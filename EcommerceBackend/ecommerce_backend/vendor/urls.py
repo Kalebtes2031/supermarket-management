@@ -1,4 +1,4 @@
-# delivery/urls.py
+# vendor/urls.py
 from django.urls import path
 from .views import VendorUserCreateView, PendingAndPreparedOrdersListAPIView, UpdatePreparedStatusAPIView, AssignOrderToDeliveryAPIView
 

@@ -81,28 +81,34 @@ class UserSerializer(BaseUserSerializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims (optional)
+        token['first_name'] = user.first_name
+        token['role'] = user.role  # Assuming a 'role' field exists on your User model
+        return token
+
     def validate(self, attrs):
         data = super().validate(attrs)
+        user = self.user
 
-        obj = self.user
+        if user.is_deactivated:
+            raise ValidationError('Account deactivated.')
+        if not user.is_active:
+            raise ValidationError('Account not activated.')
 
-        if obj.is_deactivated:
-            raise ValidationError(
-                'Account deactivated. Account deactivated!!')
-
-        if not obj.is_active:
-            raise ValidationError(
-                'Your account is not activated. go to your email and activate your account')
-
+        # Include user details in the response
         data.update({
-            'id': obj.id, 'first_name': obj.first_name,
-            'last_name': obj.last_name, 'email': obj.email,
-            'username': obj.username,
-            'phone_number': obj.phone_number,
-            'is_active': obj.is_active,
-            'is_deactivated': obj.is_deactivated,
+            'user': {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone_number': user.phone_number,
+                'role': user.role,
+            }
         })
-
         return data
     
     

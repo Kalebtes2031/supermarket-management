@@ -27,6 +27,8 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import { useRouter } from "expo-router";
 import { useCart } from "@/context/CartProvider";
 
+ import LocationTracker from '@/LocationTracker';
+
 // Get device width for the scroll item (or use DEVICE_WIDTH for full-screen width)
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = 375; // Adjust as needed

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "TrackDelivery",
-    "slug": "TrackDelivery",
+    "name": "MobileApp",
+    "slug": "MobileApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "TrackDelivery",
+    "scheme": "MobileApp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -15,7 +15,9 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "dev.expo.mobileapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +38,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e9df78ca-29e8-404d-a5e4-5134d8673a60"
+      }
+    },
+    "owner": "kalebexpo"
   }
 }

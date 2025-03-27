@@ -9,6 +9,8 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import { useEffect } from "react";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 
+import '@/testFirebase';
+
 const Welcome = () => {
   const colorScheme = useColorScheme();
   const { loading, isLogged } = useGlobalContext();

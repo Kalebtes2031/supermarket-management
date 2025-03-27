@@ -51,6 +51,7 @@ const SignIn = () => {
       // await AsyncStorage.setItem("user", form.username);
       // const users = await AsyncStorage.getItem("user")
       // Update global context
+      console.log('result is : ', result);
       setUser({ username: form.username });
       setIsLogged(true);
       
