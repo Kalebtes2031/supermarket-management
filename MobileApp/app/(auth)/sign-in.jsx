@@ -18,6 +18,8 @@ import { useRouter } from "expo-router";
 import { GET_AUTH } from "@/hooks/useFetch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import * as SecureStore from "expo-secure-store";
+
 
 const SignIn = () => {
   const router = useRouter();
@@ -31,10 +33,21 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-  useEffect(()=> {
-    console.log('let see: ', AsyncStorage.getItem("@onboardingCompleted"))
-    AsyncStorage.removeItem("@onboardingCompleted")
-  },[])
+  useEffect(() => {
+    const removeOnboardingCompleted = async () => {
+      const key = "onboardingCompleted"; // Valid key
+      try {
+        console.log("Current value:", await SecureStore.getItemAsync(key));
+        await SecureStore.deleteItemAsync(key);
+        console.log("Item removed successfully!");
+      } catch (error) {
+        console.error("Failed to remove item:", error);
+      }
+    };
+  
+    removeOnboardingCompleted();
+  }, []);
+
   const submit = async () => {
     if (!form.username || !form.password) {
       Toast.show({

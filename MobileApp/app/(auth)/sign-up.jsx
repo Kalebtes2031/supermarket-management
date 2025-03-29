@@ -6,44 +6,29 @@ import {
   Text,
   ScrollView,
   Dimensions,
-  Alert,
   Image,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
-// import { images } from "../../constants";
-import FormField from "@/components/FormField";
-import CustomBotton from "@/components/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
-// import { createUser } from "@/lib/appwrite";
+import { ThemedText } from "@/components/ThemedText";
+
+const { width } = Dimensions.get("window");
 
 const SignUp = () => {
   const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
     username: "",
     email: "",
     password: "",
   });
+
   const colorScheme = useColorScheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // const submit = async () => {
-  //   if (form.username === "" || form.email === "" || form.password === "") {
-  //     Alert.alert("Error", "Please fill in all fields");
-  //   }
-
-  //   setIsSubmitting(true);
-  //   try {
-  //     const result = await createUser(form.email, form.password, form.username);
-  //     // setUser(result);
-  //     // setIsLogged(true);
-
-  //     router.replace("/home");
-  //   } catch (error) {
-  //     Alert.alert("Error:(", error.message);
-  //     console.error("this is the error")
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
   return (
     <SafeAreaView
       edges={["left", "right", "bottom"]}
@@ -53,182 +38,237 @@ const SignUp = () => {
       }}
     >
       <ScrollView
-        style={{
-          flex: 1,
-          // backgroundColor: "red"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 24,
         }}
       >
+        {/* Hero Image */}
+        <Image
+          source={require("@/assets/images/signup.png")}
+          resizeMode="cover"
+          style={{
+            width: "100%",
+            height: 240,
+          }}
+        />
+
+        {/* Form Container */}
         <View
           style={{
-            // minHeight: Dimensions.get("window").height - 100,
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            // backgroundColor: "red"
-            // justifyContent: "center",
-            // alignItems: "center",
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            backgroundColor: colorScheme === "dark" ? "#121212" : "#fff",
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            marginTop: -28,
           }}
         >
-          <Image
-            source={require("@/assets/images/signup.png")}
-            resizeMode="cover"
-            // className="w-[115px] h-[34px]"
+          <Text
             style={{
-              width: "100%",
-              height: 440,
+              fontSize: 20,
+              fontWeight: "700",
+              color: colorScheme === "dark" ? "#fff" : "#000",
+              marginBottom: 16,
+              fontFamily:"Poppins-Medium"
             }}
-          />
+          >
+            Create your account
+          </Text>
+          <ThemedText
+            type="title"
+            fontFamily="Poppins-Medium"
+            style={{
+              fontSize: 20, // Override default title size
+              marginBottom: 10,
+            }}
+          >
+            Custom Title
+          </ThemedText>
+
+          {/* Name Row */}
           <View
             style={{
-              backgroundColor: "white",
-              borderTopLeftRadius: 40,
-              borderTopRightRadius: 40,
-              paddingTop: 20,
-              paddingBottom: 20,
-              paddingHorizontal: 40,
-              display: "flex",
-              flexDirection: "column",
-              gap: 20,
-              position: "absolute",
-              top: 300,
-              left: 0,
-              right: 0,
-              // alignItems: "center",
-              // justifyContent: "start",
+              flexDirection: "row",
+              gap: 16,
+              marginBottom: 20,
+            }}
+          >
+            <TextInput
+              style={{
+                flex: 1,
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+                borderRadius: 12,
+                // borderRadius: 24,
+                // borderWidth: 2,
+                // borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
+                padding: 14,
+                fontSize: 14,
+                color: colorScheme === "dark" ? "#fff" : "#000",
+                height: 48,
+              }}
+              placeholder="First name"
+              placeholderTextColor="#888"
+              value={form.firstName}
+              onChangeText={(text) => setForm({ ...form, firstName: text })}
+            />
+
+            <TextInput
+              style={{
+                flex: 1,
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                borderRadius: 12,
+                padding: 14,
+                fontSize: 14,
+                color: colorScheme === "dark" ? "#fff" : "#000",
+                height: 48,
+              }}
+              placeholder="Last name"
+              placeholderTextColor="#888"
+              value={form.lastName}
+              onChangeText={(text) => setForm({ ...form, lastName: text })}
+            />
+          </View>
+
+          {/* Phone Number */}
+          <TextInput
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 14,
+              color: colorScheme === "dark" ? "#fff" : "#000",
+              marginBottom: 20,
+              height: 48,
+            }}
+            placeholder="Phone number"
+            placeholderTextColor="#888"
+            keyboardType="phone-pad"
+            value={form.phoneNumber}
+            onChangeText={(text) => setForm({ ...form, phoneNumber: text })}
+          />
+
+          {/* Username */}
+          <TextInput
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 14,
+              color: colorScheme === "dark" ? "#fff" : "#000",
+              marginBottom: 20,
+              height: 48,
+            }}
+            placeholder="Username"
+            placeholderTextColor="#888"
+            value={form.username}
+            onChangeText={(text) => setForm({ ...form, username: text })}
+          />
+
+          {/* Email */}
+          <TextInput
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 14,
+              color: colorScheme === "dark" ? "#fff" : "#000",
+              marginBottom: 20,
+              height: 48,
+            }}
+            placeholder="Email address"
+            placeholderTextColor="#888"
+            keyboardType="email-address"
+            value={form.email}
+            onChangeText={(text) => setForm({ ...form, email: text })}
+          />
+
+          {/* Password */}
+          <TextInput
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 14,
+              color: colorScheme === "dark" ? "#fff" : "#000",
+              marginBottom: 16,
+              height: 48,
+            }}
+            placeholder="Create password"
+            placeholderTextColor="#888"
+            secureTextEntry
+            value={form.password}
+            onChangeText={(text) => setForm({ ...form, password: text })}
+          />
+
+          {/* Terms Text */}
+          <Text
+            style={{
+              fontSize: 12,
+              color: colorScheme === "dark" ? "#888" : "#666",
+              textAlign: "center",
+              marginBottom: 24,
+              lineHeight: 16,
+              paddingHorizontal: 24,
+            }}
+          >
+            By tapping Sign up, you agree to our{" "}
+            <Text
+              style={{
+                color: "#7E0201",
+                textDecorationLine: "underline",
+              }}
+              onPress={() => router.push("/terms")}
+            >
+              Terms & Conditions
+            </Text>
+          </Text>
+
+          {/* Sign Up Button */}
+          <CustomButton
+            title="Sign Up"
+            containerStyles={{
+              backgroundColor: "#7E0201",
+              borderRadius: 12,
+              height: 48,
+              justifyContent: "center",
+            }}
+            textStyles={{
+              color: "#fff",
+              fontSize: 16,
+              fontWeight: "600",
+            }}
+            isLoading={isSubmitting}
+          />
+
+          {/* Login Link */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              marginTop: 24,
             }}
           >
             <Text
               style={{
-                textAlign: "start",
-                fontSize: 20,
-                fontWeight: 700,
-                color: colorScheme === "dark" ? "#fff" : "black",
-                fontWeight: "700",
-                fontFamily: "Poppins-SemiBold",
+                fontSize: 14,
+                color: colorScheme === "dark" ? "#888" : "#666",
               }}
             >
-              Create your account
+              Already have an account?{" "}
             </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              {/* First Name Field */}
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderWidth: 1,
-                  borderColor: "gray",
-                  borderRadius: 35,
-                  width: "48%",
-                  height: 50,
-                  justifyContent: "center",
-                  paddingHorizontal: 12,
-                }}
-              >
-                <TextInput
-                  style={{
-                    fontSize: 20,
-                    color: colorScheme === "dark" ? "#000" : "black",
-                  }}
-                  value={form.firstName}
-                  placeholder="First Name"
-                  placeholderClassName="text-sm"
-                  placeholderTextColor="#7B7B8B"
-                  onChangeText={(e) => setForm({ ...form, firstName: e })}
-                />
-              </View>
-
-              {/* Last Name Field */}
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderWidth: 1,
-                  borderColor: "gray",
-                  borderRadius: 35,
-                  width: "48%",
-                  height: 50,
-                  justifyContent: "center",
-                  paddingHorizontal: 12,
-                }}
-              >
-                <TextInput
-                  style={{
-                    fontSize: 20,
-                    color: colorScheme === "dark" ? "#000" : "black",
-                  }}
-                  value={form.lastName}
-                  placeholder="Last Name"
-                  placeholderTextColor="#7B7B8B"
-                  onChangeText={(e) => setForm({ ...form, lastName: e })}
-                />
-              </View>
-            </View>
-
-            <FormField
-              title=""
-              value={form.username}
-              handleChangeText={(e) => setForm({ ...form, username: e })}
-              otherStyles="mt-10"
-            />
-
-            <FormField
-              title=""
-              value={form.email}
-              handleChangeText={(e) => setForm({ ...form, email: e })}
-              otherStyles=""
-              keyboardType="email-address"
-            />
-
-            <FormField
-              title=""
-              value={form.password}
-              handleChangeText={(e) => setForm({ ...form, password: e })}
-              otherStyles=""
-            />
-            <CustomBotton
-              title="Sign Up"
-              // handlePress={submit}
-              containerStyles="mt- w-full"
-              isLoading={isSubmitting}
-            />
-
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                // paddingTop: 20,
-                gap: 10,
-              }}
-              // className="flex justify-center pt-5 flex-row gap-2"
-            >
+            <TouchableOpacity onPress={() => router.push("/sign-in")}>
               <Text
                 style={{
-                  fontSize: 20,
-                  color: colorScheme === "dark" ? "#fff" : "black",
-                  fontFamily: "Poppins-Regular",
-                }}
-                // className="text-lg text-gray-100 font-pregular"
-              >
-                Have an account already?
-              </Text>
-              <Link
-                href="/sign-in"
-                style={{
-                  fontSize: 20,
+                  fontSize: 14,
                   color: "#7E0201",
-                  fontFamily: "Poppins-SemiBold",
+                  fontWeight: "600",
                 }}
-                // className="text-lg font-psemibold text-secondary"
               >
                 Login
-              </Link>
-            </View>
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

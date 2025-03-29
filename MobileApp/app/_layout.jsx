@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
+import "../i18n"; // Import i18n for translations
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -25,6 +26,8 @@ import { CartProvider } from "@/context/CartProvider";
 import { View } from "react-native";
 import { Text } from "react-native";
 import { FA5Style } from "@expo/vector-icons/build/FontAwesome5";
+
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,6 +57,7 @@ export default function RootLayout() {
           ]}
         >
           {/* <Header /> */}
+          
           <ErrorBoundary>
             <GlobalProvider>
               <CartProvider>
