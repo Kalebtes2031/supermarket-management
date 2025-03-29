@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -30,6 +30,11 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  useEffect(()=> {
+    console.log('let see: ', AsyncStorage.getItem("@onboardingCompleted"))
+    AsyncStorage.removeItem("@onboardingCompleted")
+  },[])
   const submit = async () => {
     if (!form.username || !form.password) {
       Toast.show({

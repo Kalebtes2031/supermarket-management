@@ -16,7 +16,7 @@ const FormField = ({
   const colorScheme = useColorScheme();
   return (
     <View style={{ gap: 2 }} className={` ${otherStyles}`}>
-      <Text
+      {/* <Text
         style={{
           color: colorScheme === "dark" ? "#fff" : "#7E0201",
           fontSize: 20,
@@ -25,12 +25,12 @@ const FormField = ({
         // className="text-base text-gray-100 font-pmedium"
       >
         {title}
-      </Text>
+      </Text> */}
 
       <View 
       style={{
         backgroundColor: "white",
-        borderRadius: 10,
+        borderRadius: 35,
         borderWidth: 1,
         borderColor: "gray",
         width: '100%',

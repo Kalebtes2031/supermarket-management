@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Dimensions,
+  Alert,
+  Image,
+  TextInput,
+} from "react-native";
 // import { images } from "../../constants";
 import FormField from "@/components/FormField";
 import CustomBotton from "@/components/CustomButton";
@@ -38,116 +46,189 @@ const SignUp = () => {
   // };
   return (
     <SafeAreaView
-      // className="bg-primary h-full"
+      edges={["left", "right", "bottom"]}
       style={{
-        height: "100%",
-        backgroundColor:  colorScheme === "dark" ? "#000" : "#fff",
+        flex: 1,
+        backgroundColor: colorScheme === "dark" ? "#000" : "#fff",
       }}
     >
-      <ScrollView>
+      <ScrollView
+        style={{
+          flex: 1,
+          // backgroundColor: "red"
+        }}
+      >
         <View
-          className="w-full flex justify-center min-h-[85vh] px-4 my-6"
-          // style={{
-          //   minHeight: Dimensions.get("window").height - 100,
-          // }}
           style={{
             // minHeight: Dimensions.get("window").height - 100,
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 20,
-            marginVertical: 20,
-            minHeight: "85vh",
+            // backgroundColor: "red"
+            // justifyContent: "center",
+            // alignItems: "center",
           }}
         >
           <Image
-            source={colorScheme==="dark" ? require("@/assets/images/malhibfooterlogo.png") :require("@/assets/images/malhiblogo.png")}
-            resizeMode="contain"
-            className="w-[115px] h-[34px]"
+            source={require("@/assets/images/signup.png")}
+            resizeMode="cover"
+            // className="w-[115px] h-[34px]"
             style={{
-              width: 150,
-              height: 104,
+              width: "100%",
+              height: 440,
             }}
           />
-
-          <Text 
-          style={{
-            textAlign: "center",
-            fontSize: 30,
-            fontWeight: "semibold",
-            color: colorScheme === "dark" ? "#fff" : "black",
-            marginTop: 20,
-            fontWeight: '700',
-            fontFamily: "Poppins-SemiBold",
-            textShadowColor: "rgba(0, 0, 0, 0.3)",
-            textShadowOffset: { width: 0, height: 3 },
-            textShadowRadius: 6,
-          }}
-          // className="text-2xl font-semibold text-white mt-10 font-psemibold"
-          >
-            Sign Up to Yason
-          </Text>
-          <FormField
-            title="Username"
-            value={form.username}
-            handleChangeText={(e) => setForm({ ...form, username: e })}
-            otherStyles="mt-10"
-          />
-
-          <FormField
-            title="Email"
-            value={form.email}
-            handleChangeText={(e) => setForm({ ...form, email: e })}
-            otherStyles="mt-7"
-            keyboardType="email-address"
-          />
-
-          <FormField
-            title="Password"
-            value={form.password}
-            handleChangeText={(e) => setForm({ ...form, password: e })}
-            otherStyles="mt-7"
-          />
-          <CustomBotton
-            title="Sign Up"
-            // handlePress={submit}
-            containerStyles="mt-7 w-full"
-            isLoading={isSubmitting}
-          />
-
-          <View 
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            paddingTop: 20,
-            gap: 10,
-          }}
-          // className="flex justify-center pt-5 flex-row gap-2"
-          >
-            <Text 
-             style={{
-              fontSize: 20,
-              color: colorScheme === "dark" ? "#fff" : "black",
-              fontFamily: "Poppins-Regular",
+          <View
+            style={{
+              backgroundColor: "white",
+              borderTopLeftRadius: 40,
+              borderTopRightRadius: 40,
+              paddingTop: 20,
+              paddingBottom: 20,
+              paddingHorizontal: 40,
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+              position: "absolute",
+              top: 300,
+              left: 0,
+              right: 0,
+              // alignItems: "center",
+              // justifyContent: "start",
             }}
-            // className="text-lg text-gray-100 font-pregular"
-            >
-              Have an account already?
-            </Text>
-            <Link
-              href="/sign-in"
+          >
+            <Text
               style={{
+                textAlign: "start",
                 fontSize: 20,
-                color: "#7E0201",
+                fontWeight: 700,
+                color: colorScheme === "dark" ? "#fff" : "black",
+                fontWeight: "700",
                 fontFamily: "Poppins-SemiBold",
               }}
-              // className="text-lg font-psemibold text-secondary"
             >
-              Login
-            </Link>
+              Create your account
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              {/* First Name Field */}
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderWidth: 1,
+                  borderColor: "gray",
+                  borderRadius: 35,
+                  width: "48%",
+                  height: 50,
+                  justifyContent: "center",
+                  paddingHorizontal: 12,
+                }}
+              >
+                <TextInput
+                  style={{
+                    fontSize: 20,
+                    color: colorScheme === "dark" ? "#000" : "black",
+                  }}
+                  value={form.firstName}
+                  placeholder="First Name"
+                  placeholderClassName="text-sm"
+                  placeholderTextColor="#7B7B8B"
+                  onChangeText={(e) => setForm({ ...form, firstName: e })}
+                />
+              </View>
+
+              {/* Last Name Field */}
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderWidth: 1,
+                  borderColor: "gray",
+                  borderRadius: 35,
+                  width: "48%",
+                  height: 50,
+                  justifyContent: "center",
+                  paddingHorizontal: 12,
+                }}
+              >
+                <TextInput
+                  style={{
+                    fontSize: 20,
+                    color: colorScheme === "dark" ? "#000" : "black",
+                  }}
+                  value={form.lastName}
+                  placeholder="Last Name"
+                  placeholderTextColor="#7B7B8B"
+                  onChangeText={(e) => setForm({ ...form, lastName: e })}
+                />
+              </View>
+            </View>
+
+            <FormField
+              title=""
+              value={form.username}
+              handleChangeText={(e) => setForm({ ...form, username: e })}
+              otherStyles="mt-10"
+            />
+
+            <FormField
+              title=""
+              value={form.email}
+              handleChangeText={(e) => setForm({ ...form, email: e })}
+              otherStyles=""
+              keyboardType="email-address"
+            />
+
+            <FormField
+              title=""
+              value={form.password}
+              handleChangeText={(e) => setForm({ ...form, password: e })}
+              otherStyles=""
+            />
+            <CustomBotton
+              title="Sign Up"
+              // handlePress={submit}
+              containerStyles="mt- w-full"
+              isLoading={isSubmitting}
+            />
+
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                // paddingTop: 20,
+                gap: 10,
+              }}
+              // className="flex justify-center pt-5 flex-row gap-2"
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: colorScheme === "dark" ? "#fff" : "black",
+                  fontFamily: "Poppins-Regular",
+                }}
+                // className="text-lg text-gray-100 font-pregular"
+              >
+                Have an account already?
+              </Text>
+              <Link
+                href="/sign-in"
+                style={{
+                  fontSize: 20,
+                  color: "#7E0201",
+                  fontFamily: "Poppins-SemiBold",
+                }}
+                // className="text-lg font-psemibold text-secondary"
+              >
+                Login
+              </Link>
+            </View>
           </View>
         </View>
       </ScrollView>

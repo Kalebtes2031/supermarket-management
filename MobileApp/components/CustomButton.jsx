@@ -14,9 +14,10 @@ const CustomButton = ({
       onPress={handlePress}
       activeOpacity={0.7}
       style={{ 
-        backgroundColor: "#7E0201",
+        backgroundColor: "#445399",
         height: 62,
-        borderRadius: 10,
+        borderRadius: 32,
+        width: 354,
       }}
       className={` flex flex-row justify-center items-center ${containerStyles} ${
         isLoading ? "opacity-50" : ""
@@ -27,7 +28,7 @@ const CustomButton = ({
       style={{
         color: 'white',
         fontSize: 16,
-        fontWeight: "semibold",
+        fontWeight: 700,
       }}
       className={`font-psemibold text-lg ${textStyles}`}>
         {title}
