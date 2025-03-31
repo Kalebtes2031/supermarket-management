@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,10 +13,16 @@ import {
 import CustomButton from "@/components/CustomButton";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { ThemedText } from "@/components/ThemedText";
+import Toast from "react-native-toast-message";
+
+import * as Font from "expo-font";
+import { CREATE_NEW_CUSTOMER } from "@/hooks/useFetch";
 
 const { width } = Dimensions.get("window");
 
 const SignUp = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -25,9 +31,80 @@ const SignUp = () => {
     email: "",
     password: "",
   });
+  // Add this in your component
+  // useEffect(() => {
+  //   const checkFonts = async () => {
+  //     const fonts = await Font.getAvailableFontsAsync();
+  //     console.log('Available fonts:', fonts);
+  //   };
+  //   checkFonts();
+  // }, []);
 
   const colorScheme = useColorScheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignUp = async () => {
+    // Basic form validation
+    if (
+      !form.firstName ||
+      !form.lastName ||
+      !form.phoneNumber ||
+      !form.username ||
+      !form.email ||
+      !form.password
+    ) {
+      Toast.show({
+        type: "error",
+        text1: "Please fill all required fields",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Map form fields to API expected format
+      const payload = {
+        first_name: form.firstName,
+        last_name: form.lastName,
+        phone_number: form.phoneNumber,
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      };
+
+      const response = await CREATE_NEW_CUSTOMER(payload);
+
+      if (response) {
+        Toast.show({
+          type: "success",
+          text1: "Account created successfully!",
+        });
+
+        // Reset form
+        setForm({
+          firstName: "",
+          lastName: "",
+          phoneNumber: "",
+          username: "",
+          email: "",
+          password: "",
+        });
+
+        // Redirect to login after short delay
+        setTimeout(() => router.push("/sign-in"), 1500);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Registration failed",
+        text2: error.response?.data?.message || "Please check your information",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -65,26 +142,17 @@ const SignUp = () => {
           }}
         >
           <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "700",
-              color: colorScheme === "dark" ? "#fff" : "#000",
-              marginBottom: 16,
-              fontFamily:"Poppins-Medium"
-            }}
+            // style={{
+            //   fontSize: 20,
+            //   fontWeight: "700",
+            //   // color: colorScheme === "dark" ? "#fff" : "#000",
+            //   marginBottom: 16,
+            //   fontFamily:"",
+            // }}
+            className="text-primary text-[20px] font-bold font-league-spartan mb-4"
           >
             Create your account
           </Text>
-          <ThemedText
-            type="title"
-            fontFamily="Poppins-Medium"
-            style={{
-              fontSize: 20, // Override default title size
-              marginBottom: 10,
-            }}
-          >
-            Custom Title
-          </ThemedText>
 
           {/* Name Row */}
           <View
@@ -185,7 +253,7 @@ const SignUp = () => {
           />
 
           {/* Password */}
-          <TextInput
+          {/* <TextInput
             style={{
               backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
               borderRadius: 12,
@@ -200,8 +268,46 @@ const SignUp = () => {
             secureTextEntry
             value={form.password}
             onChangeText={(text) => setForm({ ...form, password: text })}
-          />
+          /> */}
 
+          <View style={{ marginBottom: 20, position: "relative" }}>
+            <TextInput
+              style={{
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                borderRadius: 12,
+                padding: 14,
+                fontSize: 14,
+                color: colorScheme === "dark" ? "#fff" : "#000",
+                height: 48,
+                paddingRight: 50, // extra space for the icon
+              }}
+              placeholder="Create password"
+              placeholderTextColor="#888"
+              secureTextEntry={!showPassword}
+              value={form.password}
+              onChangeText={(text) => setForm({ ...form, password: text })}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: 10,
+                top: 8,
+                padding: 5,
+              }}
+            >
+              <Image
+                source={
+                  showPassword
+                    ? require("@/assets/icons/eye.png") // Icon when password is visible
+                    : require("@/assets/icons/eye-hide.png") // Icon when password is hidden
+                }
+                style={{ width: 24, height: 24 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
           {/* Terms Text */}
           <Text
             style={{
@@ -215,10 +321,11 @@ const SignUp = () => {
           >
             By tapping Sign up, you agree to our{" "}
             <Text
-              style={{
-                color: "#7E0201",
-                textDecorationLine: "underline",
-              }}
+              // style={{
+              //   color: "#7E0201",
+              //   textDecorationLine: "underline",
+              // }}
+              className="text-primary underline"
               onPress={() => router.push("/terms")}
             >
               Terms & Conditions
@@ -240,6 +347,7 @@ const SignUp = () => {
               fontWeight: "600",
             }}
             isLoading={isSubmitting}
+            handlePress={handleSignUp}
           />
 
           {/* Login Link */}
@@ -260,11 +368,12 @@ const SignUp = () => {
             </Text>
             <TouchableOpacity onPress={() => router.push("/sign-in")}>
               <Text
-                style={{
-                  fontSize: 14,
-                  color: "#7E0201",
-                  fontWeight: "600",
-                }}
+                // style={{
+                //   fontSize: 14,
+                //   color: "#7E0201",
+                //   fontWeight: "600",
+                // }}
+                className="text-primary font-semibold text-[14px]"
               >
                 Login
               </Text>

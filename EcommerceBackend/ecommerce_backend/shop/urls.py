@@ -13,6 +13,7 @@ from .views import (ProductDetailView,
                     EventImageListCreateView,
                     DiscoverEthiopianImageListCreateView,
                     ProductSearchView,
+                    CategoryListView,
                     )
 from rest_framework.routers import DefaultRouter
 
@@ -22,6 +23,7 @@ router.register(r'products', ProductView)
 router.register(r'size', SizeViewSet)
 
 urlpatterns = [
+    path('category-list/', CategoryListView.as_view(), name='category-list'),
     path('productdetail/', ProductDetailView.as_view(), name='create_order'),
     path('', include(router.urls)),
     path('cart/', CartView.as_view(), name='cart'),

@@ -5,159 +5,183 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  Dimensions,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useCart } from "@/context/CartProvider";
-import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
-import { useNavigation } from "@react-navigation/native"; // <-- Import useNavigation
 
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.45;
 
 const Card = ({ product }) => {
   const { addItemToCart } = useCart();
   const [isFavorited, setIsFavorited] = useState(false);
   const colorScheme = useColorScheme();
-  const route = useRouter();
-  const navigation = useNavigation(); // <-- Get navigation instance
+  const router = useRouter();
 
+  const toggleFavorite = () => setIsFavorited(!isFavorited);
 
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
-  };
-  // const handlePress = () => {
-  //   route.push("/(tabs)/carddetail", {product})
-  //   // navigation.navigate("/(tab)/carddetail", { product });
-  //   console.log("Card pressed!", product);
-  // };
   const handlePress = () => {
-    // Convert the product object to a JSON string and encode it for the URL
-    route.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(product))}`);
-    console.log("Card pressed!", product);
+    router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(product))}`);
   };
 
-  
   const handleAddCartClick = () => {
-    // navigate(`/shop/${id}`); // Redirect to /shop/:id
-    console.log("Cart clicked!", product.id);
-    addItemToCart(product.id, 1);
-    // Toast.show({
-    //   type: "success",
-    //   text1: "item added to cart",
-    // });
+    console.log
+    addItemToCart(product.variations.id, 1);
   };
+
   return (
-    <TouchableOpacity onPress={handlePress} style={styles.cardcontainer}>
-      <View style={styles.card}>
-        {/* Image Container with Icons */}
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: product.image }} style={styles.image} />
-          <View style={styles.cartIcon}>
-            <TouchableOpacity onPress={handleAddCartClick}>
-              <AntDesign name="shoppingcart" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
+    <TouchableOpacity 
+      onPress={handlePress} 
+      style={[styles.cardContainer, { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" }]}
+    >
+      {/* Image Container */}
+      <View style={styles.imageContainer}>
+        <Image 
+          source={{ uri: product.image }} 
+          style={styles.image} 
+          resizeMode="cover"
+        />
+        <View style={styles.imageOverlay} />
+        
+        {/* Top Icons */}
+        <View style={styles.topIconsContainer}>
+          <TouchableOpacity 
+            style={[styles.iconButton, styles.cartButton]}
+            onPress={handleAddCartClick}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <AntDesign name="shoppingcart" size={24} color="#fff" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={toggleFavorite}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <MaterialIcons
               name={isFavorited ? "favorite" : "favorite-border"}
               size={24}
-              color="#7E0201"
+              color="#445399"
             />
           </TouchableOpacity>
         </View>
-        <Text
-          style={[
-            styles.category,
-            { color: colorScheme === "dark" ? "#fff" : "#B9B4C7" },
-          ]}
-        >
-          {product.category?.name || "N/A"}
-        </Text>
-        <Text
-          style={[
-            styles.name,
-            { color: colorScheme === "dark" ? "#7E0201" : "#7E0201" },
-          ]}
-        >
-          {product.item_name}
-        </Text>
-        <Text
-          style={[
-            styles.price,
-            { color: colorScheme === "dark" ? "#fff" : "#5F374B" },
-          ]}
-        >
-          {product.price}
-        </Text>
+
+        {/* Product Info Overlay */}
+        <View style={styles.infoOverlay}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {product.item_name}
+          </Text>
+          
+          <View style={styles.priceContainer}>
+            <Text style={styles.unitText}>
+              {parseInt(product?.variations[0]?.quantity)}{" "}
+              {product?.variations[0]?.unit}
+            </Text>
+            <Text style={styles.priceText}>
+              ETB {product.variations[0].price}
+            </Text>
+          </View>
+        </View>
       </View>
+
+      {/* Add to Cart Footer */}
+      {/* <TouchableOpacity 
+        style={styles.addToCartButton}
+        onPress={handleAddCartClick}
+      >
+        <Text style={styles.addToCartText}>Add to Cart</Text>
+      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  cardcontainer: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    // padding: 10,
-    marginBottom: 10,
-    width: "100%",
-    height: 260,
-  },
-  card: {
-    // borderWidth: 1,
-    // borderColor: "#ddd",
-    // borderRadius: 10,
-    // padding: 10,
-    // marginBottom: 10,
-    width: "100%",
+  cardContainer: {
+    width: CARD_WIDTH,
+    borderRadius: 16,
+    marginBottom: 8,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    height: 280,
   },
   imageContainer: {
-    position: "relative",
+    height: 280,
+    justifyContent: "space-between",
   },
   image: {
+    ...StyleSheet.absoluteFillObject,
     width: "100%",
-    height: 150,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    height: "100%",
   },
-  cartIcon: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    backgroundColor: "#fff",
-    padding: 5,
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  topIconsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 12,
+  },
+  iconButton: {
+    backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 20,
+    padding: 6,
+    elevation: 2,
   },
-  favoriteIcon: {
+  cartButton: {
+    backgroundColor: "#445399",
+  },
+  infoOverlay: {
     position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "#fff",
-    padding: 5,
-    borderRadius: 20,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 12,
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  category: {
-    fontSize: 14,
-    marginTop: 5,
-    paddingLeft: 10,
-  },
-  name: {
+  productName: {
+    color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 5,
-    paddingLeft: 10,
-    numberOfLines: 2,
-    ellipsizeMode: "tail",
+    fontWeight: "700",
+    marginBottom: 4,
+    fontFamily: "Poppins-SemiBold",
   },
-  price: {
-    fontSize: 14,
-    color: "#7E0201",
-    marginTop: 5,
-    paddingLeft: 10,
-    paddingBottom: 10,
+  priceContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginLeft: 2,
+  },
+  unitText: {
+    color: "#fff",
+    fontSize: 15,
+    fontFamily: "Poppins-Regular",
+    opacity: 0.9,
+    fontWeight: "700",
+  },
+  priceText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: "Poppins-Bold",
+  },
+  addToCartButton: {
+    backgroundColor: "#7E0201",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  addToCartText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontFamily: "Poppins-SemiBold",
   },
 });
 

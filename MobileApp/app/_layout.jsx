@@ -33,19 +33,22 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  const [fontsLoaded, error] = useFonts({
+    'Poppins-Regular': require('../assets/fonts/Poppins-Regular.ttf'),
+    'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
+    'Poppins-bold': require('../assets/fonts/Poppins-Bold.ttf'), // Note the lowercase
+    'League Spartan': require('../assets/fonts/LeagueSpartan-Regular.ttf'),
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    if (error) console.error('Font loading error:', error);
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded, error]);
 
-  if (!loaded) {
-    return null;
+  if (!fontsLoaded) {
+    return null; // Show loading screen/image here
   }
+
 
   return (
     <SafeAreaProvider>

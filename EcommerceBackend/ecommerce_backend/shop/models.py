@@ -19,6 +19,7 @@ class Style(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True, blank=True, null=True)
     name_amh = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    image = models.ImageField(upload_to='category/', blank=True, null=True)
 
     def __str__(self):
        

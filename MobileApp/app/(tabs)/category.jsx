@@ -1,0 +1,151 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { fetchCategory } from "@/hooks/useFetch";
+import Header from "@/components/Header"; // Import your Header component
+
+const { width } = Dimensions.get("window");
+const ITEM_WIDTH = (width - 48) / 3; // Calculate width for 3 items with padding
+
+const CategoryScreen = () => {
+  const colorScheme = useColorScheme();
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetchCategory();
+        setCategories(response);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.categoryItem}
+      onPress={() => handleCategoryPress(item)}
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={styles.categoryImage}
+        resizeMode="cover"
+      />
+      <Text style={[styles.categoryText, { color: colorScheme === "dark" ? "#fff" : "#445396" }]}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* Custom Header */}
+      <Header />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={colorScheme === "dark" ? "#fff" : "#445399"}
+          />
+        </TouchableOpacity>
+        <Text className="font-poppins-bold" style={[styles.headerTitle, { color: colorScheme === "dark" ? "#fff" : "#445399" }]}>
+          Categories
+        </Text>
+      </View>
+
+      {/* Category Grid */}
+      <FlatList
+        data={categories}
+        renderItem={renderCategoryItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={3}
+        columnWrapperStyle={styles.columnWrapper}
+        ListEmptyComponent={
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading categories...</Text>
+          </View>
+        }
+        contentContainerStyle={styles.listContent}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
+  },
+  backButton: {
+    padding: 10,
+    // backgroundColor:"red",
+    borderRadius: '100%',
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    flex: 1,
+    textAlign: "center",
+  },
+  categoryItem: {
+    width: ITEM_WIDTH,
+    marginBottom: 16,
+    alignItems: "center",
+    marginRight:10,
+    // backgroundColor:"red"
+  },
+  categoryImage: {
+    width: ITEM_WIDTH - 16,
+    height: ITEM_WIDTH - 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+    paddingHorizontal: 4,
+  },
+  columnWrapper: {
+    justifyContent: "flex-start",
+    paddingHorizontal: 16,
+  },
+  listContent: {
+    paddingTop: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#666",
+  },
+});
+
+export default CategoryScreen;

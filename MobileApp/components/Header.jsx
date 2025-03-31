@@ -53,30 +53,7 @@ const Header = () => {
       }).start(() => setModalVisible(false));
     }
   };
-  useEffect(() => {
-    if (cartModalVisible) {
-      loadCartData();
-      // console.log("content of cart is : ", loadCartData);
-    }
-  }, [cartModalVisible, loadCartData]);
-
-  // Function to toggle the cart modal
-  const toggleCartModal = () => {
-    if (!cartModalVisible) {
-      setCartModalVisible(true);
-      Animated.timing(cartSlideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(cartSlideAnim, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setCartModalVisible(false));
-    }
-  };
+ 
 
   const handleLogout = () => {
     console.log("logout");
@@ -103,25 +80,25 @@ const handleDeleteProduct = async (itemId) => {
     <SafeAreaView
       style={[
         styles.header,
-        { backgroundColor: colorScheme === "dark" ? "#333" : "#fff" },
+        { backgroundColor: colorScheme === "dark" ? "#333" : "gray" },
       ]}
     >
       <ThemedView
         style={[
           styles.headerContainer,
-          { backgroundColor: colorScheme === "dark" ? "#333" : "#7E0201" },
+          { backgroundColor: colorScheme === "dark" ? "#333" : "#fff" },
         ]}
       >
         {/* Menu and logo on the left */}
         <View style={styles.menulogo}>
           <Pressable onPress={toggleModal}>
-            <Ionicons name="menu" size={24} color="white" />
+            <Ionicons name="menu" size={34} color="#445399" />
           </Pressable>
-          <Image
+          {/* <Image
             source={require("../assets/images/malhibfooterlogo.png")}
             style={styles.logo}
             resizeMode="contain"
-          />
+          /> */}
         </View>
 
         {/* Icons on the right */}
@@ -129,21 +106,14 @@ const handleDeleteProduct = async (itemId) => {
         <ThemedView
           style={[
             styles.iconContainer,
-            { backgroundColor: colorScheme === "dark" ? "#333" : "#7E0201" },
+            { backgroundColor: colorScheme === "dark" ? "#333" : "#fff" },
           ]}
         >
-          <View style={styles.iconWrapper}>
-            <Pressable onPress={toggleCartModal}>
-              <MaterialIcons name="shopping-cart" size={24} color="white" />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{cart.total_items}</Text>
-            </View>
-            </Pressable>
-          </View>
+          <MaterialIcons name="search" size={24} style={{ color: colorScheme === "dark" ? "#fff" : "#445399" }} />
 
           <View style={styles.iconWrapper}>
             <TouchableOpacity>
-              <MaterialIcons name="favorite-border" size={24} color="white" />
+              <MaterialIcons name="favorite-border" size={24} color="#445399" />
             </TouchableOpacity>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>0</Text>
@@ -151,7 +121,7 @@ const handleDeleteProduct = async (itemId) => {
           </View>
 
           <TouchableOpacity>
-            <Ionicons name="globe-outline" size={24} color="white" />
+          <Ionicons name="person" size={24} color="#445399" />
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
@@ -234,147 +204,6 @@ const handleDeleteProduct = async (itemId) => {
           </TouchableOpacity>
         </Animated.View>
       </Modal>
-      {/* Slide-in cart Modal in right side */}
-      <Modal transparent visible={cartModalVisible} animationType="none">
-        {/* Overlay to close the cart modal */}
-        <TouchableOpacity
-          style={styles.cartOverlay}
-          onPress={toggleCartModal}
-          activeOpacity={1}
-        />
-        {/* Animated cart modal content sliding from the right */}
-        <Animated.View
-  style={[
-    styles.cartModalContent,
-    {
-      transform: [{ translateX: cartSlideAnim }],
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-    },
-  ]}
->
-  <View style={{ position: "relative", height: "100%" }}>
-    {/* Header */}
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: 10,
-        height: 70,
-        width: "100%",
-      }}
-    >
-      <Text style={{ padding: 20, fontWeight: "600", fontSize: 12 }}>
-        Shopping Cart
-      </Text>
-      <TouchableOpacity onPress={toggleCartModal}>
-        <Ionicons name="close" size={24} color="black" />
-      </TouchableOpacity>
-    </View>
-
-    {/* Scrollable Cart Items Container */}
-    <View style={{ height: 500 /* fixed height, adjust as needed */ }}>
-      <ScrollView>
-        {cart.items && cart.items.length > 0 ? (
-          cart.items.map((item) => (
-            <View
-              key={item.id}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: "#ddd",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image
-                  source={{
-                    uri:
-                      item.product?.image ||
-                      "https://via.placeholder.com/60",
-                  }}
-                  style={styles.productImage}
-                />
-                <View>
-                  <Text style={{ width: 135 }}>
-                    {item.product.item_name}
-                  </Text>
-                  <Text>
-                    {item.quantity} X {item.product.price}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity onPress={() => handleDeleteProduct(item.id)}>
-                <Ionicons name="trash" size={24} color="black" />
-              </TouchableOpacity>
-            </View>
-          ))
-        ) : (
-          <View>
-            <Text>No items in cart</Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
-
-    {/* Bottom Part */}
-    <View
-      style={{
-        position: "absolute",
-        bottom: 0,
-        padding: 20,
-        width: "100%",
-        marginBottom: 20,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderTopWidth: 1,
-          borderTopColor: "#ddd",
-          borderBottomWidth: 1,
-          borderBottomColor: "#ddd",
-          paddingVertical: 10,
-          paddingHorizontal: 5,
-        }}
-      >
-        <Text style={{ fontWeight: "600" }}>Total</Text>
-        <Text style={{ fontWeight: "600" }}>{cart.total || 0}</Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => route.push("/cartscreen")}
-        style={{
-          backgroundColor: "#7E0201",
-          padding: 10,
-          borderRadius: 35,
-          marginTop: 10,
-        }}
-      >
-        <Text style={{ color: "white", textAlign: "center" }}>VIEW CART</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-      onPress={() => route.push("/checkout")}
-        style={{
-          backgroundColor: "#7E0201",
-          padding: 10,
-          borderRadius: 35,
-          marginTop: 10,
-        }}
-      >
-        <Text style={{ color: "white", textAlign: "center" }}>PROCEED TO CHECKOUT</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Animated.View>
-
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -412,17 +241,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -10,
-    backgroundColor: "white",
+    backgroundColor: "#445399",
     borderRadius: 10,
     width: 18,
     height: 18,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
     // zIndex: 10, // Ensures the badge is on top
   },
 
   badgeText: {
-    color: "#7E0201",
+    color: "white",
     fontSize: 10,
     fontWeight: "bold",
   },

@@ -30,7 +30,7 @@ const CustomButton = ({
         fontSize: 16,
         fontWeight: 700,
       }}
-      className={`font-psemibold text-lg ${textStyles}`}>
+      className={`font-league-spartan text-lg ${textStyles}`}>
         {title}
       </Text>
     </TouchableOpacity>

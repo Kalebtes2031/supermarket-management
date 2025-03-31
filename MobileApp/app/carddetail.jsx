@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,6 @@ import Toast from "react-native-toast-message";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
 
 const { width } = Dimensions.get("window");
 
@@ -57,6 +56,9 @@ const ProductDetail = ({ route }) => {
       </SafeAreaView>
     );
   }
+  // useEffect(()=> {
+  //   console.log("tg product", product)
+  // },[])
 
   // console.log('ok now i wanna know if product is here: ', product)
   return (
@@ -67,24 +69,57 @@ const ProductDetail = ({ route }) => {
       ]}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Header />
+        {/* <Header /> */}
         <View
           style={{
-            height: 60,
+            height: 150,
             backgroundColor: "#fff",
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 10,
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "start",
+            paddingHorizontal: 20,
           }}
         >
           <TouchableOpacity
             onPress={() => router.back()}
-            style={{ marginRight: 10, paddingHorizontal: 12 }}
+            style={{ marginRight: 10, paddingHorizontal: 2 }}
+            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
           >
-            <Ionicons name="arrow-back" size={24} color="gray" />
+            <Ionicons name="arrow-back" size={24} color="#445399" />
           </TouchableOpacity>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-            Product Detail
+          <View className="flex flex-row justify-between items-center">
+            <Text
+              className="text-primary font-poppins-bold mt-6 mb-10"
+              style={{ fontSize: 18, fontWeight: 700 }}
+            >
+              {product.category?.name}
+            </Text>
+            {/* Price and Stock Status */}
+            <View style={styles.priceContainer} className="mt-6">
+              {/* <Text style={styles.priceText}>ETB {product.price}</Text> */}
+              <View
+                style={[
+                  styles.stockStatus,
+                  {
+                    backgroundColor: product.variations[0]?.in_stock
+                      ? "#4CAF50"
+                      : "#F44336",
+                  },
+                ]}
+              >
+                <Text style={styles.stockText}>
+                  {product.variations[0]?.in_stock
+                    ? "In Stock"
+                    : "Out of Stock"}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <Text
+            className="text-primary font-poppins-bold"
+            style={{ fontSize: 18, fontWeight: 700, textAlign: "center" }}
+          >
+            {product.item_name}
           </Text>
         </View>
         {/* Main Product Image */}
@@ -99,6 +134,30 @@ const ProductDetail = ({ route }) => {
             style={styles.mainImage}
             resizeMode="contain"
           />
+          <Text
+            className="text-primary absolute left-10 bottom-1 font-poppins-bold mt-6 mb-10"
+            style={{ fontSize: 18, fontWeight: 700 }}
+          >
+            Birr {parseInt(product.variations[0]?.price)}
+          </Text>
+          <View
+            style={styles.quantityContainer}
+            className="absolute right-10 bottom-6"
+          >
+            <TouchableOpacity
+              onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              style={styles.quantityButton}
+            >
+              <MaterialIcons name="remove" size={24} color="#445399" />
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{quantity}</Text>
+            <TouchableOpacity
+              onPress={() => setQuantity(quantity + 1)}
+              style={styles.quantityButton}
+            >
+              <MaterialIcons name="add" size={24} color="#445399" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Image Gallery */}
@@ -130,19 +189,19 @@ const ProductDetail = ({ route }) => {
         {/* Product Details Container */}
         <View style={styles.detailsContainer}>
           {/* Category Badge */}
-          <View style={styles.categoryBadge}>
+          {/* <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{product.category?.name}</Text>
-          </View>
+          </View> */}
 
           {/* Product Title */}
-          <Text
+          {/* <Text
             style={[
               styles.title,
               { color: colorScheme === "dark" ? "#fff" : "#000" },
             ]}
           >
             {product.item_name}
-          </Text>
+          </Text> */}
 
           {/* Amharic Name */}
           {/* {product.item_name_amh && (
@@ -150,21 +209,6 @@ const ProductDetail = ({ route }) => {
               {product.item_name_amh}
             </Text>
           )} */}
-
-          {/* Price and Stock Status */}
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceText}>ETB {product.price}</Text>
-            <View
-              style={[
-                styles.stockStatus,
-                { backgroundColor: product.in_stock ? "#4CAF50" : "#F44336" },
-              ]}
-            >
-              <Text style={styles.stockText}>
-                {product.in_stock ? "In Stock" : "Out of Stock"}
-              </Text>
-            </View>
-          </View>
 
           {/* Product Description Section */}
           <View style={styles.section}>
@@ -174,7 +218,7 @@ const ProductDetail = ({ route }) => {
                 { color: colorScheme === "dark" ? "#fff" : "#000" },
               ]}
             >
-              Product Details
+              Item Details
             </Text>
             <Text
               style={[
@@ -182,9 +226,7 @@ const ProductDetail = ({ route }) => {
                 { color: colorScheme === "dark" ? "#ccc" : "#666" },
               ]}
             >
-              Premium quality men's full suit crafted from fine materials.
-              Perfect for formal occasions and business meetings. Available in
-              multiple sizes with custom tailoring options.
+              Oranges are rich in vitamin C, which is essential for the immune system and overall health. They also contain dietary fiber, which aids digestion, as well as other vitamins and minerals like vitamin A, potassium, and antioxidants.
             </Text>
           </View>
 
@@ -216,14 +258,14 @@ const ProductDetail = ({ route }) => {
             onPress={() => setQuantity(Math.max(1, quantity - 1))}
             style={styles.quantityButton}
           >
-            <MaterialIcons name="remove" size={24} color="#7E0201" />
+            <MaterialIcons name="remove" size={24} color="#445399" />
           </TouchableOpacity>
           <Text style={styles.quantityText}>{quantity}</Text>
           <TouchableOpacity
             onPress={() => setQuantity(quantity + 1)}
             style={styles.quantityButton}
           >
-            <MaterialIcons name="add" size={24} color="#7E0201" />
+            <MaterialIcons name="add" size={24} color="#445399" />
           </TouchableOpacity>
         </View>
 
@@ -246,22 +288,27 @@ const styles = StyleSheet.create({
     paddingBottom: 80, // Space for fixed action bar
   },
   mainImageContainer: {
-    height: width * 0.9,
-    backgroundColor: "#f8f8f8",
+    height: width * 0.8,
+    backgroundColor: "#D6F3D5",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 8,
-    margin: 16,
+    // borderRadius: 8,
+    marginVertical: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+    borderTopLeftRadius: 38,
+    borderTopRightRadius: 38,
+    position: "relative",
   },
   mainImage: {
     width: "100%",
-    height: "100%",
+    height: "60%",
     borderRadius: 8,
+    position: "absolute",
+    top: 25,
   },
   galleryContainer: {
     paddingHorizontal: 16,
@@ -277,7 +324,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   selectedImageContainer: {
-    borderColor: "#7E0201",
+    borderColor: "#445399",
   },
   galleryImage: {
     width: "100%",
@@ -287,7 +334,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   categoryBadge: {
-    backgroundColor: "#7E0201",
+    backgroundColor: "#445399",
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 15,
@@ -318,7 +365,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#7E0201",
+    color: "#445399",
   },
   stockStatus: {
     paddingVertical: 6,
@@ -416,7 +463,7 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: "#f5f5f5",
     borderRadius: 8,
-    padding: 8,
+    padding: 2,
   },
   quantityButton: {
     padding: 8,
@@ -429,7 +476,7 @@ const styles = StyleSheet.create({
   },
   addToCartButton: {
     flex: 1,
-    backgroundColor: "#7E0201",
+    backgroundColor: "#445399",
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: "center",

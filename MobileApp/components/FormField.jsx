@@ -1,8 +1,6 @@
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image } from "react-native";
-
-// import { icons } from "../constants";
+import { View, TextInput, TouchableOpacity, Image } from "react-native";
 
 const FormField = ({
   title,
@@ -14,50 +12,77 @@ const FormField = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
-  return (
-    <View style={{ gap: 2 }} className={` ${otherStyles}`}>
-      {/* <Text
-        style={{
-          color: colorScheme === "dark" ? "#fff" : "#7E0201",
-          fontSize: 20,
-          fontWeight: "semibold",
-        }}
-        // className="text-base text-gray-100 font-pmedium"
-      >
-        {title}
-      </Text> */}
 
-      <View 
-      style={{
-        backgroundColor: "white",
-        borderRadius: 35,
-        borderWidth: 1,
-        borderColor: "gray",
-        width: '100%',
-        height: 50,
-        paddingHorzontal: 4,
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-      }}
-      // className="w-full h-16 px-4 bg-black-100 rounded-2xl border-2 border-black-200 focus:border-secondary flex flex-row items-center"
-      >
+  const inputStyle = {
+    flex: 1,
+    color: colorScheme === "dark" ? "#000" : "black",
+    fontSize: 20,
+    fontWeight: "600",
+    paddingHorizontal: 12,
+  };
+
+  // If the title is "Password", render either a secure or non-secure input
+  const renderPasswordInput = () => {
+    if (showPassword) {
+      return (
         <TextInput
-          style={{
-            flex: 1,
-            color: colorScheme === "dark" ? "#000z" : "black",
-            fontSize: 20,
-            fontWeight: "semibold",
-            paddingHorizontal: 12,
-          }}
-          // className="flex-1 text-white font-psemibold text-base"
+          style={inputStyle}
           value={value}
           placeholder={placeholder}
           placeholderTextColor="#7B7B8B"
           onChangeText={handleChangeText}
-          secureTextEntry={title === "Password" && !showPassword}
+          secureTextEntry={false}
+          autoCorrect={false}
+          autoCapitalize="none"
           {...props}
         />
+      );
+    } else {
+      return (
+        <TextInput
+          style={inputStyle}
+          value={value}
+          placeholder={placeholder}
+          placeholderTextColor="#7B7B8B"
+          onChangeText={handleChangeText}
+          secureTextEntry={true}
+          autoCorrect={false}
+          autoCapitalize="none"
+          {...props}
+        />
+      );
+    }
+  };
+
+  return (
+    <View style={{ gap: 4, paddingVertical: 8 }} className={`${otherStyles}`}>
+      <View
+        style={{
+          backgroundColor: "white",
+          borderRadius: 35,
+          borderWidth: 1,
+          borderColor: "#445399",
+          width: "100%",
+          height: 58,
+          paddingHorizontal: 4,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {title === "Password" ? (
+          renderPasswordInput()
+        ) : (
+          <TextInput
+            style={inputStyle}
+            value={value}
+            placeholder={placeholder}
+            placeholderTextColor="#7B7B8B"
+            onChangeText={handleChangeText}
+            {...props}
+          />
+        )}
 
         {title === "Password" && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -72,7 +97,6 @@ const FormField = ({
                 height: 24,
                 marginRight: 12,
               }}
-              // className="w-6 h-6"
               resizeMode="contain"
             />
           </TouchableOpacity>

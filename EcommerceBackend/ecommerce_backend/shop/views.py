@@ -79,7 +79,7 @@ class ProductView(ModelViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        category_id = self.request.query_params.get('categoryId', None)
+        category_id = self.request.query_params.get('category_id', None)
         sort = self.request.query_params.get('sort', None)
         
         if category_id is not None:
@@ -98,7 +98,12 @@ class ProductView(ModelViewSet):
  
             
         return queryset
-    
+ 
+class CategoryListView(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [AllowAny]
+       
 class SizeViewSet(ModelViewSet):
     queryset = Size.objects.all()
     serializer_class = SizeSerializer

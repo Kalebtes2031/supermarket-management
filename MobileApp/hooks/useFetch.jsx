@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 // const baseUrl = "https://malhibnewbackend.activetechet.com/";
 // const baseUrl = "http://192.168.100.51:8000/";  //active wifi
-const baseUrl = "http://192.168.1.3:8000/";  //home wifi
+const baseUrl = "http://192.168.1.4:8000/";  //home wifi
 
 const auth = axios.create({
     baseURL: baseUrl,
@@ -20,6 +20,10 @@ const api = axios.create({
 const pay = axios.create({
     baseURL: `${baseUrl}pay/`,
 });
+
+// const account = axios.create({
+//     baseURL: `${baseUrl}account/`,
+// });
 
 export const ActivateUser = async (c) => {
     console.log(c);
@@ -76,6 +80,11 @@ export const CREATE_NEW_USER = async (credentials) => {
     const response = await auth.post("auth/users/", credentials);
     return response.data;
 };
+export const CREATE_NEW_CUSTOMER = async (credentials) => {
+    console.log('am i a problem:',credentials);
+    const response = await auth.post("account/register/", credentials);
+    return response.data;
+};
 export const RESET_PASSWORD = async (data) => {
     const response = await auth.post("auth/users/reset_password_confirm/", data);
     return response.data;
@@ -116,6 +125,10 @@ export const fetchProducts = async () => {
     const response = await api.get("products/");
     return response.data;
 };
+export const fetchCategory = async () => {
+    const response = await api.get("category-list/");
+    return response.data;
+};
 
 export const fetchProductDetail = async (id) => {
     const res = await api.get(`products/${id}`);
@@ -134,6 +147,10 @@ export const fetchRelatedProducts = async (id) => {
 
 export const fetchSortedProducts = async (sort) => {
     const { data } = await api.get(`products/?sort=${sort}`);
+    return data;
+};
+export const fetchSameCategoryProducts = async (categoryId) => {
+    const { data } = await api.get(`products/?category_id=${categoryId}`);
     return data;
 };
 
@@ -186,8 +203,8 @@ export const fetchCartSummary = async () => {
     return response.data;
 };
 
-export const addToCart = async (product_id, quantity) => {
-    const response = await api.post("cart/items/", { product_id, quantity });
+export const addToCart = async (variations_id, quantity) => {
+    const response = await api.post("cart/items/", { variations_id, quantity });
     return response.data;
 };
 
@@ -280,11 +297,12 @@ auth.interceptors.request.use(
     async (config) => {
         if (
             config.url.includes("auth/jwt/create/") ||
-            config.url.includes("auth/users/")
+            config.url.includes("auth/users/") ||
+            config.url.includes("account/register/") 
         ) {
             return config; // Don't attach Authorization header for login, registration, etc.
         }
-        const accessToken = getAccessToken();
+        const accessToken = await getAccessToken();
         if (!accessToken) {
             redirectToLogin();
             return;
@@ -307,7 +325,7 @@ auth.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
-            const refreshToken = sessionStorage.getItem("refreshToken");
+            const refreshToken = await AsyncStorage.getItem("refreshToken");
             if (refreshToken) {
                 try {
                     originalRequest._retry = true; // Mark request as retried

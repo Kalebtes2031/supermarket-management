@@ -10,7 +10,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name','name_amh']
+        fields = ['id', 'name','name_amh', 'image']
         
 class StyleSerializer(serializers.ModelSerializer):
     class Meta:

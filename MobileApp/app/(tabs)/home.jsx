@@ -21,17 +21,23 @@ import {
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
 import { useNavigation } from "@react-navigation/native";
-import { fetchNewImages, fetchPopularProducts } from "@/hooks/useFetch";
+import {
+  fetchCategory,
+  fetchNewImages,
+  fetchPopularProducts,
+  fetchSameCategoryProducts,
+} from "@/hooks/useFetch";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { useRouter } from "expo-router";
 import { useCart } from "@/context/CartProvider";
+import { Ionicons } from "@expo/vector-icons";
 
- import LocationTracker from '@/LocationTracker';
+import LocationTracker from "@/LocationTracker";
 
 // Get device width for the scroll item (or use DEVICE_WIDTH for full-screen width)
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
-const ITEM_WIDTH = 375; // Adjust as needed
+const ITEM_WIDTH = 335; // Adjust as needed
 
 export default function HomeScreen() {
   const { setCart, addItemToCart } = useCart();
@@ -41,13 +47,24 @@ export default function HomeScreen() {
   const [veryPopular, setVeryPopular] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [newImages, setNewImages] = useState([]);
+  const [greeting, setGreeting] = useState("");
+  const [category, setCategory] = useState([]);
+  const [product, setProduct] = useState(null);
 
   const handleCartClick = (id) => {
     // navigate(`/shop/${id}`); // Redirect to /shop/:id
     console.log("Cart clicked!", id);
   };
 
-
+  const fetchNewCategories = async () => {
+    try {
+      const response = await fetchCategory();
+      console.log("Categories: ", response);
+      setCategory(response); // Set the fetched categories in state
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
   const newestImages = async () => {
     try {
       const data = await fetchNewImages();
@@ -74,7 +91,8 @@ export default function HomeScreen() {
   useEffect(() => {
     newestImages();
     newPopular();
-    console.log("am i logged in: " , isLogged)
+    fetchNewCategories();
+    console.log("am i logged in: ", isLogged);
   }, []);
 
   const onRefresh = React.useCallback(() => {
@@ -92,16 +110,16 @@ export default function HomeScreen() {
   // Hard-coded array of images with text captions (using local images)
   const images = [
     {
-      image: require("@/assets/images/tilet.jpg"),
-      text: "Casual",
+      image: require("@/assets/images/signup.png"),
+      text: "Recomended Items Today",
     },
     {
-      image: require("@/assets/images/partial-react-logo.png"),
-      text: "Home Paragraph 1",
+      image: require("@/assets/images/signup.png"),
+      text: "Recomended Items Today",
     },
     {
-      image: require("@/assets/images/tilet.jpg"),
-      text: "Home Paragraph",
+      image: require("@/assets/images/signup.png"),
+      text: "Recomended Items Today",
     },
   ];
 
@@ -129,7 +147,6 @@ export default function HomeScreen() {
   let most = "Most Popular";
   let newest = "Newest Products";
 
-  
   // // Redirect if user is not authenticated
   // useEffect(() => {
   //   if (!user) {
@@ -141,6 +158,23 @@ export default function HomeScreen() {
   // if (!user) {
   //   return null;
   // }
+  useEffect(() => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour < 12) {
+      setGreeting("Good morning");
+    } else if (currentHour < 18) {
+      setGreeting("Good afternoon");
+    } else {
+      setGreeting("Good evening");
+    }
+  }, []);
+
+  const handlecategory = async (categoryId) => {
+    route.push("/(tabs)/categorydetail?categoryId=" + categoryId);
+  };
+  
+
   return (
     <ScrollView
       refreshControl={
@@ -148,10 +182,22 @@ export default function HomeScreen() {
       }
       style={styles.container}
     >
-      {/* Header & SearchBar*/}
-      <View style={styles.headerContainer}>
-        <Header />
-        <SearchComp />
+      <Header />
+      {/* greeting */}
+      <View
+        style={{
+          diplay: "flex",
+          flexDirection: "row",
+          justifyContent: "start",
+          alignItems: "center",
+          marginLeft: 18,
+          gap: 6,
+        }}
+      >
+        <Text className="text-lg  font-poppins-medium text-primary ">
+          {greeting}
+        </Text>
+        <Text className="italic ml-2 text-primary">Andualem Legesse</Text>
       </View>
 
       {/* Horizontal Image Carousel */}
@@ -161,6 +207,7 @@ export default function HomeScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
+        contentContainerStyle={{ paddingRight: 60 }}
       >
         {images.map((img, index) => (
           <View key={index} style={styles.card}>
@@ -170,116 +217,93 @@ export default function HomeScreen() {
             <View style={styles.overlay} />
             {/* Text overlay */}
             <View style={styles.textContainer}>
-              <Text style={styles.text}>{img.text}</Text>
+              <Text className="font-poppins-bold" style={styles.text}>
+                {img.text}
+              </Text>
             </View>
           </View>
         ))}
       </ScrollView>
 
-      {/* Most Newest Card lists */}
-      <Text style={{ 
-        color: colorScheme === "dark" ? "white" : "black" ,
-        padding: 16,
-        fontSize: 20,
-        fontWeight: "bold",
-        textAlign: "center",
-        }}>
-        Newest Products
-      </Text>
-      <View style={styles.popularContainer}>
-        {newImages.length > 0 ? (
-          newImages.map((product, index) => (
-            <View key={product.id || index} style={styles.cardWrapper}>
-              <Card product={product} />
-            </View>
-          ))
-        ) : (
-          <Text style={styles.loadingText}>Loading popular products...</Text>
-        )}
-      </View>
-
-      {/* Image Background Section */}
-      <ImageBackground
-        source={require("@/assets/images/malhibdesignpic.jpg")}
-        style={styles.section}
-        imageStyle={styles.imageBackground}
-        className="relative"
-      >
-        <View style={styles.overlay} />
-
-        <View
-          style={styles.contentContainer}
-          className=" -top-16 left-20 right-0 flex items-center justify-center"
-        >
-          <Image
-            source={require("@/assets/images/beteseb.jpg")}
-            style={styles.exploreImage}
-          />
-          <Text style={styles.heading} className="w-10px">
-            Explore our Family Package Collection now!
+      {/* categories*/}
+      <View className="pb-12">
+        <View className="flex flex-row justify-between pr-12 items-center">
+          <Text
+            style={{
+              color: colorScheme === "dark" ? "white" : "#445399",
+              padding: 16,
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "start",
+            }}
+          >
+            Categories
           </Text>
           <TouchableOpacity
-            onPress={() => navigation.navigate("shop")}
-            style={styles.button}
+            onPress={() => {
+              route.push("/(tabs)/category");
+            }}
           >
-            <Text style={styles.buttonText}>VIEW COLLECTION</Text>
+            <Ionicons name="arrow-forward-sharp" size={32} color="#445399" />
           </TouchableOpacity>
         </View>
-      </ImageBackground>
 
-      {/* Most popular Card lists */}
-      <Text style={{ 
-        color: colorScheme === "dark" ? "white" : "black" ,
-        padding: 16,
-        fontSize: 20,
-        fontWeight: "bold",
-        textAlign: "center",
-        }}>
-        Most Popular
-      </Text>
-      <View style={styles.popularContainer}>
-        {veryPopular.length > 0 ? (
-          veryPopular.map((product, index) => (
-            <View key={product.id || index} style={styles.cardWrapper}>
-              <Card product={product} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="px-8 "
+          contentContainerStyle={{ paddingRight: 40 }}
+        >
+          {category && category.length > 0 ? (
+            category.map((product, index) => (
+              <TouchableOpacity
+                key={product.id || index}
+                onPress={()=>handlecategory(product.id)}
+                className="flex justify-center items-center mx-2"
+              >
+                <Image
+                  source={{ uri: product.image }}
+                  className="w-24 h-24 rounded-3xl"
+                  resizeMode="cover"
+                />
+                <Text className="text-sm font-medium mt-2">{product.name}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View className="w-full justify-center items-center py-6">
+              <Text className="text-gray-500 text-base">
+                Loading categories...
+              </Text>
             </View>
-          ))
-        ) : (
-          <Text style={styles.loadingText}>Loading popular products...</Text>
-        )}
+          )}
+        </ScrollView>
       </View>
 
-      {/* Image Background Section */}
-      <ImageBackground
-        source={require("@/assets/images/malhibdesignpic.jpg")}
-        style={styles.section}
-        imageStyle={styles.imageBackground}
-        className="relative"
-      >
-        <View style={styles.overlay} />
-
-        <View
-          style={styles.contentContainer}
-          className=" -top-16 -left-20 right-0 flex items-center justify-center"
+      {/* Recommended Products */}
+      <View>
+        <Text
+          style={{
+            color: colorScheme === "dark" ? "white" : "black",
+            padding: 16,
+            fontSize: 20,
+            fontWeight: "bold",
+            textAlign: "start",
+          }}
         >
-          <Image
-            source={require("@/assets/images/beteseb.jpg")}
-            style={styles.exploreImage}
-          />
-          <Text style={styles.heading1} className="w-10px">
-            Discover Ethiopian Cultural Design "Tilet" Dress Collection!
-          </Text>
-          <Text style={styles.heading2} className="w-10px">
-            The "Tilet" dress is renowned for its unique design and quality.
-          </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Shop", { category: "Family" })}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>SHOP NOW</Text>
-          </TouchableOpacity>
+          Recommended Products
+        </Text>
+        <View style={styles.popularContainer}>
+          {veryPopular.length > 0 ? (
+            veryPopular.map((product, index) => (
+              <View key={product.id || index} style={styles.cardWrapper}>
+                <Card product={product} />
+              </View>
+            ))
+          ) : (
+            <Text style={styles.loadingText}>Loading popular products...</Text>
+          )}
         </View>
-      </ImageBackground>
+      </View>
     </ScrollView>
   );
 }
@@ -287,6 +311,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
   },
   popularContainer: {
     marginBottom: 36,
@@ -323,6 +348,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden", // Ensures the children are clipped to the borderRadius
     marginRight: 16, // Gap between cards
+    position: "relative",
   },
   image: {
     ...StyleSheet.absoluteFillObject,
@@ -330,21 +356,22 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(101,100,114,0.5)",
+    backgroundColor: "rgba(101,100,114,0.2)",
   },
   textContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 16,
+    position: "absolute",
+    bottom: 10,
+    padding: 16,
+    width: 180,
+    // backgroundColor: 'white'
   },
   text: {
     color: "#FFFFFF",
     textAlign: "center",
-    fontSize: 12,
-    letterSpacing: 2,
-    lineHeight: 18,
-    fontWeight: "600",
+    fontSize: 16,
+    letterSpacing: 0.5,
+    lineHeight: 22,
+    fontWeight: "700",
   },
   section: {
     flex: 1,
