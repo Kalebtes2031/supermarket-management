@@ -7,7 +7,8 @@ import { useRouter } from "expo-router";
 
 // const baseUrl = "https://malhibnewbackend.activetechet.com/";
 // const baseUrl = "http://192.168.100.51:8000/";  //active wifi
-const baseUrl = "http://192.168.1.4:8000/";  //home wifi
+const baseUrl = "http://192.168.1.5:8000/";  //home wifi
+// const baseUrl = "http://192.168.65.193:8000/";  //my data network
 
 const auth = axios.create({
     baseURL: baseUrl,
@@ -83,6 +84,10 @@ export const CREATE_NEW_USER = async (credentials) => {
 export const CREATE_NEW_CUSTOMER = async (credentials) => {
     console.log('am i a problem:',credentials);
     const response = await auth.post("account/register/", credentials);
+    return response.data;
+};
+export const USER_PROFILE = async () => {
+    const response = await auth.get("account/profile/");
     return response.data;
 };
 export const RESET_PASSWORD = async (data) => {
@@ -195,6 +200,7 @@ export const whoami = async () => {
 
 export const fetchCart = async () => {
     const response = await api.get("cart/");
+    console.log("cart is : ", response.data);
     return response.data;
 };
 

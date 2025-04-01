@@ -11,13 +11,28 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from decouple import config
 import requests
 from djoser.views import UserViewSet
-from accounts.serializers import CustomUserCreateSerializer, CustomUserUpdateSerializer
+from accounts.serializers import CustomUserCreateSerializer, CustomUserUpdateSerializer, CustomUserSerializer
 
+
+class LoggedInUserView(generics.RetrieveAPIView):
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Return the user associated with the request (from the access token)
+        return self.request.user
 
 class CustomUserCreateView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserCreateSerializer
     permission_classes = [AllowAny]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(serializer.errors)  # Print validation errors to the console
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return super().create(request, *args, **kwargs)
 
 
 class UpdateUserProfileView(generics.UpdateAPIView):

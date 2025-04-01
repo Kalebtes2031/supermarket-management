@@ -22,6 +22,9 @@ const CartScreen = () => {
   const [localLoading, setLocalLoading] = useState(null);
   const router = useRouter();
 
+  useEffect(() => {
+    console.log("check the cart now: ", cart);
+  }, []);
   const handleQuantityUpdate = async (itemId, newQuantity) => {
     if (newQuantity <= 0) return;
 
@@ -57,42 +60,68 @@ const CartScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Header />
+        {/* <Header /> */}
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => router.back()}
-            style={styles.backButton}
+            style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
           >
-            <Ionicons name="arrow-back" size={24} color="gray" />
+            <Ionicons name="arrow-back" size={24} color="#445399" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Shopping Cart</Text>
+          <View style={styles.iconWrapper}>
+            <TouchableOpacity>
+              <MaterialIcons name="favorite-border" size={28} color="#445399" />
+            </TouchableOpacity>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>0</Text>
+            </View>
+          </View>
         </View>
+        <Text
+          className="font-poppins-bold text-center text-primary mb-4"
+          style={styles.headerTitle}
+        >
+          Shopping Cart
+        </Text>
 
         <View style={styles.scrollContainers}>
           {cart.items.map((item) => (
             <View key={item.id} style={styles.itemContainer}>
               <Image
-                source={{ uri: item.product?.image }}
+                source={{ uri: item?.image }}
                 style={styles.productImage}
                 resizeMode="contain"
               />
 
               <View style={styles.detailsContainer}>
-                <Text style={styles.productName}>
-                  {item.product?.item_name}
-                </Text>
+                <View
+                  className="flex"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Text style={styles.productName}>{item?.item_name}</Text>
+                  <Text style={styles.productName}>
+                    {parseInt(item?.variations?.quantity)}
+                    {item?.variations?.unit}
+                  </Text>
+                </View>
                 <Text style={styles.price}>
-                  Br{parseFloat(item.product?.price || "0").toFixed(2)}
+                  Br{parseFloat(item.variations?.price || "0").toFixed(2)}
                 </Text>
 
                 <View style={styles.quantityContainer}>
                   <TouchableOpacity
                     onPress={() =>
-                      handleQuantityUpdate(item.id, item.quantity - 1)
+                      handleQuantityUpdate(item.variations.id, item.quantity - 1)
                     }
-                    disabled={localLoading === item.id || item.quantity === 1}
+                    disabled={localLoading === item.variations.id || item.quantity === 1}
                   >
-                    {localLoading === item.id ? (
+                    {localLoading === item.variations.id ? (
                       <ActivityIndicator size="small" color="#000" />
                     ) : (
                       <MaterialIcons
@@ -107,11 +136,11 @@ const CartScreen = () => {
 
                   <TouchableOpacity
                     onPress={() =>
-                      handleQuantityUpdate(item.id, item.quantity + 1)
+                      handleQuantityUpdate(item.variations.id, item.quantity + 1)
                     }
-                    disabled={localLoading === item.id}
+                    disabled={localLoading === item.variations.id}
                   >
-                    {localLoading === item.id ? (
+                    {localLoading === item.variations.id ? (
                       <ActivityIndicator size="small" color="#000" />
                     ) : (
                       <MaterialIcons
@@ -129,8 +158,8 @@ const CartScreen = () => {
                   Br{(item.total_price || 0).toFixed(2)}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => removeItemFromCart(item.id)}
-                  disabled={localLoading === item.id}
+                  onPress={() => removeItemFromCart(item.variations.id)}
+                  disabled={localLoading === item.variations.id}
                 >
                   <MaterialCommunityIcons
                     name="delete-outline"
@@ -142,27 +171,37 @@ const CartScreen = () => {
             </View>
           ))}
         </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            marginRight: 20,
+          }}
+        >
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalText}>Total =</Text>
+            <Text style={styles.totalAmount}>
+              {(cart.total || 0).toFixed(2)} Birr
+            </Text>
+          </View>
+        </View>
       </ScrollView>
 
       <View style={styles.totalContainers}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalText}>Total:</Text>
-          <Text style={styles.totalAmount}>
-            Br{(cart.total || 0).toFixed(2)}
-          </Text>
-        </View>
+        
         <View style={styles.proceedCheckout}>
           <TouchableOpacity
-            onPress={() => router.push("/checkout")}
+            onPress={() => router.push("/(tabs)/collection/checkout")}
             style={{
-              backgroundColor: "#7E0201",
-              padding: 10,
+              backgroundColor: "#445399",
+              padding: 18,
               borderRadius: 35,
               marginTop: 10,
             }}
           >
-            <Text style={{ color: "white", textAlign: "center" }}>
-              PROCEED TO CHECKOUT
+            <Text style={{ color: "white", textAlign: "center", fontSize: 16, fontWeight: "600" }}>
+              PLACE ORDER
             </Text>
           </TouchableOpacity>
         </View>
@@ -176,7 +215,7 @@ const CartScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   emptyContainer: {
     flex: 1,
@@ -193,10 +232,11 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: "#fff",
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
   },
 
   loadingContainer: {
@@ -221,6 +261,30 @@ const styles = StyleSheet.create({
   //   alignItems: "center",
   //   paddingHorizontal: 10,
   // },
+  iconWrapper: {
+    position: "relative",
+    marginRight: 16,
+  },
+
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "#445399",
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    // zIndex: 10, // Ensures the badge is on top
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
   backButton: {
     marginRight: 10,
     paddingHorizontal: 12,
@@ -235,7 +299,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    backgroundColor: "#D6F3D5",
     borderRadius: 12,
     marginBottom: 12,
     padding: 16,
@@ -298,26 +362,31 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     padding: 16,
     backgroundColor: "#fff",
-    width: '100%'
+    width: "100%",
   },
   totalContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 16,
+    justifyContent: "center", // Center text horizontally
+    alignItems: "center", // Center text vertically
+    paddingVertical: 10, // Ensure proper spacing
     paddingHorizontal: 16,
-    // backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    backgroundColor: "#75767C",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
+    gap: 4,
+    width: "60%", // Ensure proper width
+    borderRadius: 42,
   },
+
   totalText: {
     fontSize: 18,
     fontWeight: "500",
+    color: "white",
   },
   totalAmount: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2ecc71",
+    color: "white",
   },
   proceedCheckout: {
     paddingHorizontal: 12,

@@ -127,14 +127,23 @@ class CartItemView(generics.CreateAPIView):
         serializer.save(cart=cart)
 
 # View to update or delete items from the cart
+# class CartItemUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+#     serializer_class = CartItemSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         cart, _ = Cart.objects.get_or_create(user=self.request.user)
+#         return CartItem.objects.filter(cart=cart)
 class CartItemUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'variations_id'  # Use variations_id instead of the default 'pk'
 
     def get_queryset(self):
         cart, _ = Cart.objects.get_or_create(user=self.request.user)
         return CartItem.objects.filter(cart=cart)
-    
+
+
 class ClearCartView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 

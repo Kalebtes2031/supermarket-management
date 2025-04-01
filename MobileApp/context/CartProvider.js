@@ -19,6 +19,7 @@ export const CartProvider = ({ children }) => {
         ...data,
         total_items: data.items.length,
       });
+      console.log('feres cart: ', data)
     } catch (error) {
       console.error("Failed to load cart data:", error);
     }

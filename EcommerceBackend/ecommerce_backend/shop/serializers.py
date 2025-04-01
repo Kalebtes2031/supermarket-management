@@ -79,8 +79,11 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.variations.variations.item_name
 
     def get_image(self, obj):
-        # Return the image from the related Product
-        return obj.variations.variations.image.url if obj.variations.variations.image else None
+        request = self.context.get('request')  # Get request object from serializer context
+        if obj.variations.variations.image:
+            image_url = obj.variations.variations.image.url
+            return request.build_absolute_uri(image_url) if request else settings.MEDIA_URL + image_url
+        return None
 
     def create(self, validated_data):
         cart = validated_data.get('cart')

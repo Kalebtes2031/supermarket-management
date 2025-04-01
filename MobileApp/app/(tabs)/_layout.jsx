@@ -104,6 +104,30 @@ export default function TabLayout() {
           gestureEnabled: false,
         }}
       />
+      {/* <Tabs.Screen
+        name="checkout"
+        options={{
+          title: "Checkout",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      /> */}
+      {/* <Tabs.Screen
+        name="directpayment"
+        options={{
+          title: "Direct Payment",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      /> */}
+      <Tabs.Screen
+        name="collection"
+        options={{
+          title: "Schedule Delivery",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      />
     </Tabs>
   );
 }

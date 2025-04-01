@@ -30,6 +30,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     phone_number = serializers.CharField(required=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
+    image = serializers.ImageField(required=False)
 
     class Meta(UserCreateSerializer.Meta):
         model = CustomUser
@@ -40,7 +41,11 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         user = CustomUser.objects.create_user(**validated_data)
         user.save()  # Explicit save to ensure the instance is saved
         return user  # Ensure the saved instance is returned
-
+    
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'image']
 
 class UserSerializer(BaseUserSerializer):
     Date_Joined = serializers.SerializerMethodField()

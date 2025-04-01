@@ -29,6 +29,9 @@ const ProductDetail = ({ route }) => {
   const colorScheme = useColorScheme();
   const { cart, addItemToCart } = useCart();
   const router = useRouter();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const toggleFavorite = () => setIsFavorited(!isFavorited);
 
   // Create array of all available images
   const images = [
@@ -226,7 +229,10 @@ const ProductDetail = ({ route }) => {
                 { color: colorScheme === "dark" ? "#ccc" : "#666" },
               ]}
             >
-              Oranges are rich in vitamin C, which is essential for the immune system and overall health. They also contain dietary fiber, which aids digestion, as well as other vitamins and minerals like vitamin A, potassium, and antioxidants.
+              Oranges are rich in vitamin C, which is essential for the immune
+              system and overall health. They also contain dietary fiber, which
+              aids digestion, as well as other vitamins and minerals like
+              vitamin A, potassium, and antioxidants.
             </Text>
           </View>
 
@@ -253,21 +259,17 @@ const ProductDetail = ({ route }) => {
           { backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#fff" },
         ]}
       >
-        <View style={styles.quantityContainer}>
-          <TouchableOpacity
-            onPress={() => setQuantity(Math.max(1, quantity - 1))}
-            style={styles.quantityButton}
-          >
-            <MaterialIcons name="remove" size={24} color="#445399" />
-          </TouchableOpacity>
-          <Text style={styles.quantityText}>{quantity}</Text>
-          <TouchableOpacity
-            onPress={() => setQuantity(quantity + 1)}
-            style={styles.quantityButton}
-          >
-            <MaterialIcons name="add" size={24} color="#445399" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={toggleFavorite}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons
+            name={isFavorited ? "favorite" : "favorite-border"}
+            size={34}
+            color="#445399"
+          />
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleAddToCart}
@@ -405,6 +407,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    gap: 90,
+    paddingLeft:50,
   },
 
   sectionTitle: {
@@ -481,6 +485,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     marginLeft: 12,
+    width: 10,
   },
   addToCartText: {
     color: "#fff",

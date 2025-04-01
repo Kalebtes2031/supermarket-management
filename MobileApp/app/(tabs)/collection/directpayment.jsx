@@ -13,29 +13,29 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Clipboard from "expo-clipboard";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { payUsingBankTransfer } from "@/hooks/useFetch"; // Import your API function
 import { useRouter } from "expo-router";
 
 const DirectBankTransfer = () => {
-    const router = useRouter()
+  const router = useRouter();
   const navigation = useNavigation();
   const route = useRoute();
-  const rawPaymentData = route.params?.paymentData;
+  // const rawPaymentData = route.params?.paymentData;
   let parsedPaymentData = {};
 
-  if (typeof rawPaymentData === "string") {
-    try {
-      parsedPaymentData = JSON.parse(rawPaymentData);
-    } catch (e) {
-      console.error("Error parsing paymentData:", e);
-    }
-  } else {
-    parsedPaymentData = rawPaymentData;
-  }
+  // if (typeof rawPaymentData === "string") {
+  //   try {
+  //     parsedPaymentData = JSON.parse(rawPaymentData);
+  //   } catch (e) {
+  //     console.error("Error parsing paymentData:", e);
+  //   }
+  // } else {
+  //   parsedPaymentData = rawPaymentData;
+  // }
 
-  const { orderId, amountToPay, paymentStatus } = parsedPaymentData;
+  // const { orderId, amountToPay, paymentStatus } = parsedPaymentData;
 
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [bankPaymentForm, setBankPaymentForm] = useState({
@@ -169,85 +169,123 @@ const DirectBankTransfer = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Direct Bank Transfer</Text>
-
-        <Text style={styles.instructions}>Please follow these steps:</Text>
-        <View style={styles.stepsContainer}>
-          {[1, 2, 3, 4, 5].map((step) => (
-            <Text key={step} style={styles.stepText}>
-              {step}. Step {step}
-            </Text>
-          ))}
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
+          >
+            <Ionicons name="arrow-back" size={24} color="#445399" />
+          </TouchableOpacity>
         </View>
-
-        <Text style={styles.sectionTitle}>Bank Accounts</Text>
-        {banks.map((account, index) => (
-          <View key={index} style={styles.bankCard}>
-            <Image source={account.bank} style={styles.bankLogo} />
-            <View style={styles.bankDetails}>
-              <Text style={styles.accountName}>{account.name}</Text>
-              <View style={styles.accountNumberContainer}>
-                <Text style={styles.accountNumber}>{account.number}</Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    copyToClipboard(account.number, index, account.bankName)
-                  }
-                  style={styles.copyButton}
-                >
-                  {copiedIndex === index ? (
-                    <Feather name="check-circle" size={20} color="green" />
-                  ) : (
-                    <Feather name="copy" size={20} color="gray" />
-                  )}
-                </TouchableOpacity>
+        <Text
+          className="font-poppins-bold text-center text-primary mb-4"
+          style={styles.headerTitle}
+        >
+          Bank Accounts
+        </Text>
+        <View style={styles.sectiona}>
+          <Text style={styles.sectionTitle}>
+            Yason Consumption Products Trading S.c
+          </Text>
+          {banks.map((account, index) => (
+            <View key={index} style={styles.bankCard}>
+              <Image source={account.bank} style={styles.bankLogo} />
+              <View style={styles.bankDetails}>
+                <Text style={styles.accountName}>{account.name}</Text>
+                <View style={styles.accountNumberContainer}>
+                  <Text style={styles.accountNumber}>{account.number}</Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      copyToClipboard(account.number, index, account.bankName)
+                    }
+                    style={styles.copyButton}
+                  >
+                    {copiedIndex === index ? (
+                      <Feather name="check-circle" size={20} color="green" />
+                    ) : (
+                      <Feather name="copy" size={20} color="gray" />
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          ))}
 
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Select Bank</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={bankPaymentForm.bank}
-              onValueChange={(value) =>
-                setBankPaymentForm({ ...bankPaymentForm, bank: value })
-              }
-              style={styles.picker}
+          <View style={styles.formContainer}>
+            <Text style={styles.label}>Select Bank</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={bankPaymentForm.bank}
+                onValueChange={(value) =>
+                  setBankPaymentForm({ ...bankPaymentForm, bank: value })
+                }
+                style={styles.picker}
+              >
+                <Picker.Item label="Select a bank" value="" />
+                {banks.map((bank, index) => (
+                  <Picker.Item
+                    key={index}
+                    label={bank.bankName}
+                    value={bank.bankName}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={styles.label}>Upload Payment Receipt</Text>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={handleFilePick}
             >
-              <Picker.Item label="Select a bank" value="" />
-              {banks.map((bank, index) => (
-                <Picker.Item
-                  key={index}
-                  label={bank.bankName}
-                  value={bank.bankName}
-                />
-              ))}
-            </Picker>
+              <MaterialIcons name="upload-file" size={24} color="gray" />
+              <Text style={styles.uploadText}>
+                {bankPaymentForm.receipt
+                  ? bankPaymentForm.receipt.name
+                  : "Tap to upload"}
+              </Text>
+            </TouchableOpacity>
           </View>
+        </View>
+        <Text style={styles.sectionTitle}>Select Shipment/Delivery Method</Text>
+        <View 
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 20,
+          }}
+        >
 
-          <Text style={styles.label}>Upload Receipt</Text>
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleFilePick}
-          >
-            <MaterialIcons name="upload-file" size={24} color="gray" />
-            <Text style={styles.uploadText}>
-              {bankPaymentForm.receipt
-                ? bankPaymentForm.receipt.name
-                : "Tap to upload"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.submitButton, isSubmitting && styles.disabledButton]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            <Text style={styles.submitButtonText}>
-              {isSubmitting ? "Processing..." : "Submit Payment"}
-            </Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.submitButton, 
+            // isSubmitting && styles.disabledButton
+          ]}
+          onPress={() => {router.push("./schedule")}}
+          // onPress={handleSubmit}
+          // disabled={isSubmitting}
+        >
+          <Text style={styles.submitButtonText}>
+            {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
+            Schedule Delivery
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.submitButton2,
+            //  isSubmitting && styles.disabledButton
+            ]}
+          // onPress={() => {router.push("/(tabs)/home")}}
+          // onPress={handleSubmit}
+          // disabled={isSubmitting}
+        >
+          <Text style={styles.submitButtonText}>
+            {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
+            Pick Up from Store
+          </Text>
+        </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -286,12 +324,34 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     marginBottom: 4,
   },
+  headerContainer: {
+    height: 60,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  sectiona: {
+    backgroundColor: "rgba(150, 166, 234, 0.4)",
+    borderRadius: 32,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#445399",
+  },
   sectionTitle: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#7E0201",
-    marginBottom: 12,
+    color: "#445399",
+    marginVertical: 15,
   },
   bankCard: {
     flexDirection: "column",
@@ -350,9 +410,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     overflow: "hidden",
+    backgroundColor: "#f5f5f5",
   },
   picker: {
-    height: 50,
+    height: 53,
     width: "100%",
     color: "#000",
   },
@@ -371,9 +432,15 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   submitButton: {
-    backgroundColor: "#7E0201",
+    backgroundColor: "#445399",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 38,
+    alignItems: "center",
+  },
+  submitButton2: {
+    backgroundColor: "#55B051",
+    padding: 16,
+    borderRadius: 38,
     alignItems: "center",
   },
   submitButtonText: {

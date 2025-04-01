@@ -158,17 +158,31 @@ export default function HomeScreen() {
   // if (!user) {
   //   return null;
   // }
+  // useEffect(() => {
+  //   const currentHour = new Date().getHours();
+
+  //   if (currentHour < 12) {
+  //     setGreeting("Good morning");
+  //   } else if (currentHour < 18) {
+  //     setGreeting("Good afternoon");
+  //   } else {
+  //     setGreeting("Good evening");
+  //   }
+  // }, []);
   useEffect(() => {
     const currentHour = new Date().getHours();
-
-    if (currentHour < 12) {
-      setGreeting("Good morning");
+  
+    if (currentHour < 6) {
+      setGreeting("Good night"); // Midnight to 6 AM
+    } else if (currentHour < 12) {
+      setGreeting("Good morning"); // 6 AM to 12 PM
     } else if (currentHour < 18) {
-      setGreeting("Good afternoon");
+      setGreeting("Good afternoon"); // 12 PM to 6 PM
     } else {
-      setGreeting("Good evening");
+      setGreeting("Good evening"); // 6 PM to Midnight
     }
   }, []);
+  
 
   const handlecategory = async (categoryId) => {
     route.push("/(tabs)/categorydetail?categoryId=" + categoryId);

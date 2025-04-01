@@ -28,7 +28,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('cart/', CartView.as_view(), name='cart'),
     path('cart/items/', CartItemView.as_view(), name='cart_items'),
-    path('cart/items/<int:pk>/', CartItemUpdateDeleteView.as_view(), name='cart_item_detail'),
+    path('cart/items/<int:variations_id>/', CartItemUpdateDeleteView.as_view(), name='cart_item_detail'),
     path('cart/clear/', ClearCartView.as_view(), name='clear_cart'),
     path('cart/summary/', CartSummaryView.as_view(), name='cart_summary'),
     path('traditional-dressing/', TraditionalDressingImageListCreateView.as_view(), name='traditional-dressing-list-create'),

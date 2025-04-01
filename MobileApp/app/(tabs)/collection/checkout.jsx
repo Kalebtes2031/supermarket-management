@@ -1,17 +1,19 @@
 import Header from "@/components/Header";
 import { useCart } from "@/context/CartProvider";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
+  Image,
   StyleSheet,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
-import { createOrder } from "@/hooks/useFetch";
+import { createOrder, USER_PROFILE } from "@/hooks/useFetch";
 
 const CheckoutPage = () => {
   const { cart, loadCartData } = useCart();
@@ -25,6 +27,10 @@ const CheckoutPage = () => {
   const [amountToPay, setAmountToPay] = useState(null);
   const [selectedRadio, setSelectedRadio] = useState(false);
   const [selectedOption, setSelectedOption] = useState("total"); // Tracks the selected option
+  const [phone, setPhone] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
 
   const choiceofpayment = () => {
     handleBankPayment();
@@ -43,6 +49,23 @@ const CheckoutPage = () => {
       )}`
     );
   };
+
+  const fetchCustomerProfile = async () => {
+    try {
+      const profile = await USER_PROFILE();
+      console.log("Customer Profile:", profile);
+
+      setPhone(profile.phone_number || "");
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+      setEmail(profile.email || "");
+    } catch (error) {
+      console.error("Error fetching customer profile:", error);
+    }
+  };
+  useEffect(() => {
+    fetchCustomerProfile();
+  }, []);
 
   const handlePlaceOrder = async () => {
     // setShowModal(true);
@@ -118,25 +141,116 @@ const CheckoutPage = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      {/* <Header /> */}
       <View style={styles.headerContainer}>
         <TouchableOpacity
           onPress={() => route.back()}
-          style={styles.backButton}
+          style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+          className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
         >
-          <Ionicons name="arrow-back" size={24} color="gray" />
+          <Ionicons name="arrow-back" size={24} color="#445399" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <View style={styles.iconWrapper}>
+          <TouchableOpacity>
+            <MaterialIcons name="favorite-border" size={28} color="#445399" />
+          </TouchableOpacity>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>0</Text>
+          </View>
+        </View>
       </View>
+      <Text
+        className="font-poppins-bold text-center text-primary mb-4"
+        style={styles.headerTitle}
+      >
+        Check Out
+      </Text>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Order Summary Section */}
+        <View style={styles.sectiona}>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your phone number"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>First Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your first name"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Last Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your last name"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Email Address</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email address"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+        </View>
+        <Text
+          className="font-poppins-bold text-center text-primary mb-4"
+          style={styles.headerTitle}
+        >
+          Your Order
+        </Text>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginHorizontal: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "#445399",
+            }}
+          >
+            <Text style={styles.sectionTitle}>Product</Text>
+            <Text style={styles.sectionTitle}>Price</Text>
+          </View>
 
           {cart.items.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <View style={styles.itemInfo}>
-                <Text style={styles.productName}>{item.product.item_name}</Text>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "start",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Text style={styles.productName}>{item.item_name}</Text>
+                  <Text style={styles.quantity1}>
+                    {parseInt(item.variations.quantity)}
+                    {item.variations.unit}
+                  </Text>
+                </View>
                 <Text style={styles.quantity}>Qty: {item.quantity}</Text>
               </View>
               <Text style={styles.itemPrice}>
@@ -146,10 +260,10 @@ const CheckoutPage = () => {
           ))}
 
           <View style={styles.totalContainer}>
-            <View style={styles.totalRow}>
+            {/* <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total Items:</Text>
               <Text style={styles.totalValue}>{cart.total_items}</Text>
-            </View>
+            </View> */}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total Price:</Text>
               <Text style={styles.grandTotal}>Br{cart.total.toFixed(2)}</Text>
@@ -158,13 +272,26 @@ const CheckoutPage = () => {
         </View>
 
         {/* Payment Method Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 14,
+          }}
+        >
           <View style={styles.paymentMethod}>
             <View style={styles.radioButton}>
               <View style={styles.radioSelected} />
             </View>
             <Text style={styles.paymentMethodText}>Direct Bank Transfer</Text>
+          </View>
+          <View style={styles.paymentMethod}>
+            <View style={styles.radioButton}>
+              <View style={styles.radionotSelected} />
+            </View>
+            <Text style={styles.paymentMethodText}>Cash on Delivery</Text>
           </View>
         </View>
       </ScrollView>
@@ -173,11 +300,13 @@ const CheckoutPage = () => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.placeOrderButton}
-          onPress={handlePlaceOrder}
+          // onPress={handlePlaceOrder}
+          onPress={()=>route.push("./directpayment")}
           //   disabled={isLoading}
         >
           <Text style={styles.placeOrderText}>
-            {isLoading ? "Placing Order" : "Place Order"}
+            {/* {isLoading ? "Pay Now" : "Pay Now"} */}
+            Pay Now
           </Text>
         </TouchableOpacity>
       </View>
@@ -205,13 +334,16 @@ const CheckoutPage = () => {
                   setSelectedOption("advance");
                 }}
               >
-              <View style={selectedOption === "advance" && styles.radioButtons}>
                 <View
-                  style={[
-                    styles.radioButton,
-                    selectedOption === "advance" && styles.radioSelected,
-                  ]}
-                /></View>
+                  style={selectedOption === "advance" && styles.radioButtons}
+                >
+                  <View
+                    style={[
+                      styles.radioButton,
+                      selectedOption === "advance" && styles.radioSelected,
+                    ]}
+                  />
+                </View>
                 <Text style={styles.radioText}>
                   Pay Advance Br {advanceAmount}
                 </Text>
@@ -225,13 +357,14 @@ const CheckoutPage = () => {
                   setSelectedOption("total");
                 }}
               >
-               <View style={selectedOption === "total" && styles.radioButtons}>
-                <View
-                  style={[
-                    styles.radioButton,
-                    selectedOption === "total" && styles.radioSelected,
-                  ]}
-                /></View>
+                <View style={selectedOption === "total" && styles.radioButtons}>
+                  <View
+                    style={[
+                      styles.radioButton,
+                      selectedOption === "total" && styles.radioSelected,
+                    ]}
+                  />
+                </View>
                 <Text style={styles.radioText}>Pay Total Br {totalAmount}</Text>
               </TouchableOpacity>
             </View>
@@ -264,44 +397,102 @@ const CheckoutPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   headerContainer: {
     height: 60,
     backgroundColor: "#fff",
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#eee",
+  },
+  iconWrapper: {
+    position: "relative",
+    marginRight: 16,
+  },
+
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "#445399",
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    // zIndex: 10, // Ensures the badge is on top
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
   },
   backButton: {
     marginRight: 10,
     paddingHorizontal: 12,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 26,
+    paddingVertical: 6,
     paddingBottom: 100,
   },
-  section: {
-    backgroundColor: "white",
-    borderRadius: 12,
+  sectiona: {
+    backgroundColor: "rgba(150, 166, 234, 0.4)",
+    borderRadius: 32,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#445399",
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 3,
+    // elevation: 2,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#333",
+  },
+  formGroup: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 15,
+    marginBottom: 4,
+    color: "#445399",
+  },
+  input: {
+    height: 40,
+    // borderWidth: 1,
+    // borderColor: "#445399",
+    borderRadius: 38,
+    paddingHorizontal: 8,
+    backgroundColor: "#fff",
+    paddingLeft: 15,
+    // placeholderTextColor: "#445399",
+  },
+  section: {
+    backgroundColor: "rgba(150, 166, 234, 0.4)",
+    borderRadius: 32,
+    padding: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: 6,
     color: "#333",
   },
   itemRow: {
@@ -320,6 +511,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#444",
     marginBottom: 4,
+  },
+  quantity1: {
+    fontSize: 14,
+    color: "#666",
+    paddingBottom: 2,
   },
   quantity: {
     fontSize: 14,
@@ -352,7 +548,7 @@ const styles = StyleSheet.create({
   },
   grandTotal: {
     fontSize: 18,
-    color: "#7E0201",
+    color: "#445399",
     fontWeight: "700",
   },
   paymentMethod: {
@@ -366,12 +562,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "gray",
-    display:"flex",
+    display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft:8, 
-    marginRight:12
+    paddingLeft: 8,
+    marginRight: 12,
   },
   radioButton: {
     height: 20,
@@ -399,10 +595,10 @@ const styles = StyleSheet.create({
     height: 12,
     width: 12,
     borderRadius: 6,
-    backgroundColor: "#7E0201",
+    backgroundColor: "#445399",
   },
   paymentMethodText: {
-    fontSize: 16,
+    fontSize: 11,
     color: "#333",
   },
   footer: {
@@ -416,8 +612,8 @@ const styles = StyleSheet.create({
     borderTopColor: "#eee",
   },
   placeOrderButton: {
-    backgroundColor: "#7E0201",
-    borderRadius: 8,
+    backgroundColor: "#445399",
+    borderRadius: 38,
     padding: 16,
     alignItems: "center",
   },

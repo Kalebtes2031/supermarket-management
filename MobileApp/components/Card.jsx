@@ -29,7 +29,7 @@ const Card = ({ product }) => {
   };
 
   const handleAddCartClick = () => {
-    console.log
+    console.log('product.variations.id', product)
     addItemToCart(product.variations.id, 1);
   };
 
