@@ -8,6 +8,9 @@ import {
   Pressable,
   ScrollView,
   RefreshControl,
+  TextInput,
+  Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import Header from "@/components/Header";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -16,18 +19,23 @@ import { Picker } from "@react-native-picker/picker";
 import Card from "@/components/Card";
 import SearchComp from "@/components/SearchComp";
 import { fetchProducts } from "@/hooks/useFetch";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const Shop = () => {
+  const { width, height } = Dimensions.get("window");
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedValue, setSelectedValue] = useState("option1");
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   const loadProducts = async () => {
     try {
       const data = await fetchProducts();
       setProducts(data);
+      
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -49,50 +57,23 @@ const Shop = () => {
   const ListHeader = () => (
     <View style={styles.container}>
       {/* Header Section */}
-      <View style={styles.headerContainer}>
-        <Header />
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+
+        <Text style={styles.categoryTitle}> Products</Text>
+        <Text style={styles.categoryTitle2}> {products.length} Items</Text>
       </View>
       {/* Content Area */}
       <View style={styles.contentContainer}>
         {/* Image Background Section */}
-        <View style={styles.imageContainer}>
-          <ImageBackground
-            source={require("@/assets/images/headerhabeshakemis.png")}
-            style={styles.imageBackground}
-          >
-            <View style={styles.overlay} />
-            <View style={styles.textContainer}>
-              <Text style={[styles.text, styles.text1]}>Shop</Text>
-              <Text style={styles.text}>Home {">>"} Shop </Text>
-            </View>
-          </ImageBackground>
-        </View>
+        
         <SearchComp />
-        {/* Filter Container */}
-        <View style={styles.filterContainer}>
-          <Pressable
-            style={styles.button}
-            onPress={() => console.log("Filter pressed")}
-          >
-            <AntDesign name="filter" size={24} color="white" />
-            <Text style={{ color: "white" }}>Filter</Text>
-          </Pressable>
-          <Picker
-            selectedValue={selectedValue}
-            onValueChange={(itemValue) => setSelectedValue(itemValue)}
-            style={[
-              styles.picker,
-              {
-                backgroundColor: colorScheme === "dark" ? "#fff" : "#fff",
-                color: colorScheme === "dark" ? "#000" : "#333",
-              },
-            ]}
-          >
-            <Picker.Item label="Default sorting" value="option1" />
-            <Picker.Item label="Sort by popularity" value="option2" />
-            <Picker.Item label="Sort by latest" value="option3" />
-          </Picker>
-        </View>
+        
       </View>
     </View>
   );
@@ -100,11 +81,10 @@ const Shop = () => {
     <FlatList
       data={products}
       renderItem={({ item }) => (
-        <View style={{ width: '48%'}}>
-          <Card product={item} /> 
+        <View style={{ width: "48%" }}>
+          <Card product={item} />
         </View>
       )}
-      
       keyExtractor={(item) => item.id.toString()}
       numColumns={2} // This displays 2 cards per row
       columnWrapperStyle={{
@@ -112,6 +92,7 @@ const Shop = () => {
         gap: 10,
         marginBottom: 10,
         paddingHorizontal: 16,
+        backgroundColor: "white",
       }}
       ListHeaderComponent={ListHeader}
       onRefresh={onRefresh}
@@ -125,7 +106,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
+    backgroundColor: "#445399",
     padding: 0,
+  },
+  header: {
+    height: 200,
+    backgroundColor: "#445399",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    
+  },
+  backButton: {
+    position: "absolute",
+    left: 20,
+    top: 40,
+    backgroundColor: "#445399",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+    borderWidth:1,
+    borderColor:"white",
+  },
+  categoryTitle: {
+    position: "absolute",
+    top: 100,
+    left: 20,
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  categoryTitle2: {
+    position: "absolute",
+    top: 150,
+    left: 20,
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   headerContainer: {
     zIndex: 1000,
@@ -133,7 +152,11 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    marginTop: 0,
+    marginTop:0,
+    padding:10,
+    backgroundColor: "white",
+    borderTopLeftRadius: 38,
+    borderTopRightRadius: 38,
   },
   imageContainer: {
     height: 180,
@@ -195,7 +218,8 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     // padding: 10,
-    gap:2,
+    gap: 2,
+    backgroundColor: "white",
   },
 });
 

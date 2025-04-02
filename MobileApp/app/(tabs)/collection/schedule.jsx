@@ -154,146 +154,342 @@
 //     fontSize: 16,
 //     fontWeight: "600",
 //   },
-// });
-import React, { useState } from "react";
+// }); console.log('orderId am:',orderId)
+
+// @/screens/ScheduleDeliveryScreen.jsx
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  Animated,
   Platform,
+  TextInput,
+  ScrollView,
+  Image,
 } from "react-native";
-import { DateTimePicker } from "expo-date-time-picker"; // Check exact import from Expo docs
-import Toast from "react-native-toast-message";
+import { Calendar } from "react-native-calendars";
+import { Button, Overlay, Icon } from "@rneui/themed";
+// import DateTimePicker from "expo-date-time-picker";
+import { scheduleDelivery } from "@/hooks/useFetch";
+import { useNavigation } from "@react-navigation/native";
+import { format } from "date-fns";
+import * as Animatable from "react-native-animatable";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScheduleDelivery } from "@/hooks/useFetch"; // Your exported function
+import { TimePickerModal } from "react-native-paper-dates";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 
-const ScheduleDeliveryPage = () => {
-  // Extract orderId from query parameters (e.g. ?orderId=27)
+const ScheduleDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
-  const router = useRouter();
+  // let num = 40;
+  // const orderId = num;
+  const navigation = useRouter();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [calendarOpen, setCalendarOpen] = useState(true);
+  const [text, setText] = useState("");
 
-  const [date, setDate] = useState(new Date());
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+    console.log("orderId am:", orderId);
+  }, []);
 
-  // Imperative onChange handler used by DateTimePickerAndroid.open
-  const onChange = (event, selectedDate) => {
-    // The event.type will be "set" when a date is selected,
-    // "dismissed" when the user cancels the dialog.
-    if (event.type === "set" && selectedDate) {
-      setDate(selectedDate);
+  const handleDateSelect = (date) => {
+    setSelectedDate(new Date(date.timestamp));
+    setCalendarOpen(false);
+    setShowTimePicker(true);
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(Platform.OS === "ios");
+    if (selectedTime) {
+      setSelectedDate(
+        (prev) =>
+          new Date(
+            prev.setHours(selectedTime.getHours(), selectedTime.getMinutes())
+          )
+      );
     }
   };
 
-  // Opens the Android date/time picker dialog imperatively
-  const openDatePicker = () => {
-    setShowPicker(true);
+  const validateDateTime = () => {
+    const now = new Date();
+    if (selectedDate <= now) {
+      setError("Please select a future date and time");
+      return false;
+    }
+    return true;
   };
 
-  // Submit the selected date/time to schedule delivery
   const handleSchedule = async () => {
-    setIsSubmitting(true);
+    if (!validateDateTime()) return;
+
+    setLoading(true);
     try {
-      // Call your API function with orderId and ISO string date
-      const response = await ScheduleDelivery(orderId, date.toISOString());
-      Toast.show({
-        type: "success",
-        text1: "Delivery scheduled successfully",
-        text2: `Scheduled for ${date.toLocaleString()}`,
-        visibilityTime: 3000,
-      });
-      router.back(); // Optionally navigate back
-    } catch (error) {
-      console.error(
-        "Error scheduling delivery:",
-        error.response?.data || error.message
+      await scheduleDelivery(orderId, selectedDate.toISOString());
+      navigation.push(
+        `/(tabs)/orderinfo?orderId=${encodeURIComponent(
+        JSON.stringify(orderId)
+      )}`
       );
-      Toast.show({
-        type: "error",
-        text1: "Error scheduling delivery",
-        text2: error.response?.data?.detail || error.message,
-        visibilityTime: 3000,
-      });
+      // Show success toast here
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to schedule delivery");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Schedule Delivery</Text>
-      <View style={styles.dateContainer}>
-        <Text style={styles.label}>Selected Date & Time:</Text>
-        <Text style={styles.dateText}>{date.toLocaleString()}</Text>
-      </View>
-      <Text style={styles.buttonText}>Pick a Date & Time</Text>
-      {showPicker && (
-        <DateTimePicker
-          value={date}
-          onChange={(event, selectedDate) => {
-            setShowPicker(false);
-            if (selectedDate) {
-              setDate(selectedDate);
-            }
-          }}
-          mode="datetime"
-          minimumDate={new Date()}
-        />
-      )}
-      <TouchableOpacity
-        style={[styles.button, styles.submitButton]}
-        onPress={handleSchedule}
-        disabled={isSubmitting}
-      >
-        <Text style={styles.buttonText}>
-          {isSubmitting ? "Scheduling..." : "Schedule Delivery"}
+    <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
+          >
+            <Ionicons name="arrow-back" size={24} color="#445399" />
+          </TouchableOpacity>
+        </View>
+        <Text
+          className="font-poppins-bold text-center text-primary mb-4"
+          style={{fontSize: 20,fontWeight: "bold",}}
+        >
+          Schedule Delivery
         </Text>
+        <Text
+          style={{ fontSize: 18, paddingLeft: 8 }}
+          className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
+        >
+          Address
+        </Text>
+        <TextInput
+          style={{
+            height: 50,
+            width: "100%",
+            borderColor: "gray",
+            borderWidth: 1,
+            paddingHorizontal: 15,
+            marginBottom: 10,
+            borderRadius: 39,
+          }}
+          placeholder="Type your home address"
+          onChangeText={(value) => setText(value)}
+          value={text}
+        />
+        <View
+          style={{
+            padding: 10,
+          }}
+        >
+          <Image source={require("@/assets/images/map.png")} />
+        </View>
+        <Text
+          style={{ fontSize: 18, paddingLeft: 8, marginTop: 15 }}
+          className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
+        >
+          Date and Time
+        </Text>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+
+      {error ? (
+        <Animatable.View
+          animation="shake"
+          duration={500}
+          style={styles.errorContainer}
+        >
+          <Icon name="error-outline" color="#ff4444" />
+          <Text style={styles.errorText}>{error}</Text>
+        </Animatable.View>
+      ) : null}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          padding:4,
+        }}
+      >
+        
+      <View style={styles.calendarContainer}>
+        {calendarOpen && (
+          <Calendar
+            minDate={format(new Date(), "yyyy-MM-dd")}
+            onDayPress={handleDateSelect}
+            markedDates={{
+              [format(selectedDate, "yyyy-MM-dd")]: { selected: true },
+            }}
+            theme={{
+              backgroundColor: "#ffffff",
+              calendarBackground: "#ffffff",
+              selectedDayBackgroundColor: "#445399",
+              todayTextColor: "#445399",
+              arrowColor: "#445399",
+              monthTextColor: "#2d4150",
+              textDayFontWeight: "300",
+              textMonthFontWeight: "bold",
+              textDayHeaderFontWeight: "300",
+            }}
+          />
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.timePickerButton}
+        onPress={() => setShowTimePicker(true)}
+      >
+        <Icon name="clock" type="feather" color="#2089dc" />
+        <Text style={styles.timeText}>{format(selectedDate, "hh:mm a")}</Text>
       </TouchableOpacity>
-    </View>
+      </View>
+
+      {showTimePicker && (
+        // <Overlay
+        //   isVisible={showTimePicker}
+        //   onBackdropPress={() => setShowTimePicker(false)}
+        // >
+          <View style={styles.timePickerContainer}>
+            <TimePickerModal
+              visible={showTimePicker}
+              onDismiss={() => {
+                setShowTimePicker(false)
+                setCalendarOpen(true);
+              }}
+              onConfirm={({ hours, minutes }) => {
+                const newDate = new Date(selectedDate);
+                newDate.setHours(hours, minutes);
+                setSelectedDate(newDate);
+                console.log(newDate);
+                setShowTimePicker(false);
+                setCalendarOpen(true);
+              }}
+              hours={selectedDate.getHours()}
+              minutes={selectedDate.getMinutes()}
+            />
+          </View>
+      )}
+
+      <Button
+        title={loading ? "Scheduling..." : "Confirm Schedule"}
+        buttonStyle={styles.button}
+        containerStyle={styles.buttonContainer}
+        onPress={handleSchedule}
+        disabled={loading}
+        loading={loading}
+        icon={
+          <Icon
+            name="check-circle"
+            type="material"
+            color="white"
+            iconStyle={{ marginRight: 10 }}
+          />
+        }
+      />
+
+      {/* <View style={{ marginTop: 12 }}>
+        <Button title="Show Date Picker" onPress={showDatePicker} />
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+        />
+      </View> */}
+    </Animated.View>
+    </ScrollView>
   );
 };
 
-export default ScheduleDeliveryPage;
-
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  header: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 20,
+  container: {
+    // flex: 1,
+    backgroundColor: "#f8f9fa",
+    padding: 15,
   },
-  dateContainer: {
-    marginBottom: 20,
-    alignItems: "center",
+  title: {
+    marginBottom: 8,
+    color: "#2d4150",
+    textAlign: "center",
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  dateText: {
+  subtitle: {
     fontSize: 16,
-    color: "#445399",
+    color: "#86939e",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  calendarContainer: {
+    borderRadius: 15,
+    overflow: "hidden",
+    marginBottom: 25,
+    elevation: 3,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  timePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 5,
+    backgroundColor: "white",
+    borderRadius: 10,
+    marginVertical: 10,
+    elevation: 2,
+    marginRight:3,
+  },
+  timeText: {
+    fontSize: 18,
+    marginLeft: 10,
+    color: "#2d4150",
+    fontWeight: "500",
   },
   button: {
     backgroundColor: "#445399",
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    width: "80%",
+    borderRadius: 48,
+    paddingVertical: 15,
+  },
+  buttonContainer: {
+    marginTop: 20,
+    borderRadius: 10,
+  },
+  errorContainer: {
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#ffe9e9",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
   },
-  submitButton: {
-    backgroundColor: "#28a745",
+  errorText: {
+    color: "#ff4444",
+    marginLeft: 10,
+    fontSize: 14,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
+  timePickerContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 15,
+  },
+  pickerItem: {
+    fontSize: 20,
+    color: "#2089dc",
   },
 });
+
+export default ScheduleDeliveryScreen;

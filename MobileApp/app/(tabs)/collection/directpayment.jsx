@@ -188,7 +188,7 @@ const DirectBankTransfer = () => {
     }
     handleSubmit();
     // router.push("./schedule");
-    route.push(
+    router.push(
       `./schedule?orderId=${encodeURIComponent(
         JSON.stringify(orderId)
       )}`

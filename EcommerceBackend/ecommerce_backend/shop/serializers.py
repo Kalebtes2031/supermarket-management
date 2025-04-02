@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from .models import Product, ProductVariation, Category, Size, Style, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage
 
+class SimpleProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'item_name', 'image']
+
 
 class ProductVariantSerializer(serializers.ModelSerializer):
+    product = SimpleProductSerializer(source="variations", read_only=True)
+    
     class Meta:
         model = ProductVariation
-        fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity']
+        fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'product']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -212,7 +212,7 @@ export default function HomeScreen() {
         <Text className="text-lg  font-poppins-medium text-primary ">
           {greeting}
         </Text>
-        <Text className="italic ml-2 text-primary">{user.first_name} {user.last_name}</Text>
+        <Text className="italic ml-2 text-primary">{user?.first_name} {user?.last_name}</Text>
       </View>
 
       {/* Horizontal Image Carousel */}
@@ -296,17 +296,26 @@ export default function HomeScreen() {
 
       {/* Recommended Products */}
       <View>
-        <Text
-          style={{
-            color: colorScheme === "dark" ? "white" : "black",
-            padding: 16,
-            fontSize: 20,
-            fontWeight: "bold",
-            textAlign: "start",
-          }}
-        >
-          Recommended Products
-        </Text>
+      <View className="flex flex-row justify-between pr-12 items-center">
+          <Text
+            style={{
+              color: colorScheme === "dark" ? "white" : "#445399",
+              padding: 16,
+              fontSize: 20,
+              fontWeight: "bold",
+              textAlign: "start",
+            }}
+          >
+            Recommended Products
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              route.push("/(tabs)/shop");
+            }}
+          >
+            <Ionicons name="arrow-forward-sharp" size={32} color="#445399" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.popularContainer}>
           {veryPopular.length > 0 ? (
             veryPopular.map((product, index) => (

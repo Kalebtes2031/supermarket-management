@@ -14,7 +14,7 @@ class ScheduleDeliverySerializer(serializers.Serializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    variant = ProductVariantSerializer(read_only=True)
+    variant = ProductVariantSerializer(source="variations", read_only=True)
     total_price = serializers.SerializerMethodField()
 
     class Meta:

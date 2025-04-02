@@ -1,5 +1,6 @@
+import { fetchOrderDetail } from "@/hooks/useFetch";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,9 +8,31 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { format } from "date-fns";
+import { useLocalSearchParams } from "expo-router";
 
 export default function OrderInfo() {
   const route = useRouter();
+  const { orderId } = useLocalSearchParams();
+  const cleanedOrderId = JSON.parse(orderId);
+  // let num = 42;
+  // const orderId = num;
+  const [ourOrder, setOurOrder] = useState({});
+
+  const fetchOrderDetailBasedId = async () => {
+    try {
+      const order = await fetchOrderDetail(cleanedOrderId);
+      setOurOrder(order);
+      console.log("our order detail:", order);
+
+    } catch (error) {
+      console.error("Error fetching order detail", error);
+    }
+  };
+  useEffect(() => {
+    fetchOrderDetailBasedId();
+  }, []);
+
   return (
     <View
       style={{
@@ -43,7 +66,7 @@ export default function OrderInfo() {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text>ORDER NUMBER : </Text>
-              <Text>#Yas-002/16</Text>
+              <Text>#Yas-{ourOrder.id}</Text>
             </View>
           </View>
           <View
@@ -58,7 +81,8 @@ export default function OrderInfo() {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text>DATE : </Text>
-              <Text>15/07/2024</Text>
+              <Text>{new Date(ourOrder.created_at).toLocaleString()}</Text>
+              {/* <Text>{format(new Date(ourOrder.schedule_delivery), "MMM dd, yyyy HH:mm")}</Text> */}
             </View>
           </View>
           <View
@@ -73,7 +97,7 @@ export default function OrderInfo() {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text>TOTAL : </Text>
-              <Text>Br 814.20</Text>
+              <Text>Br {ourOrder.total}</Text>
             </View>
           </View>
           <View
@@ -88,7 +112,9 @@ export default function OrderInfo() {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text>PAYMENT METHOD : </Text>
-              <Text>On Delivery</Text>
+              <Text>
+                {ourOrder.total_payment === "0.00" ? "ON DELIVERY" : "BANK TRANSFER"}
+              </Text>
             </View>
           </View>
 
@@ -115,7 +141,7 @@ export default function OrderInfo() {
             >
               <Text>NAME : </Text>
               <Text style={{ textTransform: "uppercase" }}>
-                Andualem legesse taye
+                {ourOrder.first_name} {ourOrder.last_name} 
               </Text>
             </View>
             <Text>DJIBOUTI ST.</Text>
@@ -128,7 +154,7 @@ export default function OrderInfo() {
               }}
             >
               <Text>Email : </Text>
-              <Text>kalebtesfaye2031@gmail.com</Text>
+              <Text>{ourOrder.email}</Text>
             </View>
             <View
               style={{
@@ -138,7 +164,7 @@ export default function OrderInfo() {
               }}
             >
               <Text>PHONE NO : </Text>
-              <Text>+251911383095</Text>
+              <Text>{ourOrder.phone_number}</Text>
             </View>
           </View>
         </View>
@@ -221,7 +247,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 26,
-    paddingVertical: 6,
+    paddingVertical: 26,
     paddingBottom: 100,
     backgroundColor: "#fff",
     gap: 12,

@@ -1,247 +1,309 @@
-import Header from "@/components/Header";
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Image,
-  Button,
-  ImageBackground,
-  Pressable,
-  ScrollView,
-  TextInput,
-} from "react-native";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { Picker } from "@react-native-picker/picker";
-import CardList from "@/components/Card";
-import { RefreshControl } from "react-native";
-import SearchComp from "@/components/SearchComp";
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SectionList } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const TrackOrder = () => {
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
-  const [text, onChangeText] = React.useState("Useless Text");
-  const [number, onChangeNumber] = React.useState("");
-
-  const colorScheme = useColorScheme();
-  const [selectedValue, setSelectedValue] = useState("option1");
-  let newest = "";
-  return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+const OrderTrackingScreen = () => {
+  // Mock data for multiple orders
+  const orders = [
+    {
+      id: '123',
+      date: '2025-03-04',
+      status: 'in_transit',
+      items: [
+        { name: 'Tena Oil', price: 1300.00, quantity: 1 },
+        { name: 'Omar Oil', price: 1500.00, quantity: 2 }
+      ],
+      delivery: {
+        driver: 'Delivery Person1',
+        eta: '30-45 mins',
+        progress: 65,
+        coordinates: {
+          start: { lat: 40.7128, lng: -74.0060 }, // Warehouse
+          current: { lat: 40.7282, lng: -74.0776 }, // Driver location
+          end: { lat: 40.7580, lng: -73.9855 }      // Customer
+        }
       }
-      style={styles.container}
-    >
-      <View style={styles.container}>
-        {/* Header Section */}
-        <View style={styles.headerContainer}>
-          <Header />
-        </View>
+    },
+    {
+      id: '124',
+      date: '2025-03-04',
+      status: 'delivered',
+      items: [
+        { name: 'Omar Oil', price: 1500.00, quantity: 1 }
+      ],
+      delivery: {
+        driver: 'Delivery Person2',
+        eta: 'Delivered',
+        progress: 100,
+        coordinates: {
+          start: { lat: 40.7128, lng: -74.0060 },
+          end: { lat: 40.7580, lng: -73.9855 }
+        }
+      }
+    }
+  ];
 
-        {/* Content Area */}
-        <View style={styles.contentContainer}>
-          {/* Image Background Section */}
-          <View style={styles.imageContainer}>
-            <ImageBackground
-              source={require("@/assets/images/headerhabeshakemis.png")}
-              style={styles.imageBackground}
-            >
-              <View style={styles.overlay} />
-              <View style={styles.textContainer}>
-                <Text style={[styles.text, styles.text1]}>Track Order</Text>
-                <Text style={styles.text}>Home {">>"} Track Order </Text>
-              </View>
-            </ImageBackground>
-          </View>
-          {/* <View>
-            <SearchComp/>
-          </View> */}
-
-          <View className="">
-            <Text
-              style={[
-                styles.textorder,
-                { color: colorScheme === "dark" ? "white" : " black" },
-              ]}
-            >
-              {" "}
-              To track your order please enter your Order ID in the box below
-              and press the "Track" button. This was given to you on your
-              receipt and in the confirmation email you should have received.
-            </Text>
-          </View>
-          {/* order id and billing email */}
-          <View style={styles.orderContainer}>
-            <View style={styles.orderid}>
-              <Text
-                style={[
-                  styles.ordertext,
-                  { color: colorScheme === "dark" ? "white" : " black" },
-                ]}
-              >
-                Order ID
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  // { borderColor: colorScheme === "dark" ? "white" : " black" },
-                  { color: colorScheme === "dark" ? "white" : " black" },
-                ]}
-                // onChangeText={onChangeText}
-                // value={text}
-                placeholder="Found in your order "
-                keyboardType="numeric"
-                placeholderTextColor={
-                  colorScheme === "dark" ? "white" : "gray"
-                }
-              />
-            </View>
-            <View style={styles.orderid}>
-              <Text
-                style={[
-                  styles.ordertext,
-                  { color: colorScheme === "dark" ? "white" : " black" },
-                ]}
-              >
-                Billing Email
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  // { borderColor: colorScheme === "dark" ? "white" : "" },
-                  { color: colorScheme === "dark" ? "white" : " black" },
-                ]}
-                // onChangeText={onChangeNumber}
-                // value={number}
-                placeholder="Email you used during"
-                keyboardType="numeric"
-                placeholderTextColor={
-                  colorScheme === "dark" ? "white" : "gray"
-                }
-              />
-            </View>
-          </View>
-
-          <Pressable
-            style={styles.button}
-            onPress={console.log("I was pressed")}
-          >
-            {/* <AntDesign name="filter" size={24} color="white" /> */}
-            <Text className="text-white">Track</Text>
-          </Pressable>
+  const renderOrderItem = ({ item }) => (
+    <View style={styles.orderCard}>
+      {/* Order Header */}
+      <View style={styles.orderHeader}>
+        <Text style={styles.orderId}>Order #{item.id}</Text>
+        <View style={[styles.statusBadge, 
+          item.status === 'delivered' ? styles.deliveredBadge :
+          item.status === 'in_transit' ? styles.transitBadge : styles.processingBadge
+        ]}>
+          <Text style={styles.statusText}>
+            {item.status.replace('_', ' ').toUpperCase()}
+          </Text>
         </View>
       </View>
-    </ScrollView>
+
+      {/* Mock Map Visualization */}
+      <View style={styles.mapContainer}>
+        <Image 
+          source={require('@/assets/images/map.png')} // Use your mock map image
+          style={styles.mapImage}
+        />
+        <View style={styles.mapMarkers}>
+          <Icon name="warehouse" size={24} color="#4CAF50" style={styles.mapMarker} />
+          <Icon name="radio-button-checked" size={16} color="#2196F3" style={styles.mapMarker} />
+          <Icon name="place" size={24} color="#FF5722" style={styles.mapMarker} />
+        </View>
+      </View>
+
+      {/* Delivery Timeline */}
+      <View style={styles.timeline}>
+        <View style={styles.timelineStep}>
+          <Icon name="check-circle" size={20} color="#4CAF50" />
+          <Text style={styles.timelineText}>Order Confirmed</Text>
+          <Text style={styles.timelineTime}>Aug 15, 10:30 AM</Text>
+        </View>
+        
+        <View style={styles.timelineStep}>
+          <Icon name="check-circle" size={20} color="#4CAF50" />
+          <Text style={styles.timelineText}>Preparing Order</Text>
+          <Text style={styles.timelineTime}>Aug 15, 11:45 AM</Text>
+        </View>
+
+        <View style={styles.timelineStep}>
+          <Icon name={item.status === 'delivered' ? "check-circle" : "radio-button-unchecked"} 
+                size={20} color={item.status === 'delivered' ? "#4CAF50" : "#9E9E9E"} />
+          <Text style={styles.timelineText}>Out for Delivery</Text>
+          {item.status === 'in_transit' && (
+            <Text style={styles.timelineTime}>Estimated {item.delivery.eta}</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Order Details */}
+      <View style={styles.detailsSection}>
+        <Text style={styles.sectionTitle}>Order Details</Text>
+        {item.items.map((product, index) => (
+          <View key={index} style={styles.productItem}>
+            <Text style={styles.productName}>{product.quantity}x {product.name}</Text>
+            <Text style={styles.productPrice}>Br{(product.price * product.quantity).toFixed(2)}</Text>
+          </View>
+        ))}
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total:</Text>
+          <Text style={styles.totalValue}>
+            Br{item.items.reduce((sum, product) => sum + (product.price * product.quantity), 0).toFixed(2)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Delivery Info */}
+      <View style={styles.deliveryInfo}>
+        <Icon name="local-shipping" size={20} color="#445399" />
+        <View style={styles.deliveryTextContainer}>
+          <Text style={styles.deliveryDriver}>Driver: {item.delivery.driver}</Text>
+          <Text style={styles.deliveryStatus}>
+            {item.status === 'in_transit' ? ` ${item.delivery.eta}` : 'Delivered'}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <SectionList
+        sections={[
+          { title: 'Active Deliveries', data: orders.filter(o => o.status !== 'delivered') },
+          { title: 'Delivery History', data: orders.filter(o => o.status === 'delivered') }
+        ]}
+        renderItem={renderOrderItem}
+        renderSectionHeader={({ section }) => (
+          <Text style={styles.sectionHeader}>{section.title}</Text>
+        )}
+        keyExtractor={(item) => item.id}
+        stickySectionHeadersEnabled={false}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-  },
-  headerContainer: {
-    zIndex: 1000,
-    // Ensure Header has explicit height matching your header's actual height
-    height: 70, // Match your Header component's height
-  },
-  contentContainer: {
-    flex: 1,
-    marginTop: 0, // Remove default margins
-  },
-  imageContainer: {
-    height: 180, // Match ImageBackground height
-    marginBottom: 10,
-  },
-  imageBackground: {
-    height: 180,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(101,100,114,0.5)",
-  },
-  textContainer: {
-    flex: 1,
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  text: {
-    color: "#FFFFFF",
-    textAlign: "center",
-    fontSize: 12,
-    letterSpacing: 2,
-    lineHeight: 18,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-  text1: {
-    fontSize: 32,
-    fontWeight: "extrabold",
-    color: "#FFFFFF",
-    textAlign: "center",
-    letterSpacing: 2,
-    lineHeight: 18,
-    fontWeight: "600",
-    paddingTop: 28,
-  },
-  textorder: {
+    backgroundColor: '#F5F5F5',
     padding: 16,
-    // fontSize: 12,
   },
-  orderContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 8,
-    padding: 10,
-    // fontSize: 12,
+  orderCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  orderid: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "start",
-    gap: 8,
-    padding: 10,
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  ordertext: {
+  orderId: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D4150',
+  },
+  statusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  transitBadge: {
+    backgroundColor: '#2196F320',
+    borderColor: '#2196F3',
+  },
+  deliveredBadge: {
+    backgroundColor: '#4CAF5020',
+    borderColor: '#4CAF50',
+  },
+  processingBadge: {
+    backgroundColor: '#FF980020',
+    borderColor: '#FF9800',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  mapContainer: {
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+    backgroundColor: '#E0E0E0',
+  },
+  mapImage: {
+    width: '100%',
+    height: '100%',
+  },
+  mapMarkers: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  mapMarker: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  timeline: {
+    marginVertical: 16,
+  },
+  timelineStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  timelineText: {
+    flex: 1,
+    marginLeft: 12,
+    color: '#2D4150',
+    fontSize: 14,
+  },
+  timelineTime: {
+    color: '#86939E',
     fontSize: 12,
   },
-  ordertextinput: {
-    padding: 2,
+  detailsSection: {
+    marginVertical: 16,
   },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 5,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D4150',
+    marginBottom: 12,
   },
-  button: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignContent: "center",
-    gap: 2,
-    backgroundColor: "#7E0201",
-    padding: 5,
-    borderRadius: 18,
-    width: 80,
-    height: 35,
-    textAlign: "center",
-    marginLeft: 25,
+  productItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+  },
+  productName: {
+    color: '#2D4150',
+    fontSize: 14,
+  },
+  productPrice: {
+    color: '#445399',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D4150',
+  },
+  totalValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#445399',
+  },
+  deliveryInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  deliveryTextContainer: {
+    marginLeft: 12,
+  },
+  deliveryDriver: {
+    fontSize: 14,
+    color: '#2D4150',
+  },
+  deliveryStatus: {
+    fontSize: 12,
+    color: '#4CAF50',
+    marginTop: 4,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#445399',
+    marginVertical: 16,
+    marginLeft: 8,
   },
 });
 
-export default TrackOrder;
+export default OrderTrackingScreen;

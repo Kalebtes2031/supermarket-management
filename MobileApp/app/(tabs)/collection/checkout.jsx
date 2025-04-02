@@ -48,7 +48,7 @@ const CheckoutPage = () => {
     //   // email,
     //   // ...other data,
     // };
-    console.log('is the problem here, need for investigation:', paymentData)
+    console.log("is the problem here, need for investigation:", paymentData);
     // Pass the paymentData as a query parameter
     route.push(
       `./directpayment?paymentData=${encodeURIComponent(
@@ -88,12 +88,12 @@ const CheckoutPage = () => {
 
     setIsLoading(true); // Show loading spinner
     const orderinfo = {
-      "phone_number": phone,
-      "first_name": firstName,
-      "last_name": lastName,
-      "email": email,
-    }
-    
+      phone_number: phone,
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+    };
+
     try {
       const response = await createOrder(orderinfo);
       console.log("test one two three: ", response);
@@ -115,10 +115,23 @@ const CheckoutPage = () => {
       // Show modal
       // setShowModal(true);
       if (selectedOption === "directbanktransfer") {
-        handleBankPayment({ orderId: id, amountToPay: total, paymentStatus: payment_status });
+        handleBankPayment({
+          orderId: id,
+          amountToPay: total,
+          paymentStatus: payment_status,
+        });
       } else {
-
-        handleBankPayment({ orderId: id, amountToPay: total, paymentStatus: payment_status });
+        // let orderId=id
+        // route.push(
+        //   `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
+        //     JSON.stringify(orderId)
+        //   )}`
+        // );
+        handleBankPayment({
+          orderId: id,
+          amountToPay: total,
+          paymentStatus: payment_status,
+        });
       }
     } catch (error) {
       console.error("Error creating order", error);

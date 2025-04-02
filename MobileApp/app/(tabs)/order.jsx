@@ -89,18 +89,22 @@ const Order = () => {
   const renderOrderItems = (items) =>
     items.map((item) => (
       <View key={item.id} style={styles.itemContainer}>
+        <View>
+
         <Image
           source={{
-            uri: item.product?.image || "https://via.placeholder.com/60",
+            uri: item.variant.product?.image || "https://via.placeholder.com/60",
           }}
           style={styles.productImage}
         />
+        <Text>price / {item.variant?.unit} </Text>
+        </View>
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>
-            {item.product?.item_name || "Unknown Product"}
+            {item.variant.product?.item_name || "Unknown Product"}   {parseInt(item.variant?.quantity)}{item.variant?.unit}
           </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>Br{item.product?.price}</Text>
+            <Text style={styles.itemPrice}>Br{item.variant?.price}</Text>
             <Text style={styles.itemQuantity}>x {item.quantity}</Text>
           </View>
           <Text style={styles.itemTotal}>Total: Br{item.total_price}</Text>
@@ -172,12 +176,7 @@ const Order = () => {
               name="exclamation-circle"
               style={[styles.icon, styles.yellow]}
             />
-          ) : order.payment_status === "Partial Payment" ? (
-            <FontAwesome
-              name="exclamation-triangle"
-              style={[styles.icon, styles.orange]}
-            />
-          ) : (
+          ) :(
             <FontAwesome
               name="times-circle"
               style={[styles.icon, styles.red]}
@@ -193,21 +192,21 @@ const Order = () => {
               : "Cancel"}
           </Text>
         </View>
-        <View style={{
+        {/* <View style={{
           display:"flex",
           justifyContent:"center",
-        }}>
-          {order.payment_status === "Partial Payment" && (
+        }}> */}
+          {/* {order.payment_status === "Pending" && (
             <TouchableOpacity
               style={[styles.button, styles.partialPaymentButton]}
               onPress={() =>
-                openModal(order.id, "remaining", order.remaining_payment)
+                openModal(order.id, "full_payment", order.total)
               }
             >
-              <Text style={styles.buttonText}>Payment Remaining</Text>
+              <Text style={styles.buttonText}>Full Payment</Text>
             </TouchableOpacity>
-          )}
-          {order.payment_status === "Pending" && (
+          )} */}
+          {/* {order.payment_status === "Pending" && (
             <View style={styles.pendingButtonsContainer}>
               <TouchableOpacity
                 style={[styles.button, styles.fullPaymentButton]}
@@ -223,8 +222,8 @@ const Order = () => {
                 <Text style={styles.buttonText}>Pay Advance</Text>
               </TouchableOpacity>
             </View>
-          )}
-        </View>
+          )} */}
+        {/* </View> */}
         <View style={styles.totalContainer}>
           <Text style={styles.orderTotal}>Order Total:</Text>
           <Text style={styles.orderTotal}>Br{order.total}</Text>
@@ -252,7 +251,7 @@ const Order = () => {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.pageTitle}>Order History</Text>
+            <Text className="text-primary" style={styles.pageTitle}>Order History</Text>
             <Text style={styles.ordersCount}>{orders.length} orders found</Text>
             {renderOrders()}
           </ScrollView>
@@ -334,7 +333,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A1A",
     marginBottom: 8,
   },
   ordersCount: {

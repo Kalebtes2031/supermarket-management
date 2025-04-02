@@ -12,6 +12,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useCart } from "@/context/CartProvider";
 import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.45;
@@ -29,8 +30,19 @@ const Card = ({ product }) => {
   };
 
   const handleAddCartClick = () => {
-    console.log('product.variations.id', product)
-    addItemToCart(product.variations[0].id, 1);
+    try {
+      console.log('product.variations.id', product)
+      addItemToCart(product.variations[0].id, 1);
+      Toast.show({
+        type: "success",
+        text1: "product added to cart",
+        visibilityTime: 2000,
+      });
+    } catch (error) {
+      console.error("Error when add item to cart", error);
+    }
+
+
   };
 
   return (

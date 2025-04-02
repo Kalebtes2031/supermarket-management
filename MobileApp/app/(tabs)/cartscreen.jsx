@@ -50,162 +50,247 @@ const CartScreen = () => {
 
   if (!cart || !cart.items) {
     return (
-      <View style={styles.emptyContainer}>
-        <MaterialIcons name="remove-shopping-cart" size={60} color="#ccc" />
-        <Text style={styles.emptyText}>Your cart is empty</Text>
-      </View>
+      // <View style={styles.emptyContainer}>
+      //   <MaterialIcons name="remove-shopping-cart" size={60} color="#ccc" />
+      //   <Text style={styles.emptyText}>Your cart is empty</Text>
+      // </View>
+      <View style={{
+              flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+            }}>
+              <ActivityIndicator size="large" />
+            </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* <Header /> */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
-            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
-          >
-            <Ionicons name="arrow-back" size={24} color="#445399" />
-          </TouchableOpacity>
-          <View style={styles.iconWrapper}>
-            <TouchableOpacity>
-              <MaterialIcons name="favorite-border" size={28} color="#445399" />
+      {cart.total === 0 ? (
+        <View>
+          <View style={styles.headerContainer}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+              className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
+            >
+              <Ionicons name="arrow-back" size={24} color="#445399" />
             </TouchableOpacity>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>0</Text>
-            </View>
-          </View>
-        </View>
-        <Text
-          className="font-poppins-bold text-center text-primary mb-4"
-          style={styles.headerTitle}
-        >
-          Shopping Cart
-        </Text>
-
-        <View style={styles.scrollContainers}>
-          {cart.items.map((item) => (
-            <View key={item.id} style={styles.itemContainer}>
-              <Image
-                source={{ uri: item?.image }}
-                style={styles.productImage}
-                resizeMode="contain"
-              />
-
-              <View style={styles.detailsContainer}>
-                <View
-                  className="flex"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <Text style={styles.productName}>{item?.item_name}</Text>
-                  <Text style={styles.productName}>
-                    {parseInt(item?.variations?.quantity)}
-                    {item?.variations?.unit}
-                  </Text>
-                </View>
-                <Text style={styles.price}>
-                  Br{parseFloat(item.variations?.price || "0").toFixed(2)}
-                </Text>
-
-                <View style={styles.quantityContainer}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      handleQuantityUpdate(item.variations.id, item.quantity - 1)
-                    }
-                    disabled={localLoading === item.variations.id || item.quantity === 1}
-                  >
-                    {localLoading === item.variations.id ? (
-                      <ActivityIndicator size="small" color="#000" />
-                    ) : (
-                      <MaterialIcons
-                        name="remove-circle-outline"
-                        size={28}
-                        color={item.quantity === 1 ? "#ccc" : "#000"}
-                      />
-                    )}
-                  </TouchableOpacity>
-
-                  <Text style={styles.quantity}>{item.quantity}</Text>
-
-                  <TouchableOpacity
-                    onPress={() =>
-                      handleQuantityUpdate(item.variations.id, item.quantity + 1)
-                    }
-                    disabled={localLoading === item.variations.id}
-                  >
-                    {localLoading === item.variations.id ? (
-                      <ActivityIndicator size="small" color="#000" />
-                    ) : (
-                      <MaterialIcons
-                        name="add-circle-outline"
-                        size={28}
-                        color="#000"
-                      />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View style={styles.actionContainer}>
-                <Text style={styles.itemTotal}>
-                  Br{(item.total_price || 0).toFixed(2)}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => removeItemFromCart(item.variations.id)}
-                  disabled={localLoading === item.variations.id}
-                >
-                  <MaterialCommunityIcons
-                    name="delete-outline"
-                    size={24}
-                    color="#ff4444"
-                  />
-                </TouchableOpacity>
+            <View style={styles.iconWrapper}>
+              <TouchableOpacity>
+                <MaterialIcons
+                  name="favorite-border"
+                  size={28}
+                  color="#445399"
+                />
+              </TouchableOpacity>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>0</Text>
               </View>
             </View>
-          ))}
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            marginRight: 20,
-          }}
-        >
-          <View style={styles.totalContainer}>
-            <Text style={styles.totalText}>Total =</Text>
-            <Text style={styles.totalAmount}>
-              {(cart.total || 0).toFixed(2)} Birr
-            </Text>
           </View>
-        </View>
-      </ScrollView>
-
-      <View style={styles.totalContainers}>
-        
-        <View style={styles.proceedCheckout}>
-          <TouchableOpacity
-            onPress={() => router.push("/(tabs)/collection/checkout")}
+          <Text
+            className="font-poppins-bold text-center text-primary mb-4"
+            style={styles.headerTitle}
+          >
+            Shopping Cart
+          </Text>
+          <View
             style={{
-              backgroundColor: "#445399",
-              padding: 18,
-              borderRadius: 35,
-              marginTop: 10,
+              flexDirection: "column",
+              gap: 12,
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 23,
+              backgroundColor: "rgba(150, 166, 234, 0.4)",
+              margin: 42,
+              borderRadius:19,
             }}
           >
-            <Text style={{ color: "white", textAlign: "center", fontSize: 16, fontWeight: "600" }}>
-              PLACE ORDER
-            </Text>
-          </TouchableOpacity>
+            <View style={{ width: 240, height: 240, flexDirection:"row",justifyContent:"center" }}>
+              <Image
+                source={require("@/assets/images/emptycart.png")}
+                resizeMode="contain"
+              />
+            </View>
+            <Text className="text-primary font-poppins-bold"
+              style={{fontSize: 16, fontWeight:700, textAlign:"center", padding:13, marginTop: 15}}
+            >Empty CART</Text>
+          </View>
         </View>
-      </View>
+      ) : (
+        <>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {/* <Header /> */}
+            <View style={styles.headerContainer}>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+                className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
+              >
+                <Ionicons name="arrow-back" size={24} color="#445399" />
+              </TouchableOpacity>
+              <View style={styles.iconWrapper}>
+                <TouchableOpacity>
+                  <MaterialIcons
+                    name="favorite-border"
+                    size={28}
+                    color="#445399"
+                  />
+                </TouchableOpacity>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>0</Text>
+                </View>
+              </View>
+            </View>
+            <Text
+              className="font-poppins-bold text-center text-primary mb-4"
+              style={styles.headerTitle}
+            >
+              Shopping Cart
+            </Text>
+
+            <View style={styles.scrollContainers}>
+              {cart.items.map((item) => (
+                <View key={item.id} style={styles.itemContainer}>
+                  <Image
+                    source={{ uri: item?.image }}
+                    style={styles.productImage}
+                    resizeMode="contain"
+                  />
+
+                  <View style={styles.detailsContainer}>
+                    <View
+                      className="flex"
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <Text style={styles.productName}>{item?.item_name}</Text>
+                      <Text style={styles.productName}>
+                        {parseInt(item?.variations?.quantity)}
+                        {item?.variations?.unit}
+                      </Text>
+                    </View>
+                    <Text style={styles.price}>
+                      Br{parseFloat(item.variations?.price || "0").toFixed(2)}
+                    </Text>
+
+                    <View style={styles.quantityContainer}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          handleQuantityUpdate(
+                            item.variations.id,
+                            item.quantity - 1
+                          )
+                        }
+                        disabled={
+                          localLoading === item.variations.id ||
+                          item.quantity === 1
+                        }
+                      >
+                        {localLoading === item.variations.id ? (
+                          <ActivityIndicator size="small" color="#000" />
+                        ) : (
+                          <MaterialIcons
+                            name="remove-circle-outline"
+                            size={28}
+                            color={item.quantity === 1 ? "#ccc" : "#000"}
+                          />
+                        )}
+                      </TouchableOpacity>
+
+                      <Text style={styles.quantity}>{item.quantity}</Text>
+
+                      <TouchableOpacity
+                        onPress={() =>
+                          handleQuantityUpdate(
+                            item.variations.id,
+                            item.quantity + 1
+                          )
+                        }
+                        disabled={localLoading === item.variations.id}
+                      >
+                        {localLoading === item.variations.id ? (
+                          <ActivityIndicator size="small" color="#000" />
+                        ) : (
+                          <MaterialIcons
+                            name="add-circle-outline"
+                            size={28}
+                            color="#000"
+                          />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View style={styles.actionContainer}>
+                    <Text style={styles.itemTotal}>
+                      Br{(item.total_price || 0).toFixed(2)}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => removeItemFromCart(item.variations.id)}
+                      disabled={localLoading === item.variations.id}
+                    >
+                      <MaterialCommunityIcons
+                        name="delete-outline"
+                        size={24}
+                        color="#ff4444"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                marginRight: 20,
+              }}
+            >
+              <View style={styles.totalContainer}>
+                <Text style={styles.totalText}>Total =</Text>
+                <Text style={styles.totalAmount}>
+                  {(cart.total || 0).toFixed(2)} Birr
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={styles.totalContainers}>
+            <View style={styles.proceedCheckout}>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/collection/checkout")}
+                // onPress={() => router.push("/(tabs)/collection/schedule")}
+                // onPress={() => router.push("/(tabs)/orderinfo")}
+                style={{
+                  backgroundColor: "#445399",
+                  padding: 18,
+                  borderRadius: 35,
+                  marginTop: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    textAlign: "center",
+                    fontSize: 16,
+                    fontWeight: "600",
+                  }}
+                >
+                  PLACE ORDER
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </>
+      )}
+
       <Toast />
     </SafeAreaView>
   );

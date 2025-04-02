@@ -5,7 +5,7 @@ import { ThemedView } from './ThemedView';
 import { ThemedText } from './ThemedText';
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-const SearchComp = ({ placeholder = 'Search...', onSearch = () => {} }) => {
+const SearchComp = ({ placeholder = 'Search here', onSearch = () => {} }) => {
   const colorScheme = useColorScheme();
   const [text, setText] = useState('');
 
@@ -18,23 +18,24 @@ const SearchComp = ({ placeholder = 'Search...', onSearch = () => {} }) => {
     setText('');
     onSearch(''); // Reset search results
   };
+  
 
   return (
     <ThemedView style={[styles.container,
-      { backgroundColor: colorScheme === "dark" ? "#333" : "#fff" },]
+      { backgroundColor: colorScheme === "dark" ? "#333" : "#F5F5F5" },]
     }>
+    {/* Text input for search */}
+    <TextInput
+      style={[styles.input,
+        { color: colorScheme === "dark" ? "#fff" : "#333" },
+      ]}
+      placeholder={placeholder}
+      value={text}
+      onChangeText={handleChangeText}
+    />
       {/* Left side search icon */}
       <MaterialIcons name="search" size={24} style={[styles.icon, { color: colorScheme === "dark" ? "#fff" : "#333" },]} />
 
-      {/* Text input for search */}
-      <TextInput
-        style={[styles.input,
-          { color: colorScheme === "dark" ? "#fff" : "#333" },
-        ]}
-        placeholder={placeholder}
-        value={text}
-        onChangeText={handleChangeText}
-      />
 
       {/* Right side cancel icon */}
       {text.length > 0 && (
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 25,
     margin: 10,
+    justifyContent: "space-between"
   },
   icon: {
     marginRight: 10,

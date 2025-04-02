@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 // const baseUrl = "https://malhibnewbackend.activetechet.com/";
 // const baseUrl = "http://192.168.100.51:8000/";  //active wifi
-const baseUrl = "http://192.168.1.5:8000/";  //home wifi
+const baseUrl = "http://192.168.1.3:8000/";  //home wifi
 // const baseUrl = "http://192.168.65.193:8000/";  //my data network
 
 const auth = axios.create({
@@ -262,6 +262,11 @@ export const fetchOrderHistory = async () => {
     return response.data;
 };
 
+export const fetchOrderDetail = async (id) => {
+    const response = await pay.get(`orders/${id}/`);
+    return response.data;
+};
+
 export const fetchSearchProducts = async(query) => {
     const response = await api.get(`search/?q=${query}`)
     return response;
@@ -271,6 +276,7 @@ export const fetchPaymentHistoryBasedOrderId = async (id) => {
     const response = await pay.get(`payment-history/${id}/`);
     return response.data;
 };
+
 
 export const payUsingBankTransfer = async (paymentData) => {
     const response = await pay.post("update-payment-status/", paymentData,{

@@ -54,6 +54,14 @@ const SignIn = () => {
         ["refreshToken", result.refresh],
       ]);
 
+      // Fetch user profile after successful login
+    const profile = await USER_PROFILE();
+    console.log("User profile:", profile);
+
+    // Update global context
+    setUser(profile);
+    setIsLogged(true);
+
       // Immediate navigation
       console.log("Navigating to home...");
       router.replace("/(tabs)/home");

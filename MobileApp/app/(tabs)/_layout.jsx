@@ -11,6 +11,7 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -84,7 +85,7 @@ export default function TabLayout() {
         options={{
           title: "Track Order",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <MaterialCommunityIcons name="truck-delivery" size={24} color={color} />
           ),
         }}
       />
@@ -132,6 +133,14 @@ export default function TabLayout() {
         name="orderinfo"
         options={{
           title: "Order Information",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
           tabBarItemStyle: { display: "none" },
           gestureEnabled: false,
         }}
