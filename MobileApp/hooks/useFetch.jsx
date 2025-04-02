@@ -214,10 +214,19 @@ export const addToCart = async (variations_id, quantity) => {
     return response.data;
 };
 
+
 export const updateCartItem = async (itemId, quantity) => {
     const response = await api.patch(`cart/items/${itemId}/`, { quantity });
     return response.data;
 };
+
+export const scheduleDelivery = async (orderId, date) => {
+    const response = await pay.patch(`orders/${orderId}/schedule-delivery/`, {
+        scheduled_delivery: date,
+      });
+    return response.data;
+};
+
 
 export const removeCartItem = async (itemId) => {
     const response = await api.delete(`cart/items/${itemId}/`);
@@ -243,8 +252,8 @@ export const fetchDiscoverEthiopianImage = async () => {
     return response.data;
 };
 
-export const createOrder = async () => {
-    const response = await pay.post("orders/create/");
+export const createOrder = async (orderinfo) => {
+    const response = await pay.post("orders/create/", orderinfo);
     return response.data;
 };
 

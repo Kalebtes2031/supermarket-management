@@ -30,7 +30,7 @@ const Card = ({ product }) => {
 
   const handleAddCartClick = () => {
     console.log('product.variations.id', product)
-    addItemToCart(product.variations.id, 1);
+    addItemToCart(product.variations[0].id, 1);
   };
 
   return (

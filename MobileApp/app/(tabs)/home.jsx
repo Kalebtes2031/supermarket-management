@@ -26,6 +26,7 @@ import {
   fetchNewImages,
   fetchPopularProducts,
   fetchSameCategoryProducts,
+  USER_PROFILE,
 } from "@/hooks/useFetch";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useGlobalContext } from "@/context/GlobalProvider";
@@ -211,7 +212,7 @@ export default function HomeScreen() {
         <Text className="text-lg  font-poppins-medium text-primary ">
           {greeting}
         </Text>
-        <Text className="italic ml-2 text-primary">Andualem Legesse</Text>
+        <Text className="italic ml-2 text-primary">{user.first_name} {user.last_name}</Text>
       </View>
 
       {/* Horizontal Image Carousel */}

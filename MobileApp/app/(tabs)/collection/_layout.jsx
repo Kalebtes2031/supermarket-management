@@ -7,6 +7,7 @@ export default function CartLayout() {
       <Stack.Screen name="directpayment" options={{ headerShown: false }} />
       <Stack.Screen name="checkout" options={{ headerShown: false }} />
       <Stack.Screen name="schedule" options={{ headerShown: false }} />
+      {/* <Stack.Screen name="orderinfo" options={{ headerShown: false }} /> */}
     </Stack>
   );
 }

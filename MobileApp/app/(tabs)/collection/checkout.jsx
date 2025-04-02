@@ -14,9 +14,11 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { createOrder, USER_PROFILE } from "@/hooks/useFetch";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const CheckoutPage = () => {
   const { cart, loadCartData } = useCart();
+  const { user } = useGlobalContext();
   const route = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +28,7 @@ const CheckoutPage = () => {
   const [paymentStatus, setPaymentStatus] = useState("");
   const [amountToPay, setAmountToPay] = useState(null);
   const [selectedRadio, setSelectedRadio] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("total"); // Tracks the selected option
+  const [selectedOption, setSelectedOption] = useState("directbanktransfer"); // Tracks the selected option
   const [phone, setPhone] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -35,16 +37,21 @@ const CheckoutPage = () => {
   const choiceofpayment = () => {
     handleBankPayment();
   };
-  const handleBankPayment = () => {
-    const paymentData = {
-      orderId,
-      amountToPay,
-      paymentStatus,
-      // ...other data,
-    };
+  const handleBankPayment = (paymentData) => {
+    // const paymentData = {
+    //   orderId,
+    //   amountToPay,
+    //   paymentStatus,
+    //   // phone,
+    //   // firstName,
+    //   // lastName,
+    //   // email,
+    //   // ...other data,
+    // };
+    console.log('is the problem here, need for investigation:', paymentData)
     // Pass the paymentData as a query parameter
     route.push(
-      `/directpayment?paymentData=${encodeURIComponent(
+      `./directpayment?paymentData=${encodeURIComponent(
         JSON.stringify(paymentData)
       )}`
     );
@@ -52,13 +59,13 @@ const CheckoutPage = () => {
 
   const fetchCustomerProfile = async () => {
     try {
-      const profile = await USER_PROFILE();
-      console.log("Customer Profile:", profile);
+      // const profile = await USER_PROFILE();
+      // console.log("Customer Profile:", profile);
 
-      setPhone(profile.phone_number || "");
-      setFirstName(profile.first_name || "");
-      setLastName(profile.last_name || "");
-      setEmail(profile.email || "");
+      setPhone(user.phone_number || "");
+      setFirstName(user.first_name || "");
+      setLastName(user.last_name || "");
+      setEmail(user.email || "");
     } catch (error) {
       console.error("Error fetching customer profile:", error);
     }
@@ -80,45 +87,39 @@ const CheckoutPage = () => {
     }
 
     setIsLoading(true); // Show loading spinner
-
+    const orderinfo = {
+      "phone_number": phone,
+      "first_name": firstName,
+      "last_name": lastName,
+      "email": email,
+    }
+    
     try {
-      const response = await createOrder();
+      const response = await createOrder(orderinfo);
       console.log("test one two three: ", response);
 
       await loadCartData();
-      Toast.show({
-        type: "success",
-        text1: "Order successful!",
-        // visibilityTime: 2000,
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Order successful!",
+      //   // visibilityTime: 2000,
+      // });
 
-      const { id, total, advance_payment, payment_status } = response;
+      const { id, total, payment_status } = response;
 
       setOrderId(id);
       setTotalAmount(total);
-      console.log("this is the first advance payemnt", advance_payment);
-
-      setAdvanceAmount(advance_payment);
-      let advancePayment = parseFloat(advance_payment); // Ensure it's a number
-      console.log("This is the advance payment:", advancePayment);
-
-      if (advancePayment === 0) {
-        // Check as a number
-        const newAdvance = (total * 0.3).toFixed(2); // Calculate 30% of total
-        setAdvanceAmount(newAdvance); // Update advance payment
-        console.log("Advance payment updated to:", newAdvance);
-      } else {
-        setAdvanceAmount(advancePayment); // Use the existing value if not 0
-        console.log("Advance payment remains the same:", advancePayment);
-      }
-
-      console.log("this is the updated advance payemnt", advance_payment);
-
       setPaymentStatus(payment_status);
       setAmountToPay(total);
-      console.log("this is before modal opened:", total);
+      // console.log("this is before modal opened:", total);
       // Show modal
-      setShowModal(true);
+      // setShowModal(true);
+      if (selectedOption === "directbanktransfer") {
+        handleBankPayment({ orderId: id, amountToPay: total, paymentStatus: payment_status });
+      } else {
+
+        handleBankPayment({ orderId: id, amountToPay: total, paymentStatus: payment_status });
+      }
     } catch (error) {
       console.error("Error creating order", error);
       if (error.response?.status === 401) {
@@ -281,18 +282,59 @@ const CheckoutPage = () => {
             paddingHorizontal: 14,
           }}
         >
-          <View style={styles.paymentMethod}>
+          {/* <View style={styles.paymentMethod}>
             <View style={styles.radioButton}>
               <View style={styles.radioSelected} />
             </View>
             <Text style={styles.paymentMethodText}>Direct Bank Transfer</Text>
-          </View>
-          <View style={styles.paymentMethod}>
+          </View> */}
+          {/* <View style={styles.paymentMethod}>
             <View style={styles.radioButton}>
               <View style={styles.radionotSelected} />
             </View>
             <Text style={styles.paymentMethodText}>Cash on Delivery</Text>
-          </View>
+          </View> */}
+          <TouchableOpacity
+            style={styles.radioLabel}
+            onPress={() => {
+              // setAmountToPay(advanceAmount);
+              setSelectedOption("directbanktransfer");
+            }}
+          >
+            <View
+              style={
+                selectedOption === "directbanktransfer" && styles.radioButtons
+              }
+            >
+              <View
+                style={[
+                  styles.radioButton,
+                  selectedOption === "directbanktransfer" &&
+                    styles.radioSelected,
+                ]}
+              />
+            </View>
+            <Text style={styles.radioText}>Direct Bank Transfer </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.radioLabel}
+            onPress={() => {
+              // setAmountToPay(advanceAmount);
+              setSelectedOption("cashondelivery");
+            }}
+          >
+            <View
+              style={selectedOption === "cashondelivery" && styles.radioButtons}
+            >
+              <View
+                style={[
+                  styles.radioButton,
+                  selectedOption === "cashondelivery" && styles.radioSelected,
+                ]}
+              />
+            </View>
+            <Text style={styles.radioText}>Cash on Delivery</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -300,8 +342,8 @@ const CheckoutPage = () => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.placeOrderButton}
-          // onPress={handlePlaceOrder}
-          onPress={()=>route.push("./directpayment")}
+          onPress={handlePlaceOrder}
+          // onPress={()=>route.push("./directpayment")}
           //   disabled={isLoading}
         >
           <Text style={styles.placeOrderText}>
@@ -310,10 +352,11 @@ const CheckoutPage = () => {
           </Text>
         </TouchableOpacity>
       </View>
-      {showModal && (
+
+      {/* {showModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            {/* Close Button */}
+            
             <TouchableOpacity
               onPress={() => setShowModal(false)}
               style={styles.closeButton}
@@ -321,12 +364,12 @@ const CheckoutPage = () => {
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
 
-            {/* Modal Title */}
+            
             <Text style={styles.modalTitle}>Payment Option</Text>
 
-            {/* Radio Options */}
+           
             <View style={styles.radioContainer}>
-              {/* Pay Advance Amount */}
+             
               <TouchableOpacity
                 style={styles.radioLabel}
                 onPress={() => {
@@ -349,7 +392,6 @@ const CheckoutPage = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Pay Total Amount */}
               <TouchableOpacity
                 style={styles.radioLabel}
                 onPress={() => {
@@ -369,7 +411,6 @@ const CheckoutPage = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Selected Amount */}
             <Text style={styles.selectedText}>
               selected :
               <Text style={styles.selectedAmount}>
@@ -378,7 +419,6 @@ const CheckoutPage = () => {
               </Text>
             </Text>
 
-            {/* Action Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={choiceofpayment}
@@ -389,7 +429,7 @@ const CheckoutPage = () => {
             </View>
           </View>
         </View>
-      )}
+      )} */}
     </View>
   );
 };

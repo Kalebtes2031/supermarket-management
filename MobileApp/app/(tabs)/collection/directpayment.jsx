@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,27 +16,39 @@ import * as Clipboard from "expo-clipboard";
 import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { payUsingBankTransfer } from "@/hooks/useFetch"; // Import your API function
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const DirectBankTransfer = () => {
+  const params = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
   const route = useRoute();
-  // const rawPaymentData = route.params?.paymentData;
+  const rawPaymentData = params.paymentData;
   let parsedPaymentData = {};
 
-  // if (typeof rawPaymentData === "string") {
-  //   try {
-  //     parsedPaymentData = JSON.parse(rawPaymentData);
-  //   } catch (e) {
-  //     console.error("Error parsing paymentData:", e);
-  //   }
-  // } else {
-  //   parsedPaymentData = rawPaymentData;
-  // }
+  if (typeof rawPaymentData === "string") {
+    try {
+      parsedPaymentData = JSON.parse(rawPaymentData);
+    } catch (e) {
+      console.error("Error parsing paymentData:", e);
+    }
+  } else {
+    parsedPaymentData = rawPaymentData || {};
+  }
 
-  // const { orderId, amountToPay, paymentStatus } = parsedPaymentData;
+  const {
+    orderId,
+    amountToPay,
+    paymentStatus,
+    // phone,
+    // firstName,
+    // lastName,
+    // email,
+  } = parsedPaymentData;
 
+  useEffect(()=>{
+    console.log('we are on investigation', parsedPaymentData)
+  },[parsedPaymentData])
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [bankPaymentForm, setBankPaymentForm] = useState({
     bank: "",
@@ -134,7 +146,7 @@ const DirectBankTransfer = () => {
 
     // Validate required payment data
     if (!orderId || !amountToPay || !paymentStatus) {
-      Alert.alert("Error", paymentData);
+      Alert.alert("Error", formData);
       return;
     }
 
@@ -152,12 +164,12 @@ const DirectBankTransfer = () => {
 
     try {
       const response = await payUsingBankTransfer(formData);
-      if (response.status === 200) {
-        Alert.alert("Success", "Payment successful!");
-        router.push("/(tabs)/home");
-      } else {
-        Alert.alert("Error", "Payment failed, please try again.");
-      }
+      // if (response.status === 200) {
+      //   Alert.alert("Success", "Payment successful!");
+      //   router.push("/(tabs)/home");
+      // } else {
+      //   Alert.alert("Error", "Payment failed, please try again.");
+      // }
     } catch (error) {
       console.error("Error updating payment status:", error);
       Alert.alert("Error", "An unexpected error occurred.");
@@ -165,7 +177,23 @@ const DirectBankTransfer = () => {
       setIsSubmitting(false);
     }
   };
-
+  const handleSchedule = () => {
+    if (!bankPaymentForm.bank) {
+      Alert.alert("Error", "Please Select a Bank");
+      return;
+    }
+    if (!bankPaymentForm.receipt) {
+      Alert.alert("Error", "Please upload a receipt");
+      return;
+    }
+    handleSubmit();
+    // router.push("./schedule");
+    route.push(
+      `./schedule?orderId=${encodeURIComponent(
+        JSON.stringify(orderId)
+      )}`
+    );
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -248,7 +276,7 @@ const DirectBankTransfer = () => {
           </View>
         </View>
         <Text style={styles.sectionTitle}>Select Shipment/Delivery Method</Text>
-        <View 
+        <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
@@ -257,35 +285,36 @@ const DirectBankTransfer = () => {
             marginBottom: 20,
           }}
         >
-
-        <TouchableOpacity
-          style={[
-            styles.submitButton, 
-            // isSubmitting && styles.disabledButton
-          ]}
-          onPress={() => {router.push("./schedule")}}
-          // onPress={handleSubmit}
-          // disabled={isSubmitting}
-        >
-          <Text style={styles.submitButtonText}>
-            {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-            Schedule Delivery
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.submitButton2,
-            //  isSubmitting && styles.disabledButton
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              // isSubmitting && styles.disabledButton
             ]}
-          // onPress={() => {router.push("/(tabs)/home")}}
-          // onPress={handleSubmit}
-          // disabled={isSubmitting}
-        >
-          <Text style={styles.submitButtonText}>
-            {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-            Pick Up from Store
-          </Text>
-        </TouchableOpacity>
+            onPress={() => {
+              handleSchedule();
+            }}
+            // onPress={handleSubmit}
+            // disabled={isSubmitting}
+          >
+            <Text style={styles.submitButtonText}>
+              {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
+              Schedule Delivery
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.submitButton2,
+              //  isSubmitting && styles.disabledButton
+            ]}
+            // onPress={() => {router.push("/(tabs)/home")}}
+            // onPress={handleSubmit}
+            // disabled={isSubmitting}
+          >
+            <Text style={styles.submitButtonText}>
+              {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
+              Pick Up from Store
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

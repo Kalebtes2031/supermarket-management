@@ -160,47 +160,24 @@ def update_payment_status(request):
         )
 
         # Now update the order based on payment status
-        print(f"paymentType is : {payment_status},and payment status is: {order.payment_status},advance payment at start: {order.advance_payment}")
+        print(f"paymentType is : {payment_status},and payment status is: {order.payment_status}")
 
         # Update total paid based on the payment type 
-        if payment_status == "full_payment":
-            order.total_payment += amount_to_pay
-            order.payment_status = "Fully Paid"
-        elif payment_status == "Pending":
-            order.total_payment += amount_to_pay
-            # Determine payment status
-            if order.total_payment == order.total:
-                order.payment_status = "Fully Paid"
-            else:
-                order.calculate_advance_payment()
-                order.calculate_remaining_payment()
-                order.save()
-                if order.total_payment == order.advance_payment:
-                    order.payment_status = "Partial Payment"
-        elif payment_status == "advance":
-            order.calculate_advance_payment()
-            order.calculate_remaining_payment()
-            order.save()
-            order.total_payment = order.advance_payment
-            order.payment_status = "Partial Payment"
-        elif payment_status == "remaining":
-            order.calculate_advance_payment()
-            order.calculate_remaining_payment()
-            order.save()
-            order.total_payment += order.remaining_payment
-            order.payment_status = "Fully Paid"
-            # order.remaining_payment = Decimal(0)
-
+        order.total_payment += amount_to_pay
+        order.payment_status = "Fully Paid"
         order.save()
 
         # Return success response
         return Response({"message": "Payment status updated successfully."}, status=status.HTTP_200_OK)
 
     except Order.DoesNotExist:
-        return Response({"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+        error_msg = "Order not found."
+        print(error_msg)  # or use logging.error(error_msg)
+        return Response({"error": error_msg}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        # Log the error for debugging
+        print("Error in update_payment_status:", str(e))
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class InitiatePaymentView(APIView):
     """
@@ -544,7 +521,13 @@ class OrderCreateView(generics.CreateAPIView):
             raise PermissionDenied("Cannot create an order from an empty cart.")
 
         # Create the order
-        order = serializer.save(user=user)
+        order = serializer.save(
+            user=user,
+            phone_number=self.request.data.get("phone_number"),
+            first_name=self.request.data.get("first_name"),
+            last_name=self.request.data.get("last_name"),
+            email=self.request.data.get("email")
+        )
 
         # Add cart items to the order
         order_items = []

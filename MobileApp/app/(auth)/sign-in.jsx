@@ -15,14 +15,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Entypo, MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { useGlobalContext } from "@/context/GlobalProvider";
-import { GET_AUTH } from "@/hooks/useFetch";
+import { GET_AUTH, USER_PROFILE } from "@/hooks/useFetch";
 import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
-
 
 const SignIn = () => {
   const router = useRouter();
@@ -60,9 +59,9 @@ const SignIn = () => {
       router.replace("/(tabs)/home");
 
       // Update context after navigation
-      setUser({ username: form.username });
+      // setUser({ username: form.username });
+      
       setIsLogged(true);
-
     } catch (error) {
       Toast.show({
         type: "error",
@@ -74,18 +73,18 @@ const SignIn = () => {
     }
   };
 
-  useEffect( () => {
-    async function checkOnboarding(){
-      const check = await SecureStore.getItemAsync("onboardingCompleted")
+  useEffect(() => {
+    async function checkOnboarding() {
+      const check = await SecureStore.getItemAsync("onboardingCompleted");
       console.log("Current language:", check);
 
-      if(check === "true"){
-        await SecureStore.deleteItemAsync("onboardingCompleted")
+      if (check === "true") {
+        await SecureStore.deleteItemAsync("onboardingCompleted");
         console.log("Onboarding completed, deleting key.");
       }
     }
     checkOnboarding();
-  },[])
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
@@ -207,10 +206,7 @@ const SignIn = () => {
             <Text className="text-gray-600 font-poppins-regular">
               Don't have an account?{" "}
             </Text>
-            <Link
-              href="/sign-up"
-              className="text-primary font-poppins-bold"
-            >
+            <Link href="/sign-up" className="text-primary font-poppins-bold">
               Sign Up
             </Link>
           </View>

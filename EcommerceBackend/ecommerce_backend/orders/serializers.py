@@ -27,17 +27,15 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    user = serializers.SerializerMethodField()  # Add user field
-    # payment_status = serializers.CharField(source='payment_status', read_only=True)  # Expose payment status
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status','payment_status', 'created_at', 'items', 'total', 'advance_payment', 'remaining_payment','total_payment', 'prepared','delivery_person','scheduled_delivery']
+        fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email']
 
     def get_user(self, obj):
-        # Return the user's username (or any field you prefer)
         return obj.user.username if obj.user else None
-   
+
     
 class PaymentSerializer(serializers.ModelSerializer):
     # user = serializers.SerializerMethodField()  # Add user field

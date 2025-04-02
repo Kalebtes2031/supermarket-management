@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import Order, Payment
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'status', 'payment_status', 'total','total_payment','advance_payment','remaining_payment', 'created_at']
+    list_display = ['id', 'user', 'status', 'payment_status', 'total','total_payment', 'created_at']
     search_fields = ['user__username', 'payment_status']
     list_filter = ['payment_status', 'created_at']
     

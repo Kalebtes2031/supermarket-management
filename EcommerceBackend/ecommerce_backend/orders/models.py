@@ -26,41 +26,27 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    advance_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    remaining_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0)    
-    payment_status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Partial Payment', 'Partial Payment'),('Fully Paid', 'Fully Paid'), ('Failed', 'Failed')], default='Pending')
+    payment_status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Fully Paid', 'Fully Paid'), ('Failed', 'Failed')], default='Pending')
     delivery_person = models.ForeignKey(
         'delivery.AvailableDelivery', null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_orders'
     )
-    prepared= models.BooleanField(default=False)
+    prepared = models.BooleanField(default=False)
     scheduled_delivery = models.DateTimeField(null=True, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    first_name = models.CharField(max_length=20, blank=True, null=True)
+    last_name = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(unique=False, blank=True, null=True)
     
     def calculate_total(self):
         self.total = sum(item.get_total_price() for item in self.items.all())
 
-    def calculate_advance_payment(self):
-        """Calculate 30% of the total as advance payment."""
-        self.advance_payment = round(self.total * Decimal('0.3'), 2)
-
-    def calculate_remaining_payment(self):
-        """Calculate the remaining payment after deducting advance payment."""
-        self.remaining_payment = max(self.total - self.advance_payment, 0)
-
-    def clean(self):
-        """Ensure data consistency for payment amounts."""
-        if self.advance_payment > self.total:
-            raise ValidationError("Advance payment cannot exceed the total amount.")
-
     def save(self, *args, **kwargs):
-        if self.pk:  # Update total, advance payment, and remaining payment for existing orders
+        if self.pk:  
             self.calculate_total()
-            # self.calculate_advance_payment()
-            # self.calculate_remaining_payment()
         super(Order, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"
-
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
@@ -119,7 +105,5 @@ def update_order_payment_status(sender, instance, created, **kwargs):
     """
     if created and instance.status == 'Success':
         order = instance.order
-        order.advance_payment += instance.amount
-        order.calculate_remaining_payment()
-        order.payment_status = 'Paid' if order.remaining_payment == 0 else 'Partial Payment'
+        order.payment_status = 'Paid' 
         order.save()

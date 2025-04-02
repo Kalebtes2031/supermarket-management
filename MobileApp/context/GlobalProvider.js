@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getAccessToken, removeTokens } from "@/hooks/useFetch";
+import { getAccessToken, removeTokens, USER_PROFILE } from "@/hooks/useFetch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const GlobalContext = createContext();
@@ -19,7 +19,11 @@ const GlobalProvider = ({ children }) => {
         console.log("Retrieved user:", user); // Debug log
         if (token) {
           setIsLogged(true);
-          setUser(user);
+          const profile = await USER_PROFILE();
+          // console.log("Customer Profile:", profile);
+          setUser(profile);
+          // console.log('from now user is:():', user)
+          // setUser(user);
         } else {
           setIsLogged(false);
           setUser(null);
