@@ -1,0 +1,17 @@
+{
+  "bank": "የባንክ ዝርዝር",
+  "yason":"ያሶን የፍጆታ ምርት ንግድ አ.ማ",
+  "name":"አበበ ደምሴ ወ/ማርያም",
+  "select":"የተመረጠው ባንክ",
+  "selecta":"ባንክ ይምረጡ",
+  "upload":"የክፍያ ደረሰኞን ኮፒ ይጫኑ  ",
+  "tap":"ፋይል ይምረጡ",
+  "shipment":"ማድረሻ ዘዴ ይምረጡ!",
+  "schedule":"የማድረሻ ቀንና ሰዓት ይመረጡ",
+  "pick":"ከያሶን መደብር ይውሰዱ",
+  "abyssinia":"Bank of Abyssinia",
+  "cbe":"Commercial Bank of Ethiopia",
+  "coop":"COOP Bank of Oromia",
+  "telebirr":"Telebirr"
+  
+}

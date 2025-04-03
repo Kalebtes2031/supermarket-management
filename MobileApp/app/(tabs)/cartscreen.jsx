@@ -15,8 +15,12 @@ import Header from "@/components/Header";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import { useWatchlist } from "@/context/WatchlistProvider";
+import { useTranslation } from "react-i18next";
 
 const CartScreen = () => {
+  const { t, i18n } = useTranslation('cartscreen');
+  const { watchlist } = useWatchlist();
   const { cart, loadCartData, updateItemQuantity, removeItemFromCart } =
     useCart();
   const [localLoading, setLocalLoading] = useState(null);
@@ -77,7 +81,9 @@ const CartScreen = () => {
               <Ionicons name="arrow-back" size={24} color="#445399" />
             </TouchableOpacity>
             <View style={styles.iconWrapper}>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={()=>router.push('/(tabs)/watchlistscreen')}
+              >
                 <MaterialIcons
                   name="favorite-border"
                   size={28}
@@ -85,7 +91,8 @@ const CartScreen = () => {
                 />
               </TouchableOpacity>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>0</Text>
+                {/* <Text style={styles.badgeText}>0</Text> */}
+                <Text style={styles.badgeText}>{watchlist.length}</Text>
               </View>
             </View>
           </View>
@@ -93,7 +100,7 @@ const CartScreen = () => {
             className="font-poppins-bold text-center text-primary mb-4"
             style={styles.headerTitle}
           >
-            Shopping Cart
+            {t('shopping')}
           </Text>
           <View
             style={{
@@ -115,7 +122,7 @@ const CartScreen = () => {
             </View>
             <Text className="text-primary font-poppins-bold"
               style={{fontSize: 16, fontWeight:700, textAlign:"center", padding:13, marginTop: 15}}
-            >Empty CART</Text>
+            >{t('empty')}</Text>
           </View>
         </View>
       ) : (
@@ -147,7 +154,7 @@ const CartScreen = () => {
               className="font-poppins-bold text-center text-primary mb-4"
               style={styles.headerTitle}
             >
-              Shopping Cart
+              {t('shopping')}
             </Text>
 
             <View style={styles.scrollContainers}>
@@ -169,14 +176,14 @@ const CartScreen = () => {
                         gap: 10,
                       }}
                     >
-                      <Text style={styles.productName}>{item?.item_name}</Text>
+                      <Text style={styles.productName}>{i18n.language=== "en"?item?.item_name: item?.item_name_amh}</Text>
                       <Text style={styles.productName}>
                         {parseInt(item?.variations?.quantity)}
                         {item?.variations?.unit}
                       </Text>
                     </View>
                     <Text style={styles.price}>
-                      Br{parseFloat(item.variations?.price || "0").toFixed(2)}
+                      {t('br')}{parseFloat(item.variations?.price || "0").toFixed(2)}
                     </Text>
 
                     <View style={styles.quantityContainer}>
@@ -229,7 +236,7 @@ const CartScreen = () => {
 
                   <View style={styles.actionContainer}>
                     <Text style={styles.itemTotal}>
-                      Br{(item.total_price || 0).toFixed(2)}
+                      {t('br')}{(item.total_price || 0).toFixed(2)}
                     </Text>
                     <TouchableOpacity
                       onPress={() => removeItemFromCart(item.variations.id)}
@@ -254,9 +261,9 @@ const CartScreen = () => {
               }}
             >
               <View style={styles.totalContainer}>
-                <Text style={styles.totalText}>Total =</Text>
+                <Text style={styles.totalText}>{t('total')} =</Text>
                 <Text style={styles.totalAmount}>
-                  {(cart.total || 0).toFixed(2)} Birr
+                  {(cart.total || 0).toFixed(2)} {t('birr')}
                 </Text>
               </View>
             </View>
@@ -283,7 +290,7 @@ const CartScreen = () => {
                     fontWeight: "600",
                   }}
                 >
-                  PLACE ORDER
+                  {t('place')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -459,7 +466,7 @@ const styles = StyleSheet.create({
     // borderBottomWidth: 1,
     // borderBottomColor: "#eee",
     gap: 4,
-    width: "60%", // Ensure proper width
+    width: "70%", // Ensure proper width
     borderRadius: 42,
   },
 

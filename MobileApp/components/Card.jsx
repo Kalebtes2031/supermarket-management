@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import {
   View,
   Text,
@@ -13,17 +13,42 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useCart } from "@/context/CartProvider";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
+import { useWatchlist } from "@/context/WatchlistProvider";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.45;
 
 const Card = ({ product }) => {
+  const { t, i18n } = useTranslation('card');
   const { addItemToCart } = useCart();
-  const [isFavorited, setIsFavorited] = useState(false);
+  const { addToWatchlist, removeFromWatchlist, isFavorite } = useWatchlist();
+  // const [isFavorited, setIsFavorited] = useState(false);
   const colorScheme = useColorScheme();
   const router = useRouter();
 
-  const toggleFavorite = () => setIsFavorited(!isFavorited);
+  const isFavorited = isFavorite(product.variations[0].id);
+
+const toggleFavorite = () => {
+  if (isFavorited) {
+    removeFromWatchlist(product.variations[0].id);
+    Toast.show({
+      type: "info",
+      text1: "Removed from Watchlist",
+      visibilityTime: 2000,
+    });
+  } else {
+    addToWatchlist(product);
+    Toast.show({
+      type: "success",
+      text1: "Added to Watchlist",
+      visibilityTime: 2000,
+    });
+  }
+};
+
+
+
 
   const handlePress = () => {
     router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(product))}`);
@@ -85,7 +110,7 @@ const Card = ({ product }) => {
         {/* Product Info Overlay */}
         <View style={styles.infoOverlay}>
           <Text style={styles.productName} numberOfLines={2}>
-            {product.item_name}
+            {i18n.language === "en"?product.item_name: product.item_name_amh}
           </Text>
           
           <View style={styles.priceContainer}>
@@ -94,7 +119,7 @@ const Card = ({ product }) => {
               {product?.variations[0]?.unit}
             </Text>
             <Text style={styles.priceText}>
-              ETB {product.variations[0].price}
+              {t('etb')} {product.variations[0].price}
             </Text>
           </View>
         </View>

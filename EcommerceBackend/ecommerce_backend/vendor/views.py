@@ -41,7 +41,7 @@ class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
         queryset = Order.objects.filter(
             status='Pending', 
             prepared=False, 
-            payment_status='Fully Paid'
+            # payment_status='Fully Paid'
         )
         
         # Get the schedule filter from query params (e.g., "today", "tomorrow", "this_week")
@@ -66,6 +66,19 @@ class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
             # You can add additional filters as needed
 
         return queryset
+
+class OnDeliveryPaymentOrdersListAPIView(generics.ListAPIView):
+    """
+    Returns a list of orders with payment status "On Delivery".
+    """
+    serializer_class = OrderSerializer
+    permission_classes = [IsVendorPerson]
+
+    def get_queryset(self):
+        queryset = Order.objects.filter(
+            payment_status='On Delivery'
+        )
+        return queryset
     
 # class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
 #     """
@@ -88,6 +101,20 @@ class UpdatePreparedStatusAPIView(APIView):
         try:
             order = Order.objects.get(pk=pk)
             order.prepared = True
+            order.save()
+            return Response({"message": "Order prepared status updated successfully"}, status=status.HTTP_200_OK)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+class UpdatePaymentStatusAPIView(APIView):
+    """
+    Update the 'prepared' field of an order to True based on the order's ID.
+    """
+    permission_classes = [IsVendorPerson]
+
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            order.payment_status = "Fully Paid"
             order.save()
             return Response({"message": "Order prepared status updated successfully"}, status=status.HTTP_200_OK)
         except Order.DoesNotExist:

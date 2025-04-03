@@ -72,11 +72,12 @@ class CartItemSerializer(serializers.ModelSerializer):
         write_only=True
     )  # Use this for writing (POST requests)
     item_name = serializers.SerializerMethodField()  # New field for product name
+    item_name_amh = serializers.SerializerMethodField()  # New field for product name
     image = serializers.SerializerMethodField()  # New field for product image
     
     class Meta:
         model = CartItem
-        fields = ['id', 'item_name', 'image', 'variations', 'variations_id', 'quantity', 'total_price']
+        fields = ['id', 'item_name','item_name_amh', 'image', 'variations', 'variations_id', 'quantity', 'total_price']
 
     def get_total_price(self, obj):
         return obj.get_total_price()
@@ -84,6 +85,9 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_item_name(self, obj):
         # Return the item name from the related Product
         return obj.variations.variations.item_name
+    def get_item_name_amh(self, obj):
+        # Return the item name from the related Product
+        return obj.variations.variations.item_name_amh
 
     def get_image(self, obj):
         request = self.context.get('request')  # Get request object from serializer context

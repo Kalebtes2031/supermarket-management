@@ -26,7 +26,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Pending')
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_payment = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    payment_status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Fully Paid', 'Fully Paid'), ('Failed', 'Failed')], default='Pending')
+    payment_status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Fully Paid', 'Fully Paid'), ('On Delivery', 'On Delivery')], default='Pending')
     delivery_person = models.ForeignKey(
         'delivery.AvailableDelivery', null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_orders'
     )

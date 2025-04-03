@@ -30,8 +30,12 @@ import Feather from "@expo/vector-icons/Feather";
 import Octicons from "@expo/vector-icons/Octicons";
 import { getAccessToken } from "@/hooks/useFetch";
 import axios from "axios";
+import { useWatchlist } from "@/context/WatchlistProvider";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const { t, i18n } = useTranslation("welcome");
+  const { watchlist} = useWatchlist();
   const route = useRouter();
   const { cart, setCart, loadCartData, removeItemFromCart } = useCart();
   const navigation = useNavigation();
@@ -135,7 +139,12 @@ const Header = () => {
       Alert.alert("Upload Failed", "Could not upload profile image. Try again.");
     }
   };
-    
+  const handleLanguageToggle = () => {
+    const newLangCode = currentLanguage === "EN" ? "amh" : "en";
+    setCurrentLanguage(currentLanguage === "EN" ? "AM" : "EN");
+    i18n.changeLanguage(newLangCode);
+  };
+  
 
   return (
     <SafeAreaView
@@ -177,11 +186,14 @@ const Header = () => {
           />
 
           <View style={styles.iconWrapper}>
-            <TouchableOpacity>
+            <TouchableOpacity 
+              onPress={()=>route.push('/(tabs)/watchlistscreen')}
+            >
               <MaterialIcons name="favorite-border" size={24} color="#445399" />
             </TouchableOpacity>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>0</Text>
+              <Text style={styles.badgeText}>{watchlist.length}</Text>
+              {/* <Text style={styles.badgeText}>0</Text> */}
             </View>
           </View>
 
@@ -237,9 +249,7 @@ const Header = () => {
               <View className=" flex-row gap-x-1 items-center ">
                 <MaterialIcons name="language" size={24} color="#55B051" />
                 <TouchableOpacity
-                  onPress={() =>
-                    setCurrentLanguage((prev) => (prev === "EN" ? "AM" : "EN"))
-                  }
+                  onPress={handleLanguageToggle}
                   className="flex-row justify-center items-center"
                 >
                   <View

@@ -15,8 +15,10 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { createOrder, USER_PROFILE } from "@/hooks/useFetch";
 import { useGlobalContext } from "@/context/GlobalProvider";
+import { useTranslation } from "react-i18next";
 
 const CheckoutPage = () => {
+  const { t, i18n } = useTranslation("checkout");
   const { cart, loadCartData } = useCart();
   const { user } = useGlobalContext();
   const route = useRouter();
@@ -177,13 +179,13 @@ const CheckoutPage = () => {
         className="font-poppins-bold text-center text-primary mb-4"
         style={styles.headerTitle}
       >
-        Check Out
+        {t("check")}
       </Text>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Order Summary Section */}
         <View style={styles.sectiona}>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>{t("phone")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your phone number"
@@ -194,7 +196,7 @@ const CheckoutPage = () => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.label}>{t("first")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your first name"
@@ -204,7 +206,7 @@ const CheckoutPage = () => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Last Name</Text>
+            <Text style={styles.label}>{t("last")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your last name"
@@ -214,7 +216,7 @@ const CheckoutPage = () => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>{t("email")}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your email address"
@@ -229,7 +231,7 @@ const CheckoutPage = () => {
           className="font-poppins-bold text-center text-primary mb-4"
           style={styles.headerTitle}
         >
-          Your Order
+          {t("your")}
         </Text>
         <View style={styles.section}>
           <View
@@ -243,8 +245,8 @@ const CheckoutPage = () => {
               borderBottomColor: "#445399",
             }}
           >
-            <Text style={styles.sectionTitle}>Product</Text>
-            <Text style={styles.sectionTitle}>Price</Text>
+            <Text style={styles.sectionTitle}>{t("product")}</Text>
+            <Text style={styles.sectionTitle}>{t("price")}</Text>
           </View>
 
           {cart.items.map((item) => (
@@ -259,16 +261,20 @@ const CheckoutPage = () => {
                     gap: 10,
                   }}
                 >
-                  <Text style={styles.productName}>{item.item_name}</Text>
+                  <Text style={styles.productName}>
+                    {i18n.language === "en"
+                      ? item.item_name
+                      : item.item_name_amh}
+                  </Text>
                   <Text style={styles.quantity1}>
                     {parseInt(item.variations.quantity)}
                     {item.variations.unit}
                   </Text>
                 </View>
-                <Text style={styles.quantity}>Qty: {item.quantity}</Text>
+                <Text style={styles.quantity}>{t('qty')}: {item.quantity}</Text>
               </View>
               <Text style={styles.itemPrice}>
-                Br{item.total_price.toFixed(2)}
+                {t('br')}{item.total_price.toFixed(2)}
               </Text>
             </View>
           ))}
@@ -279,8 +285,8 @@ const CheckoutPage = () => {
               <Text style={styles.totalValue}>{cart.total_items}</Text>
             </View> */}
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Price:</Text>
-              <Text style={styles.grandTotal}>Br{cart.total.toFixed(2)}</Text>
+              <Text style={styles.totalLabel}>{t('total')}:</Text>
+              <Text style={styles.grandTotal}>{t('br')}{cart.total.toFixed(2)}</Text>
             </View>
           </View>
         </View>
@@ -327,7 +333,7 @@ const CheckoutPage = () => {
                 ]}
               />
             </View>
-            <Text style={styles.radioText}>Direct Bank Transfer </Text>
+            <Text style={styles.radioText}>{t('direct')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.radioLabel}
@@ -346,7 +352,7 @@ const CheckoutPage = () => {
                 ]}
               />
             </View>
-            <Text style={styles.radioText}>Cash on Delivery</Text>
+            <Text style={styles.radioText}>{t('cash')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -361,7 +367,7 @@ const CheckoutPage = () => {
         >
           <Text style={styles.placeOrderText}>
             {/* {isLoading ? "Pay Now" : "Pay Now"} */}
-            Pay Now
+            {t('pay')}
           </Text>
         </TouchableOpacity>
       </View>

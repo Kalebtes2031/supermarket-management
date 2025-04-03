@@ -35,12 +35,14 @@ import { useCart } from "@/context/CartProvider";
 import { Ionicons } from "@expo/vector-icons";
 
 import LocationTracker from "@/LocationTracker";
+import { useTranslation } from "react-i18next";
 
 // Get device width for the scroll item (or use DEVICE_WIDTH for full-screen width)
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = 335; // Adjust as needed
 
 export default function HomeScreen() {
+  const { t, i18n } = useTranslation("home");
   const { setCart, addItemToCart } = useCart();
   const { isLogged, user } = useGlobalContext();
   const route = useRouter();
@@ -174,20 +176,23 @@ export default function HomeScreen() {
     const currentHour = new Date().getHours();
   
     if (currentHour < 6) {
-      setGreeting("Good night"); // Midnight to 6 AM
+      setGreeting(t('night')); // Midnight to 6 AM
     } else if (currentHour < 12) {
-      setGreeting("Good morning"); // 6 AM to 12 PM
+      setGreeting(t("morning")); // 6 AM to 12 PM
     } else if (currentHour < 18) {
-      setGreeting("Good afternoon"); // 12 PM to 6 PM
+      setGreeting(t('afternoon')); // 12 PM to 6 PM
     } else {
-      setGreeting("Good evening"); // 6 PM to Midnight
+      setGreeting(t("evening")); // 6 PM to Midnight
     }
   }, []);
   
 
-  const handlecategory = async (categoryId) => {
-    route.push("/(tabs)/categorydetail?categoryId=" + categoryId);
+  const handlecategory = async (categoryId, name, name_amh) => {
+    route.push(
+      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(name)}&name_amh=${encodeURIComponent(name_amh)}`
+    );
   };
+  
   
 
   return (
@@ -252,7 +257,7 @@ export default function HomeScreen() {
               textAlign: "start",
             }}
           >
-            Categories
+          {t('categories')}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -273,7 +278,7 @@ export default function HomeScreen() {
             category.map((product, index) => (
               <TouchableOpacity
                 key={product.id || index}
-                onPress={()=>handlecategory(product.id)}
+                onPress={()=>handlecategory(product.id, product.name, product.name_amh)}
                 className="flex justify-center items-center mx-2"
               >
                 <Image
@@ -281,7 +286,7 @@ export default function HomeScreen() {
                   className="w-24 h-24 rounded-3xl"
                   resizeMode="cover"
                 />
-                <Text className="text-sm font-medium mt-2">{product.name}</Text>
+                <Text className="text-sm font-medium mt-2">{i18n.language === "en" ?product.name: product.name_amh}</Text>
               </TouchableOpacity>
             ))
           ) : (
@@ -306,7 +311,7 @@ export default function HomeScreen() {
               textAlign: "start",
             }}
           >
-            Recommended Products
+            {t('recommended')}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -324,7 +329,7 @@ export default function HomeScreen() {
               </View>
             ))
           ) : (
-            <Text style={styles.loadingText}>Loading popular products...</Text>
+            <Text style={styles.loadingText}>{t('loading')}</Text>
           )}
         </View>
       </View>

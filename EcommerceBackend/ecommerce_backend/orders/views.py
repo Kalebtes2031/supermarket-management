@@ -69,6 +69,7 @@ class ConfirmDeliveryAPIView(APIView):
 
         # Update the order status to 'Delivered'
         order.status = "Delivered"
+        order.payment_status = "On Delivery"
         order.save()
 
         # Optional: Send notification to the delivery person indicating the delivery is confirmed.

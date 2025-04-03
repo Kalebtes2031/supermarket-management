@@ -1,6 +1,9 @@
 {
-    "title": "Welcome to Yason",
-    "subtitle": "Store Delivery Application",
-    "next": "Next",
-    "skip": "Skip"
-  }
+  "categories": "መደቦች",
+  "morning": "እንደምን አደሩ",
+  "afternoon": "እንደምን ዋሉ",
+  "evening": "እንደምን አመሹ",
+  "night": "Good night",
+  "recommended": "የሚመከሩ ምርቶች",
+  "loading": "በትዕግስት ይጠብቁ"
+}

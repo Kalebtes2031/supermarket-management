@@ -13,11 +13,13 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCategory } from "@/hooks/useFetch";
 import Header from "@/components/Header"; // Import your Header component
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 const ITEM_WIDTH = (width - 48) / 3; // Calculate width for 3 items with padding
 
 const CategoryScreen = () => {
+  const { t, i18n } = useTranslation("category");
   const colorScheme = useColorScheme();
   const router = useRouter();
   const [categories, setCategories] = useState([]);
@@ -44,8 +46,13 @@ const CategoryScreen = () => {
         style={styles.categoryImage}
         resizeMode="cover"
       />
-      <Text style={[styles.categoryText, { color: colorScheme === "dark" ? "#fff" : "#445396" }]}>
-        {item.name}
+      <Text
+        style={[
+          styles.categoryText,
+          { color: colorScheme === "dark" ? "#fff" : "#445396" },
+        ]}
+      >
+        {i18n.language === "en" ? item.name : item.name_amh}
       </Text>
     </TouchableOpacity>
   );
@@ -55,15 +62,24 @@ const CategoryScreen = () => {
       {/* Custom Header */}
       <Header />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons
             name="arrow-back"
             size={24}
             color={colorScheme === "dark" ? "#fff" : "#445399"}
           />
         </TouchableOpacity>
-        <Text className="font-poppins-bold" style={[styles.headerTitle, { color: colorScheme === "dark" ? "#fff" : "#445399" }]}>
-          Categories
+        <Text
+          className="font-poppins-bold"
+          style={[
+            styles.headerTitle,
+            { color: colorScheme === "dark" ? "#fff" : "#445399" },
+          ]}
+        >
+          {t("category")}
         </Text>
       </View>
 
@@ -76,7 +92,7 @@ const CategoryScreen = () => {
         columnWrapperStyle={styles.columnWrapper}
         ListEmptyComponent={
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading categories...</Text>
+            <Text style={styles.loadingText}>{t("loading")}</Text>
           </View>
         }
         contentContainerStyle={styles.listContent}
@@ -100,7 +116,7 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 10,
     // backgroundColor:"red",
-    borderRadius: '100%',
+    borderRadius: "100%",
     borderWidth: 1,
     borderColor: "#ccc",
   },
@@ -114,7 +130,7 @@ const styles = StyleSheet.create({
     width: ITEM_WIDTH,
     marginBottom: 16,
     alignItems: "center",
-    marginRight:10,
+    marginRight: 10,
     // backgroundColor:"red"
   },
   categoryImage: {

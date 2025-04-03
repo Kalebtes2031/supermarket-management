@@ -6,12 +6,26 @@ const resources = {
   en: {
     welcome: require("@/languages/eng/welcome.json"),
     home: require("@/languages/eng/home.json"),
-    common: require("@/languages/eng/common.json"),
+    card: require("@/languages/eng/card.json"),
+    categorydetail: require("@/languages/eng/categorydetail.json"),
+    category: require("@/languages/eng/category.json"),
+    tabs: require("@/languages/eng/tabs.json"),
+    shop: require("@/languages/eng/shop.json"),
+    cartscreen: require("@/languages/eng/cartscreen.json"),
+    checkout: require("@/languages/eng/checkout.json"),
+    directpayment: require("@/languages/eng/directpayment.json"),
   },
   amh: {
     welcome: require("@/languages/amh/welcome.json"),
     home: require("@/languages/amh/home.json"),
-    common: require("@/languages/amh/common.json"),
+    card: require("@/languages/amh/card.json"),
+    categorydetail: require("@/languages/amh/categorydetail.json"),
+    category: require("@/languages/amh/category.json"),
+    tabs: require("@/languages/amh/tabs.json"),
+    shop: require("@/languages/amh/shop.json"),
+    cartscreen: require("@/languages/amh/cartscreen.json"),
+    checkout: require("@/languages/amh/checkout.json"),
+    directpayment: require("@/languages/amh/directpayment.json"),
   },
 };
 

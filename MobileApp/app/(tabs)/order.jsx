@@ -90,18 +90,20 @@ const Order = () => {
     items.map((item) => (
       <View key={item.id} style={styles.itemContainer}>
         <View>
-
-        <Image
-          source={{
-            uri: item.variant.product?.image || "https://via.placeholder.com/60",
-          }}
-          style={styles.productImage}
-        />
-        <Text>price / {item.variant?.unit} </Text>
+          <Image
+            source={{
+              uri:
+                item.variant.product?.image || "https://via.placeholder.com/60",
+            }}
+            style={styles.productImage}
+          />
+          <Text>price / {item.variant?.unit} </Text>
         </View>
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>
-            {item.variant.product?.item_name || "Unknown Product"}   {parseInt(item.variant?.quantity)}{item.variant?.unit}
+            {item.variant.product?.item_name || "Unknown Product"}{" "}
+            {parseInt(item.variant?.quantity)}
+            {item.variant?.unit}
           </Text>
           <View style={styles.priceRow}>
             <Text style={styles.itemPrice}>Br{item.variant?.price}</Text>
@@ -176,7 +178,12 @@ const Order = () => {
               name="exclamation-circle"
               style={[styles.icon, styles.yellow]}
             />
-          ) :(
+          ) : order.payment_status === "On Delivery" ? (
+            <FontAwesome
+              name="check-circle"
+              style={[styles.icon, styles.green]}
+            />
+          ) : (
             <FontAwesome
               name="times-circle"
               style={[styles.icon, styles.red]}
@@ -189,23 +196,25 @@ const Order = () => {
               ? "Pending"
               : order.payment_status === "Partial Payment"
               ? "Partial Payment"
+              : order.payment_status === "On Delivery"
+              ? "Fully Paid"
               : "Cancel"}
           </Text>
         </View>
-        {/* <View style={{
-          display:"flex",
-          justifyContent:"center",
-        }}> */}
-          {/* {order.payment_status === "Pending" && (
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          {order.payment_status === "Pending" && (
             <TouchableOpacity
               style={[styles.button, styles.partialPaymentButton]}
-              onPress={() =>
-                openModal(order.id, "full_payment", order.total)
-              }
+              onPress={() => openModal(order.id, "full_payment", order.total)}
             >
               <Text style={styles.buttonText}>Full Payment</Text>
             </TouchableOpacity>
-          )} */}
+          )}
           {/* {order.payment_status === "Pending" && (
             <View style={styles.pendingButtonsContainer}>
               <TouchableOpacity
@@ -223,7 +232,7 @@ const Order = () => {
               </TouchableOpacity>
             </View>
           )} */}
-        {/* </View> */}
+        </View>
         <View style={styles.totalContainer}>
           <Text style={styles.orderTotal}>Order Total:</Text>
           <Text style={styles.orderTotal}>Br{order.total}</Text>
@@ -251,7 +260,9 @@ const Order = () => {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text className="text-primary" style={styles.pageTitle}>Order History</Text>
+            <Text className="text-primary" style={styles.pageTitle}>
+              My Orders
+            </Text>
             <Text style={styles.ordersCount}>{orders.length} orders found</Text>
             {renderOrders()}
           </ScrollView>
@@ -570,7 +581,7 @@ const styles = StyleSheet.create({
     justifyContent: "start",
     alignItems: "center",
     gap: 28,
-    marginTop:12,
+    marginTop: 12,
   },
   fullPaymentButton: {
     backgroundColor: "#A67C52", // Primary-lightbrown

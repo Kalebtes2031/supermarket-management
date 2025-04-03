@@ -21,8 +21,10 @@ import SearchComp from "@/components/SearchComp";
 import { fetchProducts } from "@/hooks/useFetch";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const Shop = () => {
+  const { t, i18n } = useTranslation('shop');
   const { width, height } = Dimensions.get("window");
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
@@ -65,8 +67,8 @@ const Shop = () => {
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
 
-        <Text style={styles.categoryTitle}> Products</Text>
-        <Text style={styles.categoryTitle2}> {products.length} Items</Text>
+        <Text style={styles.categoryTitle}> {t("products")}</Text>
+        <Text style={styles.categoryTitle2}> {products.length} {t('items')}</Text>
       </View>
       {/* Content Area */}
       <View style={styles.contentContainer}>

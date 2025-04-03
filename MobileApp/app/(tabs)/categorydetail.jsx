@@ -7,16 +7,19 @@ import {
   FlatList, 
   TouchableOpacity, 
   Dimensions,
-  TextInput
+  TextInput,
+  NativeModules
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { fetchSameCategoryProducts } from "@/hooks/useFetch";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
 const CategoryDetail = () => {
-  const { categoryId, name } = useLocalSearchParams();
+  const { t, i18n } = useTranslation('categorydetail');
+  const { categoryId, name, name_amh } = useLocalSearchParams();
   const [products, setProducts] = useState([]);
   const router = useRouter();
 
@@ -25,6 +28,7 @@ const CategoryDetail = () => {
       try {
         const data = await fetchSameCategoryProducts(Number(categoryId));
         setProducts(data);
+        console.log("i want to know so badly the name:", name)
       } catch (error) {
         console.error("Error:", error);
       }
@@ -46,7 +50,7 @@ const CategoryDetail = () => {
       onPress={() => handlePress(item)}
     >
       {/* Product Name */}
-      <Text style={styles.productName}>{item.item_name}</Text>
+      <Text style={styles.productName}>{i18n.language === "en"?item.item_name:item.item_name_amh}</Text>
       
       {/* Image Container */}
       <View style={styles.imageContainer}>
@@ -59,7 +63,7 @@ const CategoryDetail = () => {
   
       {/* Price Circle */}
       <View style={styles.priceCircle}>
-        <Text style={styles.priceText}>Br {parseInt(item.variations[0].price)}</Text>
+        <Text style={styles.priceText}>{t('br')} {parseInt(item.variations[0].price)}</Text>
         <Text style={styles.unitText}>/{item.variations[0].unit}</Text>
       </View>
     </TouchableOpacity>
@@ -72,17 +76,24 @@ const CategoryDetail = () => {
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.push("/(tabs)/home");
+            }
+          }}
+          
         >
           <Ionicons name="arrow-back" size={24} color="#445399" />
         </TouchableOpacity>
 
-        <Text style={styles.categoryTitle}>{products.name} Category</Text>
+        <Text style={styles.categoryTitle}>{i18n.language === "en"? name: name_amh} {t('category')}</Text>
         
         {/* Search Container */}
         <View style={styles.searchContainer}>
           <TextInput
-            placeholder="Search products..."
+            placeholder={t('search')}
             style={styles.searchInput}
             placeholderTextColor="#999"
           />
@@ -99,7 +110,7 @@ const CategoryDetail = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No products found</Text>
+            <Text style={styles.emptyText}>{t('noproduct')}</Text>
           </View>
         }
       />

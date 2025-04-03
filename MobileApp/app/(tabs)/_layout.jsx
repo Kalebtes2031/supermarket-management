@@ -12,8 +12,10 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useTranslation } from "react-i18next";
 
 export default function TabLayout() {
+  const { t, i18n } = useTranslation('tabs');
   const colorScheme = useColorScheme();
   const { isLogged } = useGlobalContext();
   const router = useRouter();
@@ -46,7 +48,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          title: t('home'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -55,7 +57,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="shop"
         options={{
-          title: "Shop",
+          title: t('shop'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="shop" color={color} />
           ),
@@ -64,7 +66,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="cartscreen"
         options={{
-          title: "Cart",
+          title: t('cart'),
           tabBarIcon: ({ color }) => (
             <AntDesign name="shoppingcart" size={28} color={color} />
           ),
@@ -74,7 +76,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="order"
         options={{
-          title: "My Orders",
+          title: t("myorders"),
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="work-history" size={28} color={color} />
           ),
@@ -83,7 +85,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="trackorder"
         options={{
-          title: "Track Order",
+          title: t('track'),
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="truck-delivery" size={24} color={color} />
           ),
@@ -141,6 +143,14 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      />
+      <Tabs.Screen
+        name="watchlistscreen"
+        options={{
+          title: "Watch-List Screen",
           tabBarItemStyle: { display: "none" },
           gestureEnabled: false,
         }}

@@ -17,8 +17,10 @@ import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { payUsingBankTransfer } from "@/hooks/useFetch"; // Import your API function
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const DirectBankTransfer = () => {
+  const { t, i18n } = useTranslation('directpayment');
   const params = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
@@ -59,26 +61,26 @@ const DirectBankTransfer = () => {
   const banks = [
     {
       bank: require("@/assets/images/abyssinia.png"), // Update with actual image paths
-      bankName: "Bank of Abyssinia",
-      name: "Abebe Demssie W/Mariam",
+      bankName: t("abyssinia"),
+      name: t('name'),
       number: "23680661",
     },
     {
       bank: require("@/assets/images/cbenew.png"),
       bankName: "Commercial Bank of Ethiopia",
-      name: "Abebe Demssie W/Mariam",
+      name:t('name'),
       number: "1000152439427",
     },
     {
       bank: require("@/assets/images/coop.png"),
       bankName: "COOP Bank of Oromia",
-      name: "Abebe Demssie W/Mariam",
+      name:t('name'),
       number: "1000043541939",
     },
     {
       bank: require("@/assets/images/telebirrnew.png"),
       bankName: "Telebirr",
-      name: "Abebe Demssie W/Mariam",
+      name: t('name'),
       number: "+251912860746",
     },
   ];
@@ -210,11 +212,11 @@ const DirectBankTransfer = () => {
           className="font-poppins-bold text-center text-primary mb-4"
           style={styles.headerTitle}
         >
-          Bank Accounts
+         {t('bank')}
         </Text>
         <View style={styles.sectiona}>
           <Text style={styles.sectionTitle}>
-            Yason Consumption Products Trading S.c
+            {t('yason')}
           </Text>
           {banks.map((account, index) => (
             <View key={index} style={styles.bankCard}>
@@ -241,7 +243,7 @@ const DirectBankTransfer = () => {
           ))}
 
           <View style={styles.formContainer}>
-            <Text style={styles.label}>Select Bank</Text>
+            <Text style={styles.label}>{t('select')}</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={bankPaymentForm.bank}
@@ -250,7 +252,7 @@ const DirectBankTransfer = () => {
                 }
                 style={styles.picker}
               >
-                <Picker.Item label="Select a bank" value="" />
+                <Picker.Item label={t("selecta")} value="" />
                 {banks.map((bank, index) => (
                   <Picker.Item
                     key={index}
@@ -261,7 +263,7 @@ const DirectBankTransfer = () => {
               </Picker>
             </View>
 
-            <Text style={styles.label}>Upload Payment Receipt</Text>
+            <Text style={styles.label}>{t("upload")}</Text>
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={handleFilePick}
@@ -275,7 +277,7 @@ const DirectBankTransfer = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.sectionTitle}>Select Shipment/Delivery Method</Text>
+        <Text style={styles.sectionTitle}>{t('shipment')}</Text>
         <View
           style={{
             flexDirection: "row",
@@ -298,7 +300,7 @@ const DirectBankTransfer = () => {
           >
             <Text style={styles.submitButtonText}>
               {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              Schedule Delivery
+              {t('schedule')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -306,13 +308,13 @@ const DirectBankTransfer = () => {
               styles.submitButton2,
               //  isSubmitting && styles.disabledButton
             ]}
-            // onPress={() => {router.push("/(tabs)/home")}}
+            // onPress={() => {()=>router.push("/(tabs)/home")}}
             // onPress={handleSubmit}
             // disabled={isSubmitting}
           >
             <Text style={styles.submitButtonText}>
               {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              Pick Up from Store
+              {t('pick')}
             </Text>
           </TouchableOpacity>
         </View>
