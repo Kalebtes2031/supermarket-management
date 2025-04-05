@@ -32,10 +32,11 @@ import { getAccessToken } from "@/hooks/useFetch";
 import axios from "axios";
 import { useWatchlist } from "@/context/WatchlistProvider";
 import { useTranslation } from "react-i18next";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const Header = () => {
-  const { t, i18n } = useTranslation("welcome");
-  const { watchlist} = useWatchlist();
+  const { t, i18n } = useTranslation("header");
+  const { watchlist } = useWatchlist();
   const route = useRouter();
   const { cart, setCart, loadCartData, removeItemFromCart } = useCart();
   const navigation = useNavigation();
@@ -91,17 +92,20 @@ const Header = () => {
   const handleImagePick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please grant access to the media library.");
+      Alert.alert(
+        "Permission Denied",
+        "Please grant access to the media library."
+      );
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
-  
+
     if (!result.canceled) {
       const newImage = result.assets[0].uri;
       setUser((prevUser) => ({ ...prevUser, image: newImage })); // Update UI immediately
@@ -113,14 +117,14 @@ const Header = () => {
       const token = await getAccessToken();
       const uriParts = imageUri.split(".");
       const fileType = uriParts[uriParts.length - 1];
-  
+
       const formData = new FormData();
       formData.append("image", {
         uri: imageUri,
         name: `profile.${fileType}`,
         type: `image/${fileType}`,
       });
-  
+
       const response = await axios.put(
         "http://192.168.1.3:8000/account/user/profile/update/",
         formData,
@@ -131,12 +135,15 @@ const Header = () => {
           },
         }
       );
-  
+
       if (response.status === 200) {
         setUser(response.data); // Update the global state with new image
       }
     } catch (error) {
-      Alert.alert("Upload Failed", "Could not upload profile image. Try again.");
+      Alert.alert(
+        "Upload Failed",
+        "Could not upload profile image. Try again."
+      );
     }
   };
   const handleLanguageToggle = () => {
@@ -144,7 +151,6 @@ const Header = () => {
     setCurrentLanguage(currentLanguage === "EN" ? "AM" : "EN");
     i18n.changeLanguage(newLangCode);
   };
-  
 
   return (
     <SafeAreaView
@@ -186,8 +192,8 @@ const Header = () => {
           />
 
           <View style={styles.iconWrapper}>
-            <TouchableOpacity 
-              onPress={()=>route.push('/(tabs)/watchlistscreen')}
+            <TouchableOpacity
+              onPress={() => route.push("/(tabs)/watchlistscreen")}
             >
               <MaterialIcons name="favorite-border" size={24} color="#445399" />
             </TouchableOpacity>
@@ -246,7 +252,7 @@ const Header = () => {
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
               {/* language */}
-              <View className=" flex-row gap-x-1 items-center ">
+              {/* <View className=" flex-row gap-x-1 items-center ">
                 <MaterialIcons name="language" size={24} color="#55B051" />
                 <TouchableOpacity
                   onPress={handleLanguageToggle}
@@ -268,11 +274,10 @@ const Header = () => {
                       {currentLanguage === "EN" ? "አማ" : "EN"}
                     </Text>
                   </View>
-                  {/* <Text className="text-white text-[12px] ml-2 font-poppins-medium">
-                            {currentLanguage === "EN" ? "EN | አማ" : "አማ | EN"}
-                          </Text> */}
+                 
                 </TouchableOpacity>
-              </View>
+              </View> */}
+
               {/* sign out */}
               <TouchableOpacity onPress={handleLogout}>
                 <View
@@ -280,7 +285,7 @@ const Header = () => {
                 >
                   <SimpleLineIcons name="logout" size={14} color="white" />
                   <Text className=" font-poppins-medium text-white">
-                    Sign Out
+                    {t("signout")}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -317,7 +322,7 @@ const Header = () => {
                       </View>
                     )}
                   </TouchableOpacity>
-                  <View style={{position:'absolute',bottom:10,left:38,}}>
+                  <View style={{ position: "absolute", bottom: 10, left: 38 }}>
                     <TouchableOpacity
                       style={styles.editButton}
                       onPress={handleImagePick}
@@ -327,26 +332,13 @@ const Header = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text style={{color:"white"}}>
+                <Text style={{ color: "white" }}>
                   {user?.first_name} {user?.last_name}
                 </Text>
               </View>
-              <TouchableOpacity
-                style={{
-                  flexDirection: "column",
-                  alignItems: "center",
-                  paddingRight: 14,
-                }}
-                // onPress={() => route.push("shop")}
-              >
-                <Ionicons name="moon-sharp" size={24} color="white" />
-                <Text
-                  style={{ color: "white" }}
-                  className="font-poppins-medium"
-                >
-                  Dark Mode
-                </Text>
-              </TouchableOpacity>
+              <View style={{ marginRight: 10 }}>
+                <LanguageToggle />
+              </View>
             </View>
           </View>
           {/* zerzer */}
@@ -365,49 +357,63 @@ const Header = () => {
               onPress={() => route.push("order")}
             >
               <Octicons name="note" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Order History</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t("myorders")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <AntDesign name="setting" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Setting</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t('settings')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <SimpleLineIcons name="earphones-alt" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Contact Support</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t("contact")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <SimpleLineIcons name="note" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Terms & Conditions</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t('terms')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <MaterialIcons name="question-answer" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>FAQs</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t('faq')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <MaterialIcons name="privacy-tip" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Privacy Policies</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t('privacy')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.link}
               // onPress={() => route.push("home")}
             >
               <MaterialIcons name="delete" size={24} color="#445399" />
-              <Text className="font-poppins-mediu" style={styles.linkText}>Remove</Text>
+              <Text className="font-poppins-mediu" style={styles.linkText}>
+                {t('remove')}
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>

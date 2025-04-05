@@ -11,11 +11,13 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useTranslation } from "react-i18next";
+import { useCart } from "@/context/CartProvider";
 
 export default function TabLayout() {
-  const { t, i18n } = useTranslation('tabs');
+  const { cart } = useCart();
+  const { t, i18n } = useTranslation("tabs");
   const colorScheme = useColorScheme();
   const { isLogged } = useGlobalContext();
   const router = useRouter();
@@ -48,7 +50,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: t('home'),
+          title: t("home"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -57,7 +59,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="shop"
         options={{
-          title: t('shop'),
+          title: t("shop"),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="shop" color={color} />
           ),
@@ -66,10 +68,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="cartscreen"
         options={{
-          title: t('cart'),
+          title: t("cart"),
           tabBarIcon: ({ color }) => (
-            <AntDesign name="shoppingcart" size={28} color={color} />
+            <AntDesign name="shoppingcart" size={32} color={color} />
           ),
+          tabBarBadge: cart.total_items, // 🔥 This line shows the number
+          tabBarBadgeStyle: {
+            backgroundColor: "#445399",
+            color: "white",
+            fontSize: 12,
+          },
         }}
       />
 
@@ -85,9 +93,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="trackorder"
         options={{
-          title: t('track'),
+          title: t("track"),
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="truck-delivery" size={24} color={color} />
+            <MaterialCommunityIcons
+              name="truck-delivery"
+              size={24}
+              color={color}
+            />
           ),
         }}
       />

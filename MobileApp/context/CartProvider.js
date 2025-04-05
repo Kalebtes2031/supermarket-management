@@ -8,7 +8,7 @@ export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const { isLogged } = useGlobalContext();
-  const [cart, setCart] = useState({ items: [], total: 0 });
+  const [cart, setCart] = useState({ items: [], total_items: 0 });
 
   // Load the cart data only if the user is logged in
   const loadCartData = async () => {

@@ -123,17 +123,17 @@ const CheckoutPage = () => {
           paymentStatus: payment_status,
         });
       } else {
-        // let orderId=id
-        // route.push(
-        //   `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
-        //     JSON.stringify(orderId)
-        //   )}`
-        // );
-        handleBankPayment({
-          orderId: id,
-          amountToPay: total,
-          paymentStatus: payment_status,
-        });
+        let orderId=id
+        route.push(
+          `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
+            JSON.stringify(orderId)
+          )}`
+        );
+        // handleBankPayment({
+        //   orderId: id,
+        //   amountToPay: total,
+        //   paymentStatus: payment_status,
+        // });
       }
     } catch (error) {
       console.error("Error creating order", error);

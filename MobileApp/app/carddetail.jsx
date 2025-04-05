@@ -17,10 +17,13 @@ import Toast from "react-native-toast-message";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { useWatchlist } from "@/context/WatchlistProvider";
 
 const { width } = Dimensions.get("window");
 
 const ProductDetail = ({ route }) => {
+  const { t, i18n } = useTranslation("carddetail");
   // const { product } = route.params;
   const { product: productString } = useLocalSearchParams();
   const product = productString ? JSON.parse(productString) : null;
@@ -29,10 +32,32 @@ const ProductDetail = ({ route }) => {
   const colorScheme = useColorScheme();
   const { cart, addItemToCart } = useCart();
   const router = useRouter();
-  const [isFavorited, setIsFavorited] = useState(false);
+  // const [isFavorited, setIsFavorited] = useState(false);
+  const { watchlist, addToWatchlist, removeFromWatchlist , isFavorite} = useWatchlist();
 
-  const toggleFavorite = () => setIsFavorited(!isFavorited);
 
+  useEffect(() => {
+    console.log('try to work is hard:', watchlist)
+    console.log('try to work is nothard:', product)
+  },[])
+  const isFavorited = isFavorite(product.variations[0].id);
+const toggleFavorite = () => {
+  if (isFavorited) {
+    removeFromWatchlist(product.variations[0].id);
+    Toast.show({
+      type: "info",
+      text1:t('removed'),
+      visibilityTime: 2000,
+    });
+  } else {
+    addToWatchlist(product);
+    Toast.show({
+      type: "success",
+      text1: t('added'),
+      visibilityTime: 2000,
+    });
+  }
+};
   // Create array of all available images
   const images = [
     product.image,
@@ -55,7 +80,7 @@ const ProductDetail = ({ route }) => {
   if (!product) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>No product details available.</Text>
+        <Text style={styles.errorText}>{t('no')}</Text>
       </SafeAreaView>
     );
   }
@@ -95,7 +120,7 @@ const ProductDetail = ({ route }) => {
               className="text-primary font-poppins-bold mt-6 mb-10"
               style={{ fontSize: 18, fontWeight: 700 }}
             >
-              {product.category?.name}
+              {i18n.language === "en"?product.category?.name:product.category?.name_amh}
             </Text>
             {/* Price and Stock Status */}
             <View style={styles.priceContainer} className="mt-6">
@@ -122,7 +147,7 @@ const ProductDetail = ({ route }) => {
             className="text-primary font-poppins-bold"
             style={{ fontSize: 18, fontWeight: 700, textAlign: "center" }}
           >
-            {product.item_name}
+            {i18n.language === "en"?product.item_name:product.item_name_amh}
           </Text>
         </View>
         {/* Main Product Image */}
@@ -141,7 +166,7 @@ const ProductDetail = ({ route }) => {
             className="text-primary absolute left-10 bottom-1 font-poppins-bold mt-6 mb-10"
             style={{ fontSize: 18, fontWeight: 700 }}
           >
-            Birr {parseInt(product.variations[0]?.price)}
+            {t('br')} {parseInt(product.variations[0]?.price)}
           </Text>
           <View
             style={styles.quantityContainer}
@@ -221,7 +246,7 @@ const ProductDetail = ({ route }) => {
                 { color: colorScheme === "dark" ? "#fff" : "#000" },
               ]}
             >
-              Item Details
+              {t('detail')}
             </Text>
             <Text
               style={[
@@ -275,7 +300,7 @@ const ProductDetail = ({ route }) => {
           onPress={handleAddToCart}
           style={styles.addToCartButton}
         >
-          <Text style={styles.addToCartText}>Add to Cart</Text>
+          <Text style={styles.addToCartText}>{t('add')}</Text>
         </TouchableOpacity>
       </View>
     </View>

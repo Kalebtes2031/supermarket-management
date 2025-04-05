@@ -34,14 +34,14 @@ const toggleFavorite = () => {
     removeFromWatchlist(product.variations[0].id);
     Toast.show({
       type: "info",
-      text1: "Removed from Watchlist",
+      text1:t('removed'),
       visibilityTime: 2000,
     });
   } else {
     addToWatchlist(product);
     Toast.show({
       type: "success",
-      text1: "Added to Watchlist",
+      text1: t('added'),
       visibilityTime: 2000,
     });
   }
@@ -54,13 +54,13 @@ const toggleFavorite = () => {
     router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(product))}`);
   };
 
-  const handleAddCartClick = () => {
+  const handleAddCartClick = async() => {
     try {
       console.log('product.variations.id', product)
-      addItemToCart(product.variations[0].id, 1);
+      await addItemToCart(product.variations[0].id, 1);
       Toast.show({
         type: "success",
-        text1: "product added to cart",
+        text1: t('product'),
         visibilityTime: 2000,
       });
     } catch (error) {

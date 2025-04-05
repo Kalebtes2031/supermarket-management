@@ -172,7 +172,7 @@ import {
 import { Calendar } from "react-native-calendars";
 import { Button, Overlay, Icon } from "@rneui/themed";
 // import DateTimePicker from "expo-date-time-picker";
-import { scheduleDelivery } from "@/hooks/useFetch";
+import { fetchOrderDetail, scheduleDelivery } from "@/hooks/useFetch";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import * as Animatable from "react-native-animatable";
@@ -180,8 +180,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { TimePickerModal } from "react-native-paper-dates";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
+
 
 const ScheduleDeliveryScreen = () => {
+  const { t, i18n } = useTranslation('schedule');
   const { orderId } = useLocalSearchParams();
   // let num = 40;
   // const orderId = num;
@@ -193,7 +197,15 @@ const ScheduleDeliveryScreen = () => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [calendarOpen, setCalendarOpen] = useState(true);
   const [text, setText] = useState("");
+  const [product, setProduct] = useState({});
 
+
+  const fetchOrderData = async ()=>{
+    const response = await fetchOrderDetail(orderId);
+    setProduct(response);
+    // console.log("orderId am:", orderId);
+    console.log("detail info on order:", response);
+  }
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -201,6 +213,7 @@ const ScheduleDeliveryScreen = () => {
       useNativeDriver: true,
     }).start();
     console.log("orderId am:", orderId);
+    fetchOrderData();
   }, []);
 
   const handleDateSelect = (date) => {
@@ -224,7 +237,7 @@ const ScheduleDeliveryScreen = () => {
   const validateDateTime = () => {
     const now = new Date();
     if (selectedDate <= now) {
-      setError("Please select a future date and time");
+      setError(t('please'));
       return false;
     }
     return true;
@@ -264,13 +277,13 @@ const ScheduleDeliveryScreen = () => {
           className="font-poppins-bold text-center text-primary mb-4"
           style={{fontSize: 20,fontWeight: "bold",}}
         >
-          Schedule Delivery
+          {t('schedule')}
         </Text>
         <Text
           style={{ fontSize: 18, paddingLeft: 8 }}
           className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
         >
-          Address
+          {t('address')}
         </Text>
         <TextInput
           style={{
@@ -297,7 +310,7 @@ const ScheduleDeliveryScreen = () => {
           style={{ fontSize: 18, paddingLeft: 8, marginTop: 15 }}
           className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
         >
-          Date and Time
+          {t('date')}
         </Text>
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
 
@@ -380,7 +393,7 @@ const ScheduleDeliveryScreen = () => {
       )}
 
       <Button
-        title={loading ? "Scheduling..." : "Confirm Schedule"}
+        title={loading ? t('scheduling') : t('confirm')}
         buttonStyle={styles.button}
         containerStyle={styles.buttonContainer}
         onPress={handleSchedule}
@@ -395,6 +408,35 @@ const ScheduleDeliveryScreen = () => {
           />
         }
       />
+      {product && (
+        <View style={{ marginTop: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", padding:5 }}>
+            <View className="flex-row items-center gap-3 my-6">
+                        <View className="flex-1 h-px bg-gray-200" />
+                        <Text className="text-gray-500 font-poppins-medium">OR</Text>
+                        <View className="flex-1 h-px bg-gray-200" />
+                      </View>
+          </View>
+          <TouchableOpacity
+            onPress={()=>navigation.push(
+              `/(tabs)/orderinfo?orderId=${encodeURIComponent(
+              JSON.stringify(orderId)
+            )}`
+            )}
+            style={{
+              backgroundColor: "#55B051",
+              borderRadius: 48,
+              alignItems: "center",
+              paddingVertical: 15,
+            }}
+          >
+            <Text style={{ fontSize: 16, color: "#fff" }}>
+              {t('pick')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+      )}
 
       {/* <View style={{ marginTop: 12 }}>
         <Button title="Show Date Picker" onPress={showDatePicker} />

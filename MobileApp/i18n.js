@@ -14,6 +14,12 @@ const resources = {
     cartscreen: require("@/languages/eng/cartscreen.json"),
     checkout: require("@/languages/eng/checkout.json"),
     directpayment: require("@/languages/eng/directpayment.json"),
+    schedule: require("@/languages/eng/schedule.json"),
+    carddetail: require("@/languages/eng/carddetail.json"),
+    orderinfo: require("@/languages/eng/orderinfo.json"),
+    order: require("@/languages/eng/order.json"),
+    header: require("@/languages/eng/header.json"),
+    watchlist: require("@/languages/eng/watchlist.json"),
   },
   amh: {
     welcome: require("@/languages/amh/welcome.json"),
@@ -26,6 +32,12 @@ const resources = {
     cartscreen: require("@/languages/amh/cartscreen.json"),
     checkout: require("@/languages/amh/checkout.json"),
     directpayment: require("@/languages/amh/directpayment.json"),
+    schedule: require("@/languages/amh/schedule.json"),
+    carddetail: require("@/languages/amh/carddetail.json"),
+    orderinfo: require("@/languages/amh/orderinfo.json"),
+    order: require("@/languages/amh/order.json"),
+    header: require("@/languages/amh/header.json"),
+    watchlist: require("@/languages/amh/watchlist.json"),
   },
 };
 

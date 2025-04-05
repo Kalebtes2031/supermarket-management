@@ -184,7 +184,7 @@ export default function HomeScreen() {
     } else {
       setGreeting(t("evening")); // 6 PM to Midnight
     }
-  }, []);
+  }, [i18n.language]);
   
 
   const handlecategory = async (categoryId, name, name_amh) => {
@@ -193,8 +193,6 @@ export default function HomeScreen() {
     );
   };
   
-  
-
   return (
     <ScrollView
       refreshControl={

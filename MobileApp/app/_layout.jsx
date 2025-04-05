@@ -10,7 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import "../i18n"; 
+import "../i18n";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -24,6 +24,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import GlobalProvider from "@/context/GlobalProvider";
 import { CartProvider } from "@/context/CartProvider";
 import { WatchlistProvider } from "@/context/WatchlistProvider";
+import { LanguageProvider } from "@/context/LanguageProvider";
 import { View } from "react-native";
 import { Text } from "react-native";
 import { FA5Style } from "@expo/vector-icons/build/FontAwesome5";
@@ -60,79 +61,82 @@ export default function RootLayout() {
           {/* <Header /> */}
 
           <ErrorBoundary>
-            <GlobalProvider>
-              <CartProvider>
-                <WatchlistProvider>
-                  <Stack>
-                    <Stack.Screen
-                      name="(auth)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="index"
-                      options={{ headerShown: false }}
-                    />
+              <GlobalProvider>
+                <CartProvider>
+                  <WatchlistProvider>
+                    <LanguageProvider>
+                      {/* <SearchComp /> */}
+                    <Stack>
+                      <Stack.Screen
+                        name="(auth)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="index"
+                        options={{ headerShown: false }}
+                      />
 
-                    <Stack.Screen
-                      name="carddetail"
-                      options={{
-                        headerShown: false,
-                        // header: ({ navigation }) => (
-                        //   <View
-                        //     style={{
-                        //       height: 60,
-                        //       backgroundColor: "#fff",
-                        //       flexDirection: "row",
-                        //       alignItems: "center",
-                        //       paddingHorizontal: 10,
-                        //     }}
-                        //   >
-                        //     <TouchableOpacity
-                        //       onPress={() => navigation.goBack()}
-                        //       style={{ marginRight: 10, paddingHorizontal: 12 }}
-                        //     >
-                        //       <Ionicons
-                        //         name="arrow-back"
-                        //         size={24}
-                        //         color="gray"
-                        //       />
-                        //     </TouchableOpacity>
-                        //     <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                        //       Product Detail
-                        //     </Text>
-                        //   </View>
-                        // ),
-                      }}
-                    />
-                    <Stack.Screen
-                      name="cartscreen"
-                      options={{
-                        headerShown: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="checkout"
-                      options={{
-                        headerShown: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="directpayment"
-                      options={{
-                        headerShown: false,
-                      }}
-                    />
+                      <Stack.Screen
+                        name="carddetail"
+                        options={{
+                          headerShown: false,
+                          // header: ({ navigation }) => (
+                          //   <View
+                          //     style={{
+                          //       height: 60,
+                          //       backgroundColor: "#fff",
+                          //       flexDirection: "row",
+                          //       alignItems: "center",
+                          //       paddingHorizontal: 10,
+                          //     }}
+                          //   >
+                          //     <TouchableOpacity
+                          //       onPress={() => navigation.goBack()}
+                          //       style={{ marginRight: 10, paddingHorizontal: 12 }}
+                          //     >
+                          //       <Ionicons
+                          //         name="arrow-back"
+                          //         size={24}
+                          //         color="gray"
+                          //       />
+                          //     </TouchableOpacity>
+                          //     <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                          //       Product Detail
+                          //     </Text>
+                          //   </View>
+                          // ),
+                        }}
+                      />
+                      <Stack.Screen
+                        name="cartscreen"
+                        options={{
+                          headerShown: false,
+                        }}
+                      />
+                      <Stack.Screen
+                        name="checkout"
+                        options={{
+                          headerShown: false,
+                        }}
+                      />
+                      <Stack.Screen
+                        name="directpayment"
+                        options={{
+                          headerShown: false,
+                        }}
+                      />
 
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                  <Toast />
-                </WatchlistProvider>
-              </CartProvider>
-            </GlobalProvider>
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                    <Toast />
+                    </LanguageProvider>
+                  </WatchlistProvider>
+                </CartProvider>
+              </GlobalProvider>
           </ErrorBoundary>
           <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         </SafeAreaView>

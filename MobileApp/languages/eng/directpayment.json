@@ -10,8 +10,8 @@
   "schedule":"Schedule Delivery",
   "pick":"Pick Up from Store",
   "qty": "Qty",
-  "abyssinia":"Bank of Abyssinia",
+  "tele":"Telebirr",
   "cbe":"Commercial Bank of Ethiopia",
-  "coop":"COOP Bank of Oromia",
-  "telebirr":"Telebirr"
+  "abyssinia":"Bank of Abysinia",
+  "coop":"Cooperative Bank of Oromia"
 }

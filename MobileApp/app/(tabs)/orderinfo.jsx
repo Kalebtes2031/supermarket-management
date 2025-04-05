@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { format } from "date-fns";
 import { useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function OrderInfo() {
+  const {t,i18n} = useTranslation("orderinfo");
   const route = useRouter();
   const { orderId } = useLocalSearchParams();
   const cleanedOrderId = JSON.parse(orderId);
@@ -48,8 +50,8 @@ export default function OrderInfo() {
 
             {/* Bottom Rectangle */}
             <View style={styles.rectangle}>
-              <Text style={styles.text}>Your Order is in process</Text>
-              <Text style={styles.text2}>Thank you!</Text>
+              <Text style={styles.text}>{t('your')}</Text>
+              <Text style={styles.text2}>{t('thank')}</Text>
             </View>
           </View>
         </View>
@@ -65,7 +67,7 @@ export default function OrderInfo() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text>ORDER NUMBER : </Text>
+              <Text>{t('number')} : </Text>
               <Text>#Yas-{ourOrder.id}</Text>
             </View>
           </View>
@@ -80,7 +82,7 @@ export default function OrderInfo() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text>DATE : </Text>
+              <Text>{t('date')} : </Text>
               <Text>{new Date(ourOrder.created_at).toLocaleString()}</Text>
               {/* <Text>{format(new Date(ourOrder.schedule_delivery), "MMM dd, yyyy HH:mm")}</Text> */}
             </View>
@@ -96,8 +98,8 @@ export default function OrderInfo() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text>TOTAL : </Text>
-              <Text>Br {ourOrder.total}</Text>
+              <Text>{t('total')} : </Text>
+              <Text>{t('br')} {ourOrder.total}</Text>
             </View>
           </View>
           <View
@@ -111,9 +113,9 @@ export default function OrderInfo() {
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text>PAYMENT METHOD : </Text>
+              <Text>{t('payment')} : </Text>
               <Text>
-                {ourOrder.total_payment === "0.00" ? "ON DELIVERY" : "BANK TRANSFER"}
+                {ourOrder.total_payment === "0.00" ? t('cash') : t('bank')}
               </Text>
             </View>
           </View>
@@ -130,7 +132,7 @@ export default function OrderInfo() {
               className="text-primary"
               style={{ fontSize: 15, fontWeight: 600 }}
             >
-              Order Address
+              {t('address')}
             </Text>
             <View
               style={{
@@ -139,7 +141,7 @@ export default function OrderInfo() {
                 marginTop: 3,
               }}
             >
-              <Text>NAME : </Text>
+              <Text>{t('name')} : </Text>
               <Text style={{ textTransform: "uppercase" }}>
                 {ourOrder.first_name} {ourOrder.last_name} 
               </Text>
@@ -153,7 +155,7 @@ export default function OrderInfo() {
                 marginTop: 3,
               }}
             >
-              <Text>Email : </Text>
+              <Text>{t('email')} : </Text>
               <Text>{ourOrder.email}</Text>
             </View>
             <View
@@ -163,7 +165,7 @@ export default function OrderInfo() {
                 marginTop: 3,
               }}
             >
-              <Text>PHONE NO : </Text>
+              <Text>{t('phone')} : </Text>
               <Text>{ourOrder.phone_number}</Text>
             </View>
           </View>
@@ -176,7 +178,7 @@ export default function OrderInfo() {
         >
           <Text style={styles.placeOrderText}>
             {/* {isLoading ? "Pay Now" : "Pay Now"} */}
-            Track Order
+            {t('track')}
           </Text>
         </TouchableOpacity>
       </ScrollView>

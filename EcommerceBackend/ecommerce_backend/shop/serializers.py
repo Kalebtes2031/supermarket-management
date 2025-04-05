@@ -4,7 +4,7 @@ from .models import Product, ProductVariation, Category, Size, Style, Cart, Cart
 class SimpleProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'item_name', 'image']
+        fields = ['id', 'item_name','item_name_amh', 'image']
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):

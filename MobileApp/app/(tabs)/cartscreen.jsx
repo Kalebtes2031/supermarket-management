@@ -19,7 +19,7 @@ import { useWatchlist } from "@/context/WatchlistProvider";
 import { useTranslation } from "react-i18next";
 
 const CartScreen = () => {
-  const { t, i18n } = useTranslation('cartscreen');
+  const { t, i18n } = useTranslation("cartscreen");
   const { watchlist } = useWatchlist();
   const { cart, loadCartData, updateItemQuantity, removeItemFromCart } =
     useCart();
@@ -51,20 +51,42 @@ const CartScreen = () => {
       setLocalLoading(null);
     }
   };
-
+  const handleRemoveCartItems = async (id) => {
+    try {
+      // setLocalLoading(id);
+      await removeItemFromCart(id);
+      await loadCartData();
+      Toast.show({
+        type: "success",
+        text1: "Item removed",
+        visibilityTime: 2000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Remove failed",
+        text2: "Please try again",
+      });
+    }
+  };
+  const handlePress = (product) => {
+    router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(product))}`);
+  };
   if (!cart || !cart.items) {
     return (
       // <View style={styles.emptyContainer}>
       //   <MaterialIcons name="remove-shopping-cart" size={60} color="#ccc" />
       //   <Text style={styles.emptyText}>Your cart is empty</Text>
       // </View>
-      <View style={{
-              flex: 1,
+      <View
+        style={{
+          flex: 1,
           justifyContent: "center",
           alignItems: "center",
-            }}>
-              <ActivityIndicator size="large" />
-            </View>
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
     );
   }
 
@@ -82,7 +104,7 @@ const CartScreen = () => {
             </TouchableOpacity>
             <View style={styles.iconWrapper}>
               <TouchableOpacity
-                onPress={()=>router.push('/(tabs)/watchlistscreen')}
+                // onPress={() => router.push("/(tabs)/watchlistscreen")}
               >
                 <MaterialIcons
                   name="favorite-border"
@@ -92,7 +114,7 @@ const CartScreen = () => {
               </TouchableOpacity>
               <View style={styles.badge}>
                 {/* <Text style={styles.badgeText}>0</Text> */}
-                <Text style={styles.badgeText}>{watchlist.length}</Text>
+                <Text style={styles.badgeText}>{cart.length}</Text>
               </View>
             </View>
           </View>
@@ -100,7 +122,7 @@ const CartScreen = () => {
             className="font-poppins-bold text-center text-primary mb-4"
             style={styles.headerTitle}
           >
-            {t('shopping')}
+            {t("shopping")}
           </Text>
           <View
             style={{
@@ -111,18 +133,34 @@ const CartScreen = () => {
               padding: 23,
               backgroundColor: "rgba(150, 166, 234, 0.4)",
               margin: 42,
-              borderRadius:19,
+              borderRadius: 19,
             }}
           >
-            <View style={{ width: 240, height: 240, flexDirection:"row",justifyContent:"center" }}>
+            <View
+              style={{
+                width: 240,
+                height: 240,
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
               <Image
                 source={require("@/assets/images/emptycart.png")}
                 resizeMode="contain"
               />
             </View>
-            <Text className="text-primary font-poppins-bold"
-              style={{fontSize: 16, fontWeight:700, textAlign:"center", padding:13, marginTop: 15}}
-            >{t('empty')}</Text>
+            <Text
+              className="text-primary font-poppins-bold"
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                textAlign: "center",
+                padding: 13,
+                marginTop: 15,
+              }}
+            >
+              {t("empty")}
+            </Text>
           </View>
         </View>
       ) : (
@@ -138,7 +176,10 @@ const CartScreen = () => {
                 <Ionicons name="arrow-back" size={24} color="#445399" />
               </TouchableOpacity>
               <View style={styles.iconWrapper}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push("/(tabs)/watchlistscreen")}
+                >
+
                   <MaterialIcons
                     name="favorite-border"
                     size={28}
@@ -146,7 +187,7 @@ const CartScreen = () => {
                   />
                 </TouchableOpacity>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>0</Text>
+                  <Text style={styles.badgeText}>{watchlist.length}</Text>
                 </View>
               </View>
             </View>
@@ -154,17 +195,22 @@ const CartScreen = () => {
               className="font-poppins-bold text-center text-primary mb-4"
               style={styles.headerTitle}
             >
-              {t('shopping')}
+              {t("shopping")}
             </Text>
 
             <View style={styles.scrollContainers}>
               {cart.items.map((item) => (
                 <View key={item.id} style={styles.itemContainer}>
+                  <TouchableOpacity
+                    // onPress={() => handlePress(item)}
+                  >
+
                   <Image
                     source={{ uri: item?.image }}
                     style={styles.productImage}
                     resizeMode="contain"
                   />
+                  </TouchableOpacity>
 
                   <View style={styles.detailsContainer}>
                     <View
@@ -176,14 +222,19 @@ const CartScreen = () => {
                         gap: 10,
                       }}
                     >
-                      <Text style={styles.productName}>{i18n.language=== "en"?item?.item_name: item?.item_name_amh}</Text>
+                      <Text style={styles.productName}>
+                        {i18n.language === "en"
+                          ? item?.item_name
+                          : item?.item_name_amh}
+                      </Text>
                       <Text style={styles.productName}>
                         {parseInt(item?.variations?.quantity)}
                         {item?.variations?.unit}
                       </Text>
                     </View>
                     <Text style={styles.price}>
-                      {t('br')}{parseFloat(item.variations?.price || "0").toFixed(2)}
+                      {t("br")}
+                      {parseFloat(item.variations?.price || "0").toFixed(2)}
                     </Text>
 
                     <View style={styles.quantityContainer}>
@@ -236,10 +287,11 @@ const CartScreen = () => {
 
                   <View style={styles.actionContainer}>
                     <Text style={styles.itemTotal}>
-                      {t('br')}{(item.total_price || 0).toFixed(2)}
+                      {t("br")}
+                      {(item.total_price || 0).toFixed(2)}
                     </Text>
                     <TouchableOpacity
-                      onPress={() => removeItemFromCart(item.variations.id)}
+                      onPress={() => handleRemoveCartItems(item.variations.id)}
                       disabled={localLoading === item.variations.id}
                     >
                       <MaterialCommunityIcons
@@ -261,9 +313,9 @@ const CartScreen = () => {
               }}
             >
               <View style={styles.totalContainer}>
-                <Text style={styles.totalText}>{t('total')} =</Text>
+                <Text style={styles.totalText}>{t("total")} =</Text>
                 <Text style={styles.totalAmount}>
-                  {(cart.total || 0).toFixed(2)} {t('birr')}
+                  {(cart.total || 0).toFixed(2)} {t("birr")}
                 </Text>
               </View>
             </View>
@@ -290,7 +342,7 @@ const CartScreen = () => {
                     fontWeight: "600",
                   }}
                 >
-                  {t('place')}
+                  {t("place")}
                 </Text>
               </TouchableOpacity>
             </View>

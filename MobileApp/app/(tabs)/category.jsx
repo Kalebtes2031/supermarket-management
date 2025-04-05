@@ -36,10 +36,22 @@ const CategoryScreen = () => {
     loadCategories();
   }, []);
 
+  // const handleCategoryPress = (category) => {
+  //   router.push({
+  //     pathname: "/categorydetail",
+  //     params: { categoryId: category.id },
+  //   });
+  // };
+  const handleCategoryPress = async (categoryId, name, name_amh) => {
+    router.push(
+      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(name)}&name_amh=${encodeURIComponent(name_amh)}`
+    );
+  };
+
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => handleCategoryPress(item)}
+      onPress={() => handleCategoryPress(item.id,item.name,item.name_amh)}
     >
       <Image
         source={{ uri: item.image }}

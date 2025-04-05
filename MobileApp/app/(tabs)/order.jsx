@@ -19,8 +19,10 @@ import { format } from "date-fns";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { RadioButton } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 const Order = () => {
+  const { t, i18n} = useTranslation('order')
   const route = useRouter();
   const { isLogged } = useGlobalContext();
   const [orders, setOrders] = useState([]);
@@ -75,6 +77,7 @@ const Order = () => {
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
       setOrders(sortedResult);
+      console.log("Fetched orders:", sortedResult);
     } catch (error) {
       console.error("Error fetching order history:", error);
     } finally {
@@ -97,19 +100,19 @@ const Order = () => {
             }}
             style={styles.productImage}
           />
-          <Text>price / {item.variant?.unit} </Text>
+          <Text>{t('price')} / {item.variant?.unit} </Text>
         </View>
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>
-            {item.variant.product?.item_name || "Unknown Product"}{" "}
+            {i18n.language === 'en' ?(item.variant.product?.item_name ): (item.variant.product?.item_name_amh)}{" "}
             {parseInt(item.variant?.quantity)}
             {item.variant?.unit}
           </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>Br{item.variant?.price}</Text>
+            <Text style={styles.itemPrice}>{t('br')}{item.variant?.price}</Text>
             <Text style={styles.itemQuantity}>x {item.quantity}</Text>
           </View>
-          <Text style={styles.itemTotal}>Total: Br{item.total_price}</Text>
+          <Text style={styles.itemTotal}>{t('total')}: {t('br')}{item.total_price}</Text>
         </View>
       </View>
     ));
@@ -146,7 +149,7 @@ const Order = () => {
     if (!orders.length) {
       return (
         <Text style={styles.noOrdersText}>
-          No orders found. Start shopping!
+         {t("no")}
         </Text>
       );
     }
@@ -154,7 +157,7 @@ const Order = () => {
     return orders.map((order) => (
       <View key={order.id} style={styles.orderContainer}>
         <View style={styles.orderHeader}>
-          <Text style={styles.orderId}>Order #{order.id}</Text>
+          <Text style={styles.orderId}>{t('order')} #{order.id}</Text>
           {renderOrderStatus(order.status)}
         </View>
 
@@ -164,10 +167,10 @@ const Order = () => {
           </Text>
         </View>
 
-        <Text style={styles.sectionHeader}>ITEMS</Text>
+        <Text style={styles.sectionHeader}>{t('items')}</Text>
         {renderOrderItems(order.items)}
         <View style={styles.paymentStatusContainer}>
-          <Text style={[styles.metaText, { marginRight: 5 }]}>Payment:</Text>
+          <Text style={[styles.metaText, { marginRight: 5 }]}>{t('payment')}:</Text>
           {order.payment_status === "Fully Paid" ? (
             <FontAwesome
               name="check-circle"
@@ -212,7 +215,7 @@ const Order = () => {
               style={[styles.button, styles.partialPaymentButton]}
               onPress={() => openModal(order.id, "full_payment", order.total)}
             >
-              <Text style={styles.buttonText}>Full Payment</Text>
+              <Text style={styles.buttonText}>{t('full')}</Text>
             </TouchableOpacity>
           )}
           {/* {order.payment_status === "Pending" && (
@@ -234,8 +237,8 @@ const Order = () => {
           )} */}
         </View>
         <View style={styles.totalContainer}>
-          <Text style={styles.orderTotal}>Order Total:</Text>
-          <Text style={styles.orderTotal}>Br{order.total}</Text>
+          <Text style={styles.orderTotal}>{t('ordertotal')}:</Text>
+          <Text style={styles.orderTotal}>{t('br')}{order.total}</Text>
         </View>
       </View>
     ));
@@ -246,11 +249,11 @@ const Order = () => {
       {!isLogged ? (
         <View style={styles.loginPromptContainer}>
           <Text style={styles.loginPromptText}>
-            Please{" "}
+            {"please"}{" "}
             <Link href="/(auth)/sign-in" style={styles.loginLink}>
-              Login
+              {'login'}
             </Link>{" "}
-            to view your orders
+            {t("view")}
           </Text>
         </View>
       ) : (
@@ -261,9 +264,9 @@ const Order = () => {
             showsVerticalScrollIndicator={false}
           >
             <Text className="text-primary" style={styles.pageTitle}>
-              My Orders
+              {t('myorders')}
             </Text>
-            <Text style={styles.ordersCount}>{orders.length} orders found</Text>
+            <Text style={styles.ordersCount}>{orders.length} {t('found')}</Text>
             {renderOrders()}
           </ScrollView>
           <Modal
@@ -274,7 +277,7 @@ const Order = () => {
           >
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Choose</Text>
+                <Text style={styles.modalTitle}>{t('choose')}</Text>
                 <View style={styles.radioGroup}>
                   <View style={styles.radioOption}>
                     <RadioButton
@@ -286,7 +289,7 @@ const Order = () => {
                       }
                       onPress={() => setPaymentType("Direct Bank Payment")}
                     />
-                    <Text style={styles.radioLabel}>Direct Bank Payment</Text>
+                    <Text style={styles.radioLabel}>{'bank'}</Text>
                   </View>
                 </View>
                 <View style={styles.buttonContainer}>
@@ -294,13 +297,13 @@ const Order = () => {
                     style={styles.cancelButton}
                     onPress={closeModal}
                   >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                    <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.proceedButton}
                     onPress={handleSubmitPayment}
                   >
-                    <Text style={styles.proceedButtonText}>Proceed</Text>
+                    <Text style={styles.proceedButtonText}>{t('proceed')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

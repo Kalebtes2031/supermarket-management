@@ -20,7 +20,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 const DirectBankTransfer = () => {
-  const { t, i18n } = useTranslation('directpayment');
+  const { t, i18n } = useTranslation("directpayment");
   const params = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
@@ -48,9 +48,9 @@ const DirectBankTransfer = () => {
     // email,
   } = parsedPaymentData;
 
-  useEffect(()=>{
-    console.log('we are on investigation', parsedPaymentData)
-  },[parsedPaymentData])
+  useEffect(() => {
+    console.log("we are on investigation", parsedPaymentData);
+  }, [parsedPaymentData]);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [bankPaymentForm, setBankPaymentForm] = useState({
     bank: "",
@@ -62,25 +62,25 @@ const DirectBankTransfer = () => {
     {
       bank: require("@/assets/images/abyssinia.png"), // Update with actual image paths
       bankName: t("abyssinia"),
-      name: t('name'),
+      name: t("name"),
       number: "23680661",
     },
     {
       bank: require("@/assets/images/cbenew.png"),
-      bankName: "Commercial Bank of Ethiopia",
-      name:t('name'),
+      bankName: t("cbe"),
+      name: t("name"),
       number: "1000152439427",
     },
     {
       bank: require("@/assets/images/coop.png"),
-      bankName: "COOP Bank of Oromia",
-      name:t('name'),
+      bankName: t("coop"),
+      name: t("name"),
       number: "1000043541939",
     },
     {
       bank: require("@/assets/images/telebirrnew.png"),
-      bankName: "Telebirr",
-      name: t('name'),
+      bankName: t("tele"),
+      name: t("name"),
       number: "+251912860746",
     },
   ];
@@ -191,9 +191,7 @@ const DirectBankTransfer = () => {
     handleSubmit();
     // router.push("./schedule");
     router.push(
-      `./schedule?orderId=${encodeURIComponent(
-        JSON.stringify(orderId)
-      )}`
+      `./schedule?orderId=${encodeURIComponent(JSON.stringify(orderId))}`
     );
   };
   return (
@@ -212,12 +210,10 @@ const DirectBankTransfer = () => {
           className="font-poppins-bold text-center text-primary mb-4"
           style={styles.headerTitle}
         >
-         {t('bank')}
+          {t("bank")}
         </Text>
         <View style={styles.sectiona}>
-          <Text style={styles.sectionTitle}>
-            {t('yason')}
-          </Text>
+          <Text style={styles.sectionTitle}>{t("yason")}</Text>
           {banks.map((account, index) => (
             <View key={index} style={styles.bankCard}>
               <Image source={account.bank} style={styles.bankLogo} />
@@ -243,7 +239,7 @@ const DirectBankTransfer = () => {
           ))}
 
           <View style={styles.formContainer}>
-            <Text style={styles.label}>{t('select')}</Text>
+            <Text style={styles.label}>{t("select")}</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={bankPaymentForm.bank}
@@ -272,12 +268,12 @@ const DirectBankTransfer = () => {
               <Text style={styles.uploadText}>
                 {bankPaymentForm.receipt
                   ? bankPaymentForm.receipt.name
-                  : "Tap to upload"}
+                  : t("tap")}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.sectionTitle}>{t('shipment')}</Text>
+        <Text style={styles.sectionTitle}>{t("shipment")}</Text>
         <View
           style={{
             flexDirection: "row",
@@ -289,7 +285,9 @@ const DirectBankTransfer = () => {
         >
           <TouchableOpacity
             style={[
-              styles.submitButton,
+              i18n.language === "en"
+                ? styles.submitButton
+                : styles.submitButton1,
               // isSubmitting && styles.disabledButton
             ]}
             onPress={() => {
@@ -298,23 +296,44 @@ const DirectBankTransfer = () => {
             // onPress={handleSubmit}
             // disabled={isSubmitting}
           >
-            <Text style={styles.submitButtonText}>
+            <Text
+              style={
+                i18n.language === "en"
+                  ? styles.submitButtonText
+                  : styles.submitButtonText1
+              }
+            >
               {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              {t('schedule')}
+              {t("schedule")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={() =>
+              navigation.push(
+                `/(tabs)/orderinfo?orderId=${encodeURIComponent(
+                  JSON.stringify(orderId)
+                )}`
+              )
+            }
             style={[
-              styles.submitButton2,
+              i18n.language === "en"
+                ? styles.submitButton2
+                : styles.submitButton3,
               //  isSubmitting && styles.disabledButton
             ]}
             // onPress={() => {()=>router.push("/(tabs)/home")}}
             // onPress={handleSubmit}
             // disabled={isSubmitting}
           >
-            <Text style={styles.submitButtonText}>
+            <Text
+              style={
+                i18n.language === "en"
+                  ? styles.submitButtonText
+                  : styles.submitButtonText1
+              }
+            >
               {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              {t('pick')}
+              {t("pick")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -468,14 +487,31 @@ const styles = StyleSheet.create({
     borderRadius: 38,
     alignItems: "center",
   },
+  submitButton1: {
+    backgroundColor: "#445399",
+    padding: 10,
+    borderRadius: 38,
+    alignItems: "center",
+  },
   submitButton2: {
     backgroundColor: "#55B051",
     padding: 16,
     borderRadius: 38,
     alignItems: "center",
   },
+  submitButton3: {
+    backgroundColor: "#55B051",
+    padding: 10,
+    borderRadius: 38,
+    alignItems: "center",
+  },
   submitButtonText: {
     fontSize: 16,
+    color: "#fff",
+    fontWeight: "600",
+  },
+  submitButtonText1: {
+    fontSize: 12,
     color: "#fff",
     fontWeight: "600",
   },
