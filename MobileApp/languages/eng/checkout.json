@@ -12,5 +12,6 @@
   "total":"Total Price",
   "direct":"Direct Bank Transfer",
   "cash":"Cash on Delivery",
-  "qty": "Qty"
+  "qty": "Qty",
+  "schedule": "Schedule Delivery"
 }

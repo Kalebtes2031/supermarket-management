@@ -117,25 +117,48 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
     
     
-class CustomUserUpdateSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
-    phone_number = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
+# class CustomUserUpdateSerializer(serializers.ModelSerializer):
+#     first_name = serializers.CharField(required=True)
+#     last_name = serializers.CharField(required=True)
+#     phone_number = serializers.CharField(required=True)
+#     email = serializers.EmailField(required=True)
+#     username = serializers.CharField(required=True)
 
+#     class Meta:
+#         model = CustomUser
+#         fields = ('first_name', 'last_name', 'phone_number', 'email', 'username','image')
+
+#     def validate_email(self, value):
+#         # Check if the email is unique (not already taken by another user)
+#         if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
+#             raise ValidationError("Email is already in use by another user.")
+#         return value
+
+#     def validate_username(self, value):
+#         # Check if the username is unique (not already taken by another user)
+#         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
+#             raise ValidationError("Username is already in use by another user.")
+#         return value
+
+class CustomUserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'phone_number', 'email', 'username','image')
+        fields = ('first_name', 'last_name', 'phone_number', 'email', 'username', 'image')
+        extra_kwargs = {
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'phone_number': {'required': False},
+            'email': {'required': False},
+            'username': {'required': False},
+            'image': {'required': False},
+        }
 
     def validate_email(self, value):
-        # Check if the email is unique (not already taken by another user)
         if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
-            raise ValidationError("Email is already in use by another user.")
+            raise serializers.ValidationError("Email is already in use by another user.")
         return value
 
     def validate_username(self, value):
-        # Check if the username is unique (not already taken by another user)
         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
-            raise ValidationError("Username is already in use by another user.")
+            raise serializers.ValidationError("Username is already in use by another user.")
         return value

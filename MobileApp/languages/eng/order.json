@@ -16,5 +16,6 @@
   "order":"Order",
   "no":"No orders found. Start shopping!",
   "price":"price",
-  "total":"Total"
+  "total":"Total",
+  "date":"Date"
 }

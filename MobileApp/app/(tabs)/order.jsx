@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Pressable,
   Modal,
+  RefreshControl,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useGlobalContext } from "@/context/GlobalProvider";
@@ -22,7 +23,7 @@ import { RadioButton } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 
 const Order = () => {
-  const { t, i18n} = useTranslation('order')
+  const { t, i18n } = useTranslation("order");
   const route = useRouter();
   const { isLogged } = useGlobalContext();
   const [orders, setOrders] = useState([]);
@@ -31,6 +32,15 @@ const Order = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentType, setPaymentType] = useState("Direct Bank Payment");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchOrderHistorys();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   const openModal = (order, buttonType, amount) => {
     setSelectedOrder({ order, buttonType, amount });
@@ -63,7 +73,7 @@ const Order = () => {
       paymentStatus: buttonType,
     };
     route.push(
-      `/directpayment?paymentData=${encodeURIComponent(
+      `/(tabs)/collection/directpayment?paymentData=${encodeURIComponent(
         JSON.stringify(paymentData)
       )}`
     );
@@ -100,19 +110,29 @@ const Order = () => {
             }}
             style={styles.productImage}
           />
-          <Text>{t('price')} / {item.variant?.unit} </Text>
+          <Text>
+            {t("price")} / {item.variant?.unit}{" "}
+          </Text>
         </View>
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>
-            {i18n.language === 'en' ?(item.variant.product?.item_name ): (item.variant.product?.item_name_amh)}{" "}
+            {i18n.language === "en"
+              ? item.variant.product?.item_name
+              : item.variant.product?.item_name_amh}{" "}
             {parseInt(item.variant?.quantity)}
             {item.variant?.unit}
           </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>{t('br')}{item.variant?.price}</Text>
+            <Text style={styles.itemPrice}>
+              {t("br")}
+              {item.variant?.price}
+            </Text>
             <Text style={styles.itemQuantity}>x {item.quantity}</Text>
           </View>
-          <Text style={styles.itemTotal}>{t('total')}: {t('br')}{item.total_price}</Text>
+          <Text style={styles.itemTotal}>
+            {t("total")}: {t("br")}
+            {item.total_price}
+          </Text>
         </View>
       </View>
     ));
@@ -147,30 +167,31 @@ const Order = () => {
     }
 
     if (!orders.length) {
-      return (
-        <Text style={styles.noOrdersText}>
-         {t("no")}
-        </Text>
-      );
+      return <Text style={styles.noOrdersText}>{t("no")}</Text>;
     }
 
     return orders.map((order) => (
       <View key={order.id} style={styles.orderContainer}>
         <View style={styles.orderHeader}>
-          <Text style={styles.orderId}>{t('order')} #{order.id}</Text>
+          <Text style={styles.orderId}>
+            {t("order")} #{order.id}
+          </Text>
           {renderOrderStatus(order.status)}
         </View>
 
         <View style={styles.orderMeta}>
           <Text style={styles.metaText}>
-            Date: {format(new Date(order.created_at), "MMM dd, yyyy HH:mm")}
+            {t("date")}:{" "}
+            {format(new Date(order.created_at), "MMM dd, yyyy HH:mm")}
           </Text>
         </View>
 
-        <Text style={styles.sectionHeader}>{t('items')}</Text>
+        <Text style={styles.sectionHeader}>{t("items")}</Text>
         {renderOrderItems(order.items)}
         <View style={styles.paymentStatusContainer}>
-          <Text style={[styles.metaText, { marginRight: 5 }]}>{t('payment')}:</Text>
+          <Text style={[styles.metaText, { marginRight: 5 }]}>
+            {t("payment")}:
+          </Text>
           {order.payment_status === "Fully Paid" ? (
             <FontAwesome
               name="check-circle"
@@ -215,7 +236,7 @@ const Order = () => {
               style={[styles.button, styles.partialPaymentButton]}
               onPress={() => openModal(order.id, "full_payment", order.total)}
             >
-              <Text style={styles.buttonText}>{t('full')}</Text>
+              <Text style={styles.buttonText}>{t("full")}</Text>
             </TouchableOpacity>
           )}
           {/* {order.payment_status === "Pending" && (
@@ -237,8 +258,11 @@ const Order = () => {
           )} */}
         </View>
         <View style={styles.totalContainer}>
-          <Text style={styles.orderTotal}>{t('ordertotal')}:</Text>
-          <Text style={styles.orderTotal}>{t('br')}{order.total}</Text>
+          <Text style={styles.orderTotal}>{t("ordertotal")}:</Text>
+          <Text style={styles.orderTotal}>
+            {t("br")}
+            {order.total}
+          </Text>
         </View>
       </View>
     ));
@@ -251,7 +275,7 @@ const Order = () => {
           <Text style={styles.loginPromptText}>
             {"please"}{" "}
             <Link href="/(auth)/sign-in" style={styles.loginLink}>
-              {'login'}
+              {"login"}
             </Link>{" "}
             {t("view")}
           </Text>
@@ -262,11 +286,16 @@ const Order = () => {
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           >
             <Text className="text-primary" style={styles.pageTitle}>
-              {t('myorders')}
+              {t("myorders")}
             </Text>
-            <Text style={styles.ordersCount}>{orders.length} {t('found')}</Text>
+            <Text style={styles.ordersCount}>
+              {orders.length} {t("found")}
+            </Text>
             {renderOrders()}
           </ScrollView>
           <Modal
@@ -277,7 +306,7 @@ const Order = () => {
           >
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>{t('choose')}</Text>
+                <Text style={styles.modalTitle}>{t("choose")}</Text>
                 <View style={styles.radioGroup}>
                   <View style={styles.radioOption}>
                     <RadioButton
@@ -289,7 +318,7 @@ const Order = () => {
                       }
                       onPress={() => setPaymentType("Direct Bank Payment")}
                     />
-                    <Text style={styles.radioLabel}>{'bank'}</Text>
+                    <Text style={styles.radioLabel}>{t("bank")}</Text>
                   </View>
                 </View>
                 <View style={styles.buttonContainer}>
@@ -297,13 +326,13 @@ const Order = () => {
                     style={styles.cancelButton}
                     onPress={closeModal}
                   >
-                    <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+                    <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.proceedButton}
                     onPress={handleSubmitPayment}
                   >
-                    <Text style={styles.proceedButtonText}>{t('proceed')}</Text>
+                    <Text style={styles.proceedButtonText}>{t("proceed")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('orders/<int:order_id>/schedule-delivery-pick-from-store/', views.ScheduleDeliveryAndPickFromStoreAPIView.as_view(), name='schedule_delivery_and_pick_from_store'),
     path('orders/<int:order_id>/schedule-delivery/', views.ScheduleDeliveryAPIView.as_view(), name='schedule_delivery'),
     path('orders/<int:order_id>/confirm-delivery/', views.ConfirmDeliveryAPIView.as_view(), name='confirm_delivery'),
     path('update-payment-status/', views.update_payment_status, name='update_payment_status'),
@@ -11,6 +12,7 @@ urlpatterns = [
     path("payment/initiate", views.InitiatePaymentView.as_view(), name="initiate-payment"),
     path("payment/callback", views.PaymentCallbackView.as_view(), name="payment-callback"),
     path('orders/', views.OrderListView.as_view(), name='order-list'),
+    path('orders/need-delivery/', views.DeliveryOrderListView.as_view(), name='orders-need-delivery'),
     path('payment-history/', views.PaymentListView.as_view(), name='payment-list'),
     path('payment-history/<int:order_id>/', views.PaymentDetailView.as_view(), name='payment-detail'),
     path('orders/create/', views.OrderCreateView.as_view(), name='order-create'),

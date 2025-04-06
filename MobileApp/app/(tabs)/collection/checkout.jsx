@@ -365,9 +365,9 @@ const CheckoutPage = () => {
           // onPress={()=>route.push("./directpayment")}
           //   disabled={isLoading}
         >
-          <Text style={styles.placeOrderText}>
+          <Text style={i18n.language === "en"?styles.placeOrderText:styles.placeOrderText1}>
             {/* {isLoading ? "Pay Now" : "Pay Now"} */}
-            {t('pay')}
+            {selectedOption === "cashondelivery"? t('schedule'): t('pay')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -679,6 +679,11 @@ const styles = StyleSheet.create({
   placeOrderText: {
     color: "white",
     fontSize: 16,
+    fontWeight: "600",
+  },
+  placeOrderText1: {
+    color: "white",
+    fontSize: 12,
     fontWeight: "600",
   },
   //starts here

@@ -105,6 +105,7 @@ class UpdatePreparedStatusAPIView(APIView):
             return Response({"message": "Order prepared status updated successfully"}, status=status.HTTP_200_OK)
         except Order.DoesNotExist:
             return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class UpdatePaymentStatusAPIView(APIView):
     """
     Update the 'prepared' field of an order to True based on the order's ID.

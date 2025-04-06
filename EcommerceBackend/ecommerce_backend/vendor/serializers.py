@@ -2,6 +2,7 @@
 from djoser.serializers import UserCreateSerializer
 from accounts.models import CustomUser
 from rest_framework import serializers
+from django.contrib.auth.models import Group
 
 class VendorUserCreateSerializer(UserCreateSerializer):
     phone_number = serializers.CharField(required=True)
@@ -16,4 +17,10 @@ class VendorUserCreateSerializer(UserCreateSerializer):
 
     def create(self, validated_data):
         validated_data['role'] = 'vendor'  # Set the role for delivery personnel
-        return super().create(validated_data)
+        user = super().create(validated_data)
+        user.is_staff = True  # Grant access to the Django admin
+        user.save()
+         # Add user to the vendor group (which should already exist thanks to the post_migrate signal)
+        vendor_group, created = Group.objects.get_or_create(name='Vendor')
+        user.groups.add(vendor_group)
+        return user

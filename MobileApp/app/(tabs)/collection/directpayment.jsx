@@ -273,14 +273,14 @@ const DirectBankTransfer = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.sectionTitle}>{t("shipment")}</Text>
+        {/* <Text style={styles.sectionTitle}>{t("shipment")}</Text> */}
         <View
           style={{
             flexDirection: "row",
-            justifyContent: "space-between",
+            justifyContent: "center",
             alignItems: "center",
             gap: 10,
-            marginBottom: 20,
+            marginVertical: 20,
           }}
         >
           <TouchableOpacity
@@ -307,7 +307,7 @@ const DirectBankTransfer = () => {
               {t("schedule")}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() =>
               navigation.push(
                 `/(tabs)/orderinfo?orderId=${encodeURIComponent(
@@ -333,9 +333,9 @@ const DirectBankTransfer = () => {
               }
             >
               {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              {t("pick")}
-            </Text>
-          </TouchableOpacity>
+              {/* {t("pick")} */}
+            {/* </Text> */}
+          {/* </TouchableOpacity> */}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -486,12 +486,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 38,
     alignItems: "center",
+    width:"100%"
   },
   submitButton1: {
     backgroundColor: "#445399",
-    padding: 10,
+    padding: 16,
     borderRadius: 38,
     alignItems: "center",
+    width:"100%"
   },
   submitButton2: {
     backgroundColor: "#55B051",

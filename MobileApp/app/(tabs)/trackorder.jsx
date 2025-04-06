@@ -1,144 +1,283 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SectionList } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { fetchDeliveryNeedOrderHistory } from "@/hooks/useFetch";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SectionList,
+  Image,
+  ActivityIndicator,
+  RefreshControl,
+  Animated,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import AnimatedCountdown from "@/components/AnimatedCountdown";
+
+// Color Constants
+const COLORS = {
+  primary: "#2D4150",
+  secondary: "#445399",
+  success: "#4CAF50",
+  warning: "#FF9800",
+  error: "#FF5722",
+  background: "#F8FAFC",
+  text: "#2D4150",
+  muted: "#94A3B8",
+};
 
 const OrderTrackingScreen = () => {
-  // Mock data for multiple orders
-  const orders = [
-    {
-      id: '123',
-      date: '2025-03-04',
-      status: 'in_transit',
-      items: [
-        { name: 'Tena Oil', price: 1300.00, quantity: 1 },
-        { name: 'Omar Oil', price: 1500.00, quantity: 2 }
-      ],
-      delivery: {
-        driver: 'Delivery Person1',
-        eta: '30-45 mins',
-        progress: 65,
-        coordinates: {
-          start: { lat: 40.7128, lng: -74.0060 }, // Warehouse
-          current: { lat: 40.7282, lng: -74.0776 }, // Driver location
-          end: { lat: 40.7580, lng: -73.9855 }      // Customer
-        }
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(Date.now());
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchDeliveryNeedOrderHistory();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await fetchDeliveryNeedOrderHistory();
+        // Sort orders descending by id
+        const sortedData = data.sort((a, b) => b.id - a.id);
+        setOrders(sortedData);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
       }
-    },
-    {
-      id: '124',
-      date: '2025-03-04',
-      status: 'delivered',
-      items: [
-        { name: 'Omar Oil', price: 1500.00, quantity: 1 }
-      ],
-      delivery: {
-        driver: 'Delivery Person2',
-        eta: 'Delivered',
-        progress: 100,
-        coordinates: {
-          start: { lat: 40.7128, lng: -74.0060 },
-          end: { lat: 40.7580, lng: -73.9855 }
-        }
-      }
+    };
+
+    loadData();
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (scheduledTime) => {
+    const scheduled = new Date(scheduledTime);
+    const nowDate = new Date(now);
+    const diff = scheduled - nowDate;
+
+    if (diff < 0) {
+      const daysLate = Math.ceil(Math.abs(diff) / (1000 * 60 * 60 * 24));
+      return {
+        status: "Delayed",
+        color: COLORS.error,
+        details: `${daysLate} day${daysLate !== 1 ? "s" : ""} overdue`,
+      };
     }
-  ];
 
-  const renderOrderItem = ({ item }) => (
-    <View style={styles.orderCard}>
-      {/* Order Header */}
-      <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>Order #{item.id}</Text>
-        <View style={[styles.statusBadge, 
-          item.status === 'delivered' ? styles.deliveredBadge :
-          item.status === 'in_transit' ? styles.transitBadge : styles.processingBadge
-        ]}>
-          <Text style={styles.statusText}>
-            {item.status.replace('_', ' ').toUpperCase()}
-          </Text>
-        </View>
-      </View>
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      {/* Mock Map Visualization */}
-      <View style={styles.mapContainer}>
-        <Image 
-          source={require('@/assets/images/map.png')} // Use your mock map image
-          style={styles.mapImage}
-        />
-        <View style={styles.mapMarkers}>
-          <Icon name="warehouse" size={24} color="#4CAF50" style={styles.mapMarker} />
-          <Icon name="radio-button-checked" size={16} color="#2196F3" style={styles.mapMarker} />
-          <Icon name="place" size={24} color="#FF5722" style={styles.mapMarker} />
-        </View>
-      </View>
+    return {
+      status: `${days}d ${hours}h ${minutes}m ${seconds}s `,
+      color: days === 0 && hours < 2 ? COLORS.warning : COLORS.success,
+      details: `Due by ${new Date(scheduledTime).toLocaleString()}`,
+    };
+  };
 
-      {/* Delivery Timeline */}
-      <View style={styles.timeline}>
-        <View style={styles.timelineStep}>
-          <Icon name="check-circle" size={20} color="#4CAF50" />
-          <Text style={styles.timelineText}>Order Confirmed</Text>
-          <Text style={styles.timelineTime}>Aug 15, 10:30 AM</Text>
-        </View>
-        
-        <View style={styles.timelineStep}>
-          <Icon name="check-circle" size={20} color="#4CAF50" />
-          <Text style={styles.timelineText}>Preparing Order</Text>
-          <Text style={styles.timelineTime}>Aug 15, 11:45 AM</Text>
-        </View>
+  const renderOrderItem = ({ item }) => {
+    const timeInfo =
+      item.status === "Delivered"
+        ? {
+            status: "Delivered",
+            color: COLORS.success,
+            details: `Delivered on ${new Date(
+              item.scheduled_delivery
+            ).toLocaleDateString()}`,
+          }
+        : formatCountdown(item.scheduled_delivery);
 
-        <View style={styles.timelineStep}>
-          <Icon name={item.status === 'delivered' ? "check-circle" : "radio-button-unchecked"} 
-                size={20} color={item.status === 'delivered' ? "#4CAF50" : "#9E9E9E"} />
-          <Text style={styles.timelineText}>Out for Delivery</Text>
-          {item.status === 'in_transit' && (
-            <Text style={styles.timelineTime}>Estimated {item.delivery.eta}</Text>
-          )}
-        </View>
-      </View>
-
-      {/* Order Details */}
-      <View style={styles.detailsSection}>
-        <Text style={styles.sectionTitle}>Order Details</Text>
-        {item.items.map((product, index) => (
-          <View key={index} style={styles.productItem}>
-            <Text style={styles.productName}>{product.quantity}x {product.name}</Text>
-            <Text style={styles.productPrice}>Br{(product.price * product.quantity).toFixed(2)}</Text>
+    return (
+      <View style={styles.card}>
+        {/* Card Header */}
+        <LinearGradient
+          colors={[`${timeInfo.color}25`, "#FFFFFF"]}
+          style={styles.cardHeaderNew}
+        >
+          <View style={styles.headerLeft}>
+            <Text style={styles.orderNumber}>ORDER #{item.id}</Text>
           </View>
-        ))}
-        <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total:</Text>
-          <Text style={styles.totalValue}>
-            Br{item.items.reduce((sum, product) => sum + (product.price * product.quantity), 0).toFixed(2)}
-          </Text>
-        </View>
-      </View>
+          <View style={styles.countdownWrapper}>
+            {item.status === "Delivered" ? (
+              <View style={styles.deliveredBadge}>
+                <Icon name="check-circle" size={18} color={timeInfo.color} />
+                <Text style={[styles.deliveredText, { color: timeInfo.color }]}>
+                  Delivered
+                </Text>
+              </View>
+            ) : (
+              <AnimatedCountdown
+                scheduledTime={item.scheduled_delivery}
+                warningColor={COLORS.warning}
+                successColor={COLORS.success}
+              />
+            )}
+          </View>
+        </LinearGradient>
 
-      {/* Delivery Info */}
-      <View style={styles.deliveryInfo}>
-        <Icon name="local-shipping" size={20} color="#445399" />
-        <View style={styles.deliveryTextContainer}>
-          <Text style={styles.deliveryDriver}>Driver: {item.delivery.driver}</Text>
-          <Text style={styles.deliveryStatus}>
-            {item.status === 'in_transit' ? ` ${item.delivery.eta}` : 'Delivered'}
-          </Text>
+        {/* Time Progress */}
+        {/* <View style={styles.timeContainer}>
+          <Text style={styles.timeMainText}>{timeInfo.details}</Text>
+          {item.status !== "Delivered" && (
+            <Text style={styles.timeSubText}>
+              Created: {new Date(item.created_at).toLocaleDateString()}
+            </Text>
+          )}
+        </View> */}
+
+        {/* Delivery Progress */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressStep}>
+            <Icon name="check-circle" size={20} color="#4CAF50" />
+            <Text style={styles.progressLabel}>Confirmed</Text>
+          </View>
+
+          <View
+            style={[
+              styles.progressLine,
+              {
+                backgroundColor: item.prepared ? COLORS.success : COLORS.muted,
+              },
+            ]}
+          />
+
+          <View style={styles.progressStep}>
+            <Icon
+              name={item.prepared ? "check-circle" : "radio-button-unchecked"}
+              size={20}
+              color={item.prepared ? COLORS.success : COLORS.muted}
+            />
+            <Text style={styles.progressLabel}>Prepared</Text>
+          </View>
+
+          <View
+            style={[
+              styles.progressLine,
+              {
+                backgroundColor:
+                  item.status === "Delivered" ? COLORS.success : COLORS.muted,
+              },
+            ]}
+          />
+
+          <View style={styles.progressStep}>
+            <Icon
+              name={
+                item.status === "Delivered"
+                  ? "check-circle"
+                  : "radio-button-unchecked"
+              }
+              size={20}
+              color={
+                item.status === "Delivered" ? COLORS.success : COLORS.muted
+              }
+            />
+            <Text style={styles.progressLabel}>Delivered</Text>
+          </View>
+        </View>
+
+        {/* Order Details */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.sectionTitle}>Order Summary</Text>
+
+          {item.items.map((product, index) => (
+            <View key={`item-${item.id}-${index}`} style={styles.productItem}>
+              <Image
+                source={{ uri: product.variant.product.image }}
+                style={styles.productImage}
+              />
+              <View style={{flex:1, flexDirection:"row", justifyContent:"space-between", alignItems:"center", paddingRight:22}}>
+
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>
+                  {product.variant.product.item_name} 
+                </Text>
+                
+                <Text style={styles.productMeta}>
+                  {product.quantity}x {product.variant.price}
+                </Text>
+              </View>
+              <View >
+                <Text style={styles.productName}>
+                  Subtotal 
+                </Text>
+                
+                <Text style={styles.productMeta}>
+                  Br{product.total_price}
+                </Text>
+              </View>
+              
+              </View>
+            </View>
+          ))}
+
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total Amount:</Text>
+            <Text style={styles.totalValue}>Br{item.total}</Text>
+          </View>
+        </View>
+
+        {/* Delivery Info */}
+        <View style={styles.deliveryInfo}>
+          <Icon name="local-shipping" size={20} color={COLORS.secondary} />
+          <View style={styles.deliveryDetails}>
+            <Text style={styles.driverText}>
+              {item.delivery_person || "Awaiting driver assignment"}
+            </Text>
+            {/* <Text style={styles.contactText}>Contact: {item.phone_number}</Text> */}
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading Orders...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <SectionList
         sections={[
-          { title: 'Active Deliveries', data: orders.filter(o => o.status !== 'delivered') },
-          { title: 'Delivery History', data: orders.filter(o => o.status === 'delivered') }
+          {
+            title: "Active Deliveries",
+            data: orders.filter((o) => o.status !== "Delivered"),
+          },
+          {
+            title: "Completed Deliveries",
+            data: orders.filter((o) => o.status === "Delivered"),
+          },
         ]}
         renderItem={renderOrderItem}
         renderSectionHeader={({ section }) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
-        keyExtractor={(item) => item.id}
-        stickySectionHeadersEnabled={false}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Icon name="assignment" size={48} color={COLORS.muted} />
+            <Text style={styles.emptyText}>No orders found</Text>
+          </View>
+        }
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </View>
   );
@@ -147,162 +286,241 @@ const OrderTrackingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 16,
+    backgroundColor: COLORS.background,
   },
-  orderCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  card: {
+    backgroundColor: "#FFF",
+    borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 8,
+    // elevation: 2,
   },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+  cardHeader: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
-  orderId: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2D4150',
+  orderNumber: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: COLORS.muted,
   },
   statusBadge: {
-    paddingVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 16,
+    borderRadius: 20,
+    gap: 6,
   },
-  transitBadge: {
-    backgroundColor: '#2196F320',
-    borderColor: '#2196F3',
+  cardHeaderNew: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "start",
+    padding: 12,
+    gap: 12,
+    paddingleft: 16,
+    borderRadius: 10,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.15,
+    // shadowRadius: 4,
+    // elevation: 3,
+    marginBottom: 8,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  orderNumber: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2D4150",
+  },
+
+  headerLeft: {
+    flex: 1,
+  },
+  orderNumber: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2D4150",
+  },
+  countdownWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   deliveredBadge: {
-    backgroundColor: '#4CAF5020',
-    borderColor: '#4CAF50',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
   },
-  processingBadge: {
-    backgroundColor: '#FF980020',
-    borderColor: '#FF9800',
+  deliveredText: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  countdownContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  countdownText: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "600",
   },
-  mapContainer: {
-    height: 200,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
-    backgroundColor: '#E0E0E0',
+  timeContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
   },
-  mapImage: {
-    width: '100%',
-    height: '100%',
+  timeMainText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 4,
   },
-  mapMarkers: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  timeSubText: {
+    fontSize: 12,
+    color: COLORS.muted,
+  },
+  progressContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
-  mapMarker: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+  progressStep: {
+    alignItems: "center",
+    gap: 8,
   },
-  timeline: {
-    marginVertical: 16,
-  },
-  timelineStep: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  timelineText: {
-    flex: 1,
-    marginLeft: 12,
-    color: '#2D4150',
-    fontSize: 14,
-  },
-  timelineTime: {
-    color: '#86939E',
+  progressLabel: {
     fontSize: 12,
+    color: COLORS.text,
+    fontWeight: "500",
   },
-  detailsSection: {
-    marginVertical: 16,
+  progressLine: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: 8,
+  },
+  detailsContainer: {
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2D4150',
-    marginBottom: 12,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 16,
   },
   productItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 8,
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
+  },
+  productImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+  },
+  productInfo: {
+    flex: 1,
+    justifyContent: "center",
   },
   productName: {
-    color: '#2D4150',
     fontSize: 14,
+    fontWeight: "500",
+    color: COLORS.text,
   },
-  productPrice: {
-    color: '#445399',
-    fontSize: 14,
-    fontWeight: '500',
+  productMeta: {
+    fontSize: 12,
+    color: COLORS.muted,
+    marginTop: 4,
   },
   totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: "#F1F5F9",
   },
   totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2D4150',
+    fontSize: 14,
+    color: COLORS.text,
   },
   totalValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#445399',
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
   },
   deliveryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: "#F1F5F9",
+    gap: 12,
   },
-  deliveryTextContainer: {
-    marginLeft: 12,
+  deliveryDetails: {
+    flex: 1,
   },
-  deliveryDriver: {
+  driverText: {
     fontSize: 14,
-    color: '#2D4150',
+    color: COLORS.text,
+    fontWeight: "500",
   },
-  deliveryStatus: {
+  contactText: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: COLORS.muted,
     marginTop: 4,
   },
   sectionHeader: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#445399',
+    fontSize: 20,
+    fontWeight: "600",
+    color: COLORS.primary,
     marginVertical: 16,
-    marginLeft: 8,
+    paddingHorizontal: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: COLORS.muted,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 48,
+    gap: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.muted,
   },
 });
 

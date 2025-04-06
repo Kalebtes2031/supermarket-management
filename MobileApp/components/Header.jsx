@@ -28,7 +28,7 @@ import * as ImagePicker from "expo-image-picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import Octicons from "@expo/vector-icons/Octicons";
-import { getAccessToken } from "@/hooks/useFetch";
+import { getAccessToken, updateUserProfile, updateUserProfileImage } from "@/hooks/useFetch";
 import axios from "axios";
 import { useWatchlist } from "@/context/WatchlistProvider";
 import { useTranslation } from "react-i18next";
@@ -115,37 +115,38 @@ const Header = () => {
   const uploadProfileImage = async (imageUri) => {
     try {
       const token = await getAccessToken();
-      const uriParts = imageUri.split(".");
-      const fileType = uriParts[uriParts.length - 1];
-
       const formData = new FormData();
-      formData.append("image", {
-        uri: imageUri,
-        name: `profile.${fileType}`,
-        type: `image/${fileType}`,
-      });
-
-      const response = await axios.put(
-        "http://192.168.1.3:8000/account/user/profile/update/",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
+  
+      // Check if the imageUri is local (i.e., starts with "file://")
+      if (imageUri && imageUri.startsWith("file://")) {
+        const uriParts = imageUri.split(".");
+        const fileType = uriParts[uriParts.length - 1];
+  
+        formData.append("image", {
+          uri: imageUri,
+          name: `profile.${fileType}`,
+          type: `image/${fileType}`,
+        });
+      } else {
+        console.warn("The image URI is not in the expected format:", imageUri);
+        // Optionally handle non-local URIs or exit early
+        return;
+      }
+  
+      const response = await updateUserProfileImage(formData)
+  
       if (response.status === 200) {
-        setUser(response.data); // Update the global state with new image
+        setUser(response.data);
       }
     } catch (error) {
+      console.error("Upload error:", error.response || error);
       Alert.alert(
         "Upload Failed",
         "Could not upload profile image. Try again."
       );
     }
   };
+  
   const handleLanguageToggle = () => {
     const newLangCode = currentLanguage === "EN" ? "amh" : "en";
     setCurrentLanguage(currentLanguage === "EN" ? "AM" : "EN");

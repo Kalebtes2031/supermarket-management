@@ -33,7 +33,7 @@ export default function OrderInfo() {
   };
   useEffect(() => {
     fetchOrderDetailBasedId();
-  }, []);
+  }, [orderId]);
 
   return (
     <View

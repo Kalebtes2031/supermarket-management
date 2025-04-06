@@ -6,8 +6,8 @@ import { useRouter } from "expo-router";
 
 
 // const baseUrl = "https://malhibnewbackend.activetechet.com/";
-const baseUrl = "http://192.168.100.51:8000/";  //active wifi
-// const baseUrl = "http://192.168.1.3:8000/";  //home wifi
+// const baseUrl = "http://192.168.100.51:8000/";  //active wifi
+const baseUrl = "http://192.168.1.5:8000/";  //home wifi
 // const baseUrl = "http://192.168.65.193:8000/";  //my data network
 
 const auth = axios.create({
@@ -226,6 +226,12 @@ export const scheduleDelivery = async (orderId, date) => {
       });
     return response.data;
 };
+export const scheduleDeliveryAndPickFromStore = async (orderId, date) => {
+    const response = await pay.patch(`orders/${orderId}/schedule-delivery-pick-from-store/`, {
+        scheduled_delivery: date,
+      });
+    return response.data;
+};
 
 
 export const removeCartItem = async (itemId) => {
@@ -261,6 +267,10 @@ export const fetchOrderHistory = async () => {
     const response = await pay.get("orders/");
     return response.data;
 };
+export const fetchDeliveryNeedOrderHistory = async () => {
+    const response = await pay.get("orders/need-delivery/");
+    return response.data;
+};
 
 export const fetchOrderDetail = async (id) => {
     const response = await pay.get(`orders/${id}/`);
@@ -280,6 +290,22 @@ export const fetchPaymentHistoryBasedOrderId = async (id) => {
 
 export const payUsingBankTransfer = async (paymentData) => {
     const response = await pay.post("update-payment-status/", paymentData,{
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+    return response;
+};
+export const updateUserProfile = async (formDataToSend) => {
+    const response = await auth.put("account/user/profile/update/", formDataToSend,{
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+    return response;
+};
+export const updateUserProfileImage = async (formData) => {
+    const response = await auth.put("account/user/profile/update/", formData,{
         headers: {
             'Content-Type': 'multipart/form-data',
         }

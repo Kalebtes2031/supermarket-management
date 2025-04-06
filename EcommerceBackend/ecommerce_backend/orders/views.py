@@ -46,6 +46,25 @@ class ScheduleDeliveryAPIView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class ScheduleDeliveryAndPickFromStoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, order_id):
+        # Retrieve the order and ensure it belongs to the authenticated user
+        order = get_object_or_404(Order, id=order_id)
+        if request.user != order.user:
+            return Response({"detail": "Not authorized to schedule this order."}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ScheduleDeliverySerializer(data=request.data)
+        if serializer.is_valid():
+            order.scheduled_delivery = serializer.validated_data['scheduled_delivery']
+            order.need_delivery = False
+            order.save()
+            return Response({"detail": "Delivery scheduled and need delivery changed successfully.", "scheduled_delivery": order.scheduled_delivery},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class ConfirmDeliveryAPIView(APIView):
     """
@@ -560,6 +579,13 @@ class OrderListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
+
+class DeliveryOrderListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user, need_delivery=True)
 
 
 class PaymentListView(generics.ListAPIView):

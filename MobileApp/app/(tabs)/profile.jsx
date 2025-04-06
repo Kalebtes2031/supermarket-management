@@ -16,7 +16,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import axios from "axios";
-import { getAccessToken } from "@/hooks/useFetch";
+import { getAccessToken, updateUserProfile } from "@/hooks/useFetch";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -161,16 +161,7 @@ const ProfileScreen = () => {
           });
         }
 
-        const response = await axios.put(
-          "http://192.168.1.3:8000/account/user/profile/update/",
-          formDataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const response = await updateUserProfile(formDataToSend)
 
         if (response.status === 200) {
           setUser(response.data);

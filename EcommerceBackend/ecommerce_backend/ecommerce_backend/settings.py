@@ -45,11 +45,11 @@ INSTALLED_APPS = [
     'shop',
     'orders',
     'delivery',
-    'vendor',
     'notification',
     'rest_framework',
     'djoser',
     'corsheaders',
+    'vendor.apps.VendorConfig',
 
 ]
 

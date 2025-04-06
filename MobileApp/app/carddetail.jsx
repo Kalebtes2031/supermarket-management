@@ -71,10 +71,12 @@ const toggleFavorite = () => {
     console.log("quantity", quantity);
     console.log("id", product.id);
     addItemToCart(product.id, quantity);
+
     Toast.show({
       type: "success",
       text1: "Product added to cart",
     });
+    router.push('/(tabs)/cartscreen')
   };
 
   if (!product) {

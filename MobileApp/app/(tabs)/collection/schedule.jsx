@@ -172,7 +172,11 @@ import {
 import { Calendar } from "react-native-calendars";
 import { Button, Overlay, Icon } from "@rneui/themed";
 // import DateTimePicker from "expo-date-time-picker";
-import { fetchOrderDetail, scheduleDelivery } from "@/hooks/useFetch";
+import {
+  fetchOrderDetail,
+  scheduleDelivery,
+  scheduleDeliveryAndPickFromStore,
+} from "@/hooks/useFetch";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
 import * as Animatable from "react-native-animatable";
@@ -183,9 +187,8 @@ import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 
-
 const ScheduleDeliveryScreen = () => {
-  const { t, i18n } = useTranslation('schedule');
+  const { t, i18n } = useTranslation("schedule");
   const { orderId } = useLocalSearchParams();
   // let num = 40;
   // const orderId = num;
@@ -198,14 +201,14 @@ const ScheduleDeliveryScreen = () => {
   const [calendarOpen, setCalendarOpen] = useState(true);
   const [text, setText] = useState("");
   const [product, setProduct] = useState({});
+  const [selectedOption, setSelectedOption] = useState("needDelivery");
 
-
-  const fetchOrderData = async ()=>{
+  const fetchOrderData = async () => {
     const response = await fetchOrderDetail(orderId);
     setProduct(response);
     // console.log("orderId am:", orderId);
     console.log("detail info on order:", response);
-  }
+  };
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -237,7 +240,7 @@ const ScheduleDeliveryScreen = () => {
   const validateDateTime = () => {
     const now = new Date();
     if (selectedDate <= now) {
-      setError(t('please'));
+      setError(t("please"));
       return false;
     }
     return true;
@@ -251,8 +254,29 @@ const ScheduleDeliveryScreen = () => {
       await scheduleDelivery(orderId, selectedDate.toISOString());
       navigation.push(
         `/(tabs)/orderinfo?orderId=${encodeURIComponent(
-        JSON.stringify(orderId)
-      )}`
+          JSON.stringify(orderId)
+        )}`
+      );
+      // Show success toast here
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to schedule delivery");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleScheduleForPickFromStore = async () => {
+    if (!validateDateTime()) return;
+
+    setLoading(true);
+    try {
+      await scheduleDeliveryAndPickFromStore(
+        orderId,
+        selectedDate.toISOString()
+      );
+      navigation.push(
+        `/(tabs)/orderinfo?orderId=${encodeURIComponent(
+          JSON.stringify(orderId)
+        )}`
       );
       // Show success toast here
     } catch (err) {
@@ -264,118 +288,118 @@ const ScheduleDeliveryScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.headerContainer}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
-            className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
-          >
-            <Ionicons name="arrow-back" size={24} color="#445399" />
-          </TouchableOpacity>
-        </View>
-        <Text
-          className="font-poppins-bold text-center text-primary mb-4"
-          style={{fontSize: 20,fontWeight: "bold",}}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
+          className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
         >
-          {t('schedule')}
-        </Text>
-        <Text
-          style={{ fontSize: 18, paddingLeft: 8 }}
-          className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
-        >
-          {t('address')}
-        </Text>
-        <TextInput
-          style={{
-            height: 50,
-            width: "100%",
-            borderColor: "gray",
-            borderWidth: 1,
-            paddingHorizontal: 15,
-            marginBottom: 10,
-            borderRadius: 39,
-          }}
-          placeholder="Type your home address"
-          onChangeText={(value) => setText(value)}
-          value={text}
-        />
-        <View
-          style={{
-            padding: 10,
-          }}
-        >
-          <Image source={require("@/assets/images/map.png")} />
-        </View>
-        <Text
-          style={{ fontSize: 18, paddingLeft: 8, marginTop: 15 }}
-          className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
-        >
-          {t('date')}
-        </Text>
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-
-      {error ? (
-        <Animatable.View
-          animation="shake"
-          duration={500}
-          style={styles.errorContainer}
-        >
-          <Icon name="error-outline" color="#ff4444" />
-          <Text style={styles.errorText}>{error}</Text>
-        </Animatable.View>
-      ) : null}
+          <Ionicons name="arrow-back" size={24} color="#445399" />
+        </TouchableOpacity>
+      </View>
+      <Text
+        className="font-poppins-bold text-center text-primary mb-4"
+        style={{ fontSize: 20, fontWeight: "bold" }}
+      >
+        {t("schedule")}
+      </Text>
+      <Text
+        style={{ fontSize: 18, paddingLeft: 8 }}
+        className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
+      >
+        {t("address")}
+      </Text>
+      <TextInput
+        style={{
+          height: 50,
+          width: "100%",
+          borderColor: "gray",
+          borderWidth: 1,
+          paddingHorizontal: 15,
+          marginBottom: 10,
+          borderRadius: 39,
+        }}
+        placeholder="Type your home address"
+        onChangeText={(value) => setText(value)}
+        value={text}
+      />
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12,
-          padding:4,
+          padding: 10,
         }}
       >
-        
-      <View style={styles.calendarContainer}>
-        {calendarOpen && (
-          <Calendar
-            minDate={format(new Date(), "yyyy-MM-dd")}
-            onDayPress={handleDateSelect}
-            markedDates={{
-              [format(selectedDate, "yyyy-MM-dd")]: { selected: true },
-            }}
-            theme={{
-              backgroundColor: "#ffffff",
-              calendarBackground: "#ffffff",
-              selectedDayBackgroundColor: "#445399",
-              todayTextColor: "#445399",
-              arrowColor: "#445399",
-              monthTextColor: "#2d4150",
-              textDayFontWeight: "300",
-              textMonthFontWeight: "bold",
-              textDayHeaderFontWeight: "300",
-            }}
-          />
-        )}
+        <Image source={require("@/assets/images/map.png")} />
       </View>
-
-      <TouchableOpacity
-        style={styles.timePickerButton}
-        onPress={() => setShowTimePicker(true)}
+      <Text
+        style={{ fontSize: 18, paddingLeft: 8, marginTop: 15 }}
+        className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
       >
-        <Icon name="clock" type="feather" color="#2089dc" />
-        <Text style={styles.timeText}>{format(selectedDate, "hh:mm a")}</Text>
-      </TouchableOpacity>
-      </View>
+        {t("date")}
+      </Text>
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        {error ? (
+          <Animatable.View
+            animation="shake"
+            duration={500}
+            style={styles.errorContainer}
+          >
+            <Icon name="error-outline" color="#ff4444" />
+            <Text style={styles.errorText}>{error}</Text>
+          </Animatable.View>
+        ) : null}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            padding: 4,
+          }}
+        >
+          <View style={styles.calendarContainer}>
+            {calendarOpen && (
+              <Calendar
+                minDate={format(new Date(), "yyyy-MM-dd")}
+                onDayPress={handleDateSelect}
+                markedDates={{
+                  [format(selectedDate, "yyyy-MM-dd")]: { selected: true },
+                }}
+                theme={{
+                  backgroundColor: "#ffffff",
+                  calendarBackground: "#ffffff",
+                  selectedDayBackgroundColor: "#445399",
+                  todayTextColor: "#445399",
+                  arrowColor: "#445399",
+                  monthTextColor: "#2d4150",
+                  textDayFontWeight: "300",
+                  textMonthFontWeight: "bold",
+                  textDayHeaderFontWeight: "300",
+                }}
+              />
+            )}
+          </View>
 
-      {showTimePicker && (
-        // <Overlay
-        //   isVisible={showTimePicker}
-        //   onBackdropPress={() => setShowTimePicker(false)}
-        // >
+          <TouchableOpacity
+            style={styles.timePickerButton}
+            onPress={() => setShowTimePicker(true)}
+          >
+            <Icon name="clock" type="feather" color="#2089dc" />
+            <Text style={styles.timeText}>
+              {format(selectedDate, "hh:mm a")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {showTimePicker && (
+          // <Overlay
+          //   isVisible={showTimePicker}
+          //   onBackdropPress={() => setShowTimePicker(false)}
+          // >
           <View style={styles.timePickerContainer}>
             <TimePickerModal
               visible={showTimePicker}
               onDismiss={() => {
-                setShowTimePicker(false)
+                setShowTimePicker(false);
                 setCalendarOpen(true);
               }}
               onConfirm={({ hours, minutes }) => {
@@ -390,39 +414,45 @@ const ScheduleDeliveryScreen = () => {
               minutes={selectedDate.getMinutes()}
             />
           </View>
-      )}
+        )}
 
-      <Button
-        title={loading ? t('scheduling') : t('confirm')}
-        buttonStyle={styles.button}
-        containerStyle={styles.buttonContainer}
-        onPress={handleSchedule}
-        disabled={loading}
-        loading={loading}
-        icon={
-          <Icon
-            name="check-circle"
-            type="material"
-            color="white"
-            iconStyle={{ marginRight: 10 }}
-          />
-        }
-      />
-      {product && (
+        <Button
+          title={loading ? t("scheduling") : t("confirm")}
+          buttonStyle={styles.button}
+          containerStyle={styles.buttonContainer}
+          onPress={handleSchedule}
+          disabled={loading}
+          loading={loading}
+          icon={
+            <Icon
+              name="check-circle"
+              type="material"
+              color="white"
+              iconStyle={{ marginRight: 10 }}
+            />
+          }
+        />
+
         <View style={{ marginTop: 20 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", padding:5 }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
+          >
             <View className="flex-row items-center gap-3 my-6">
-                        <View className="flex-1 h-px bg-gray-200" />
-                        <Text className="text-gray-500 font-poppins-medium">OR</Text>
-                        <View className="flex-1 h-px bg-gray-200" />
-                      </View>
+              <View className="flex-1 h-px bg-gray-200" />
+              <Text className="text-gray-500 font-poppins-medium">OR</Text>
+              <View className="flex-1 h-px bg-gray-200" />
+            </View>
           </View>
-          <TouchableOpacity
-            onPress={()=>navigation.push(
-              `/(tabs)/orderinfo?orderId=${encodeURIComponent(
-              JSON.stringify(orderId)
-            )}`
-            )}
+          <Button
+            title={loading ? t("scheduling") : t("pick")}
+            buttonStyle={styles.button1}
+            containerStyle={styles.buttonContainer1}
+            onPress={handleScheduleForPickFromStore}
+            disabled={loading}
+            loading={loading}
+          />
+          {/* <TouchableOpacity
+            onPress={() => handleScheduleForPickFromStore()}
             style={{
               backgroundColor: "#55B051",
               borderRadius: 48,
@@ -430,15 +460,11 @@ const ScheduleDeliveryScreen = () => {
               paddingVertical: 15,
             }}
           >
-            <Text style={{ fontSize: 16, color: "#fff" }}>
-              {t('pick')}
-            </Text>
-          </TouchableOpacity>
+            <Text style={{ fontSize: 16, color: "#fff" }}>{t("pick")}</Text>
+          </TouchableOpacity> */}
         </View>
 
-      )}
-
-      {/* <View style={{ marginTop: 12 }}>
+        {/* <View style={{ marginTop: 12 }}>
         <Button title="Show Date Picker" onPress={showDatePicker} />
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
@@ -447,7 +473,7 @@ const ScheduleDeliveryScreen = () => {
           onCancel={hideDatePicker}
         />
       </View> */}
-    </Animated.View>
+      </Animated.View>
     </ScrollView>
   );
 };
@@ -493,7 +519,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 10,
     elevation: 2,
-    marginRight:3,
+    marginRight: 3,
   },
   timeText: {
     fontSize: 18,
@@ -507,6 +533,15 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   buttonContainer: {
+    marginTop: 20,
+    borderRadius: 10,
+  },
+  button1: {
+    backgroundColor: "#55B051",
+    borderRadius: 48,
+    paddingVertical: 15,
+  },
+  buttonContainer1: {
     marginTop: 20,
     borderRadius: 10,
   },
