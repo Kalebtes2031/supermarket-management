@@ -17,10 +17,13 @@ import Toast from "react-native-toast-message";
 
 import * as Font from "expo-font";
 import { CREATE_NEW_CUSTOMER } from "@/hooks/useFetch";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
 const SignUp = () => {
+  const { t, i18n } = useTranslation('signup');
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
@@ -120,6 +123,7 @@ const SignUp = () => {
           paddingBottom: 24,
         }}
       >
+       
         {/* Hero Image */}
         <Image
           source={require("@/assets/images/signup.png")}
@@ -129,7 +133,10 @@ const SignUp = () => {
             height: 240,
           }}
         />
-
+        <View className="absolute inset-0 bg-white/20" />
+          <View className="absolute top-8 right-4 flex-row gap-x-1 items-center ">
+            <LanguageToggle bgcolor="#445399" textcolor="#445399" />
+          </View>
         {/* Form Container */}
         <View
           style={{
@@ -149,9 +156,9 @@ const SignUp = () => {
             //   marginBottom: 16,
             //   fontFamily:"",
             // }}
-            className="text-primary text-[20px] font-bold font-league-spartan mb-4"
+            className="text-primary text-[20px] font-poppins-medium mb-4"
           >
-            Create your account
+            {t("title")}
           </Text>
 
           {/* Name Row */}
@@ -165,34 +172,49 @@ const SignUp = () => {
             <TextInput
               style={{
                 flex: 1,
-                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-                // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
-                borderRadius: 12,
-                // borderRadius: 24,
-                // borderWidth: 2,
-                // borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
+                // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+                // borderRadius: 12,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
                 padding: 14,
                 fontSize: 14,
                 color: colorScheme === "dark" ? "#fff" : "#000",
                 height: 48,
+                // width:33,
               }}
-              placeholder="First name"
+              placeholder={t("first_name")}
               placeholderTextColor="#888"
               value={form.firstName}
               onChangeText={(text) => setForm({ ...form, firstName: text })}
             />
 
             <TextInput
+              // style={{
+              //   flex: 1,
+              //   backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              //   borderRadius: 12,
+              //   padding: 14,
+              //   fontSize: 14,
+              //   color: colorScheme === "dark" ? "#fff" : "#000",
+              //   height: 48,
+              // }}
               style={{
                 flex: 1,
-                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-                borderRadius: 12,
+                // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+                // borderRadius: 12,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
                 padding: 14,
+                paddingLeft: 16,
                 fontSize: 14,
                 color: colorScheme === "dark" ? "#fff" : "#000",
                 height: 48,
               }}
-              placeholder="Last name"
+              placeholder={t("last_name")}
               placeholderTextColor="#888"
               value={form.lastName}
               onChangeText={(text) => setForm({ ...form, lastName: text })}
@@ -201,16 +223,31 @@ const SignUp = () => {
 
           {/* Phone Number */}
           <TextInput
+            // style={{
+            //   backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+            //   borderRadius: 12,
+            //   padding: 14,
+            //   fontSize: 14,
+            //   color: colorScheme === "dark" ? "#fff" : "#000",
+            //   marginBottom: 20,
+            //   height: 48,
+            // }}
             style={{
-              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-              borderRadius: 12,
+              flex: 1,
+              // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+              // borderRadius: 12,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
               padding: 14,
+              paddingLeft: 16,
               fontSize: 14,
               color: colorScheme === "dark" ? "#fff" : "#000",
-              marginBottom: 20,
               height: 48,
+              marginBottom: 20,
             }}
-            placeholder="Phone number"
+            placeholder={t('phone_number')}
             placeholderTextColor="#888"
             keyboardType="phone-pad"
             value={form.phoneNumber}
@@ -220,15 +257,21 @@ const SignUp = () => {
           {/* Username */}
           <TextInput
             style={{
-              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-              borderRadius: 12,
+              flex: 1,
+              // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+              // borderRadius: 12,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
               padding: 14,
+              paddingLeft: 16,
               fontSize: 14,
               color: colorScheme === "dark" ? "#fff" : "#000",
-              marginBottom: 20,
               height: 48,
+              marginBottom: 20,
             }}
-            placeholder="Username"
+            placeholder={t('username')}
             placeholderTextColor="#888"
             value={form.username}
             onChangeText={(text) => setForm({ ...form, username: text })}
@@ -236,16 +279,22 @@ const SignUp = () => {
 
           {/* Email */}
           <TextInput
-            style={{
-              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-              borderRadius: 12,
+             style={{
+              flex: 1,
+              // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+              // borderRadius: 12,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
               padding: 14,
+              paddingLeft: 16,
               fontSize: 14,
               color: colorScheme === "dark" ? "#fff" : "#000",
-              marginBottom: 20,
               height: 48,
+              marginBottom: 20,
             }}
-            placeholder="Email address"
+            placeholder={t('email')}
             placeholderTextColor="#888"
             keyboardType="email-address"
             value={form.email}
@@ -272,16 +321,22 @@ const SignUp = () => {
 
           <View style={{ marginBottom: 20, position: "relative" }}>
             <TextInput
-              style={{
-                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
-                borderRadius: 12,
+               style={{
+                flex: 1,
+                // backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#F5F5F5",
+                backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFF",
+                // borderRadius: 12,
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "#1E1E1E" : "#445399",
                 padding: 14,
+                paddingLeft: 16,
                 fontSize: 14,
                 color: colorScheme === "dark" ? "#fff" : "#000",
                 height: 48,
-                paddingRight: 50, // extra space for the icon
+                // marginBottom: 20,
               }}
-              placeholder="Create password"
+              placeholder={t('password')}
               placeholderTextColor="#888"
               secureTextEntry={!showPassword}
               value={form.password}
@@ -319,7 +374,7 @@ const SignUp = () => {
               paddingHorizontal: 24,
             }}
           >
-            By tapping Sign up, you agree to our{" "}
+            {t('by')}{" "}
             <Text
               // style={{
               //   color: "#7E0201",
@@ -328,13 +383,13 @@ const SignUp = () => {
               className="text-primary underline"
               onPress={() => router.push("/terms")}
             >
-              Terms & Conditions
+              {t('terms')}
             </Text>
           </Text>
 
           {/* Sign Up Button */}
           <CustomButton
-            title="Sign Up"
+            title={t("signup")}
             containerStyles={{
               backgroundColor: "#7E0201",
               borderRadius: 12,
@@ -363,8 +418,9 @@ const SignUp = () => {
                 fontSize: 14,
                 color: colorScheme === "dark" ? "#888" : "#666",
               }}
+              className="font-poppins-medium"
             >
-              Already have an account?{" "}
+              {t('already')}{" "}
             </Text>
             <TouchableOpacity onPress={() => router.push("/sign-in")}>
               <Text
@@ -373,9 +429,9 @@ const SignUp = () => {
                 //   color: "#7E0201",
                 //   fontWeight: "600",
                 // }}
-                className="text-primary font-semibold text-[14px]"
+                className="text-primary font-poppins-medium text-[14px]"
               >
-                Login
+                {t('login')}
               </Text>
             </TouchableOpacity>
           </View>

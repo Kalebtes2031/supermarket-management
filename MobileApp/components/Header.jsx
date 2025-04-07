@@ -338,7 +338,7 @@ const Header = () => {
                 </Text>
               </View>
               <View style={{ marginRight: 10 }}>
-                <LanguageToggle />
+                <LanguageToggle bgcolor="#55B051" textcolor="#55B051" />
               </View>
             </View>
           </View>

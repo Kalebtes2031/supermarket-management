@@ -20,6 +20,9 @@ const resources = {
     order: require("@/languages/eng/order.json"),
     header: require("@/languages/eng/header.json"),
     watchlist: require("@/languages/eng/watchlist.json"),
+    signup: require("@/languages/eng/signup.json"),
+    signin: require("@/languages/eng/signin.json"),
+    track: require("@/languages/eng/track.json"),
   },
   amh: {
     welcome: require("@/languages/amh/welcome.json"),
@@ -38,6 +41,9 @@ const resources = {
     order: require("@/languages/amh/order.json"),
     header: require("@/languages/amh/header.json"),
     watchlist: require("@/languages/amh/watchlist.json"),
+    signup: require("@/languages/amh/signup.json"),
+    signin: require("@/languages/amh/signin.json"),
+    track: require("@/languages/amh/track.json"),
   },
 };
 

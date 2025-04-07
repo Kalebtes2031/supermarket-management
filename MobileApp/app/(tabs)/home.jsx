@@ -174,25 +174,26 @@ export default function HomeScreen() {
   // }, []);
   useEffect(() => {
     const currentHour = new Date().getHours();
-  
+
     if (currentHour < 6) {
-      setGreeting(t('night')); // Midnight to 6 AM
+      setGreeting(t("night")); // Midnight to 6 AM
     } else if (currentHour < 12) {
       setGreeting(t("morning")); // 6 AM to 12 PM
     } else if (currentHour < 18) {
-      setGreeting(t('afternoon')); // 12 PM to 6 PM
+      setGreeting(t("afternoon")); // 12 PM to 6 PM
     } else {
       setGreeting(t("evening")); // 6 PM to Midnight
     }
   }, [i18n.language]);
-  
 
   const handlecategory = async (categoryId, name, name_amh) => {
     route.push(
-      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(name)}&name_amh=${encodeURIComponent(name_amh)}`
+      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(
+        name
+      )}&name_amh=${encodeURIComponent(name_amh)}`
     );
   };
-  
+
   return (
     <ScrollView
       refreshControl={
@@ -215,7 +216,9 @@ export default function HomeScreen() {
         <Text className="text-lg  font-poppins-medium text-primary ">
           {greeting}
         </Text>
-        <Text className="italic ml-2 text-primary">{user?.first_name} {user?.last_name}</Text>
+        <Text className="italic ml-2 text-primary">
+          {user?.first_name} {user?.last_name}
+        </Text>
       </View>
 
       {/* Horizontal Image Carousel */}
@@ -255,7 +258,7 @@ export default function HomeScreen() {
               textAlign: "start",
             }}
           >
-          {t('categories')}
+            {t("categories")}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -276,15 +279,27 @@ export default function HomeScreen() {
             category.map((product, index) => (
               <TouchableOpacity
                 key={product.id || index}
-                onPress={()=>handlecategory(product.id, product.name, product.name_amh)}
+                onPress={() =>
+                  handlecategory(product.id, product.name, product.name_amh)
+                }
                 className="flex justify-center items-center mx-2"
               >
-                <Image
+                {/* <Image
                   source={{ uri: product.image }}
                   className="w-24 h-24 rounded-3xl"
                   resizeMode="cover"
-                />
-                <Text className="text-sm font-medium mt-2">{i18n.language === "en" ?product.name: product.name_amh}</Text>
+                /> */}
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: product.image }}
+                    style={styles.image1}
+                    resizeMode="cover"
+                  />
+                </View>
+
+                <Text className="text-sm font-medium mt-2">
+                  {i18n.language === "en" ? product.name : product.name_amh}
+                </Text>
               </TouchableOpacity>
             ))
           ) : (
@@ -299,7 +314,7 @@ export default function HomeScreen() {
 
       {/* Recommended Products */}
       <View>
-      <View className="flex flex-row justify-between pr-12 items-center">
+        <View className="flex flex-row justify-between pr-12 items-center">
           <Text
             style={{
               color: colorScheme === "dark" ? "white" : "#445399",
@@ -309,7 +324,7 @@ export default function HomeScreen() {
               textAlign: "start",
             }}
           >
-            {t('recommended')}
+            {t("recommended")}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -327,7 +342,7 @@ export default function HomeScreen() {
               </View>
             ))
           ) : (
-            <Text style={styles.loadingText}>{t('loading')}</Text>
+            <Text style={styles.loadingText}>{t("loading")}</Text>
           )}
         </View>
       </View>
@@ -339,6 +354,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+  },
+  imageContainer: {
+    width: 96, // or 'w-24' converted to pixels, e.g., 96px
+    height: 96, // same as above
+    // borderLeftWidth: 1,
+    // borderRightWidth: 1,
+    borderColor: 'rgba(0,0,0,0.2)', // slight border on left/right
+    borderRadius: 24,
+    backgroundColor: '#fff', // important for shadows
+    // Shadow for iOS:
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 }, // pushes shadow downward
+    shadowOpacity: 0.3,
+    shadowRadius: 1, // keep radius small so the top isn't blurred
+    // For Android:
+    elevation: 4,// for Android shadow
+    // padding:2, 
+  },
+  image1: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
   },
   popularContainer: {
     marginBottom: 36,

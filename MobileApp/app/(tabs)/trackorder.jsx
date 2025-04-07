@@ -13,6 +13,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import AnimatedCountdown from "@/components/AnimatedCountdown";
+import { useTranslation } from "react-i18next";
 
 // Color Constants
 const COLORS = {
@@ -27,6 +28,7 @@ const COLORS = {
 };
 
 const OrderTrackingScreen = () => {
+  const { t, i18n } = useTranslation("track");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
@@ -139,7 +141,7 @@ const OrderTrackingScreen = () => {
         <View style={styles.progressContainer}>
           <View style={styles.progressStep}>
             <Icon name="check-circle" size={20} color="#4CAF50" />
-            <Text style={styles.progressLabel}>Confirmed</Text>
+            <Text style={styles.progressLabel}>{t('confirmed')}</Text>
           </View>
 
           <View
@@ -157,7 +159,7 @@ const OrderTrackingScreen = () => {
               size={20}
               color={item.prepared ? COLORS.success : COLORS.muted}
             />
-            <Text style={styles.progressLabel}>Prepared</Text>
+            <Text style={styles.progressLabel}>{t('prepared')}</Text>
           </View>
 
           <View
@@ -182,13 +184,13 @@ const OrderTrackingScreen = () => {
                 item.status === "Delivered" ? COLORS.success : COLORS.muted
               }
             />
-            <Text style={styles.progressLabel}>Delivered</Text>
+            <Text style={styles.progressLabel}>{t('delivered')}</Text>
           </View>
         </View>
 
         {/* Order Details */}
         <View style={styles.detailsContainer}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
+          <Text style={styles.sectionTitle}>{t('summary')}</Text>
 
           {item.items.map((product, index) => (
             <View key={`item-${item.id}-${index}`} style={styles.productItem}>
@@ -196,34 +198,38 @@ const OrderTrackingScreen = () => {
                 source={{ uri: product.variant.product.image }}
                 style={styles.productImage}
               />
-              <View style={{flex:1, flexDirection:"row", justifyContent:"space-between", alignItems:"center", paddingRight:22}}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingRight: 22,
+                }}
+              >
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName}>
+                    {product.variant.product.item_name}
+                  </Text>
 
-              <View style={styles.productInfo}>
-                <Text style={styles.productName}>
-                  {product.variant.product.item_name} 
-                </Text>
-                
-                <Text style={styles.productMeta}>
-                  {product.quantity}x {product.variant.price}
-                </Text>
-              </View>
-              <View >
-                <Text style={styles.productName}>
-                  Subtotal 
-                </Text>
-                
-                <Text style={styles.productMeta}>
-                  Br{product.total_price}
-                </Text>
-              </View>
-              
+                  <Text style={styles.productMeta}>
+                    {product.quantity}x {product.variant.price}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.productName}>{t('subtotal')}</Text>
+
+                  <Text style={styles.productMeta}>
+                    Br{product.total_price}
+                  </Text>
+                </View>
               </View>
             </View>
           ))}
 
           <View style={styles.totalContainer}>
-            <Text style={styles.totalLabel}>Total Amount:</Text>
-            <Text style={styles.totalValue}>Br{item.total}</Text>
+            <Text style={styles.totalLabel}>{t('totalamount')}:</Text>
+            <Text style={styles.totalValue}>{t('br')}{item.total}</Text>
           </View>
         </View>
 
@@ -232,7 +238,7 @@ const OrderTrackingScreen = () => {
           <Icon name="local-shipping" size={20} color={COLORS.secondary} />
           <View style={styles.deliveryDetails}>
             <Text style={styles.driverText}>
-              {item.delivery_person || "Awaiting driver assignment"}
+              {item.delivery_person || t("await")}
             </Text>
             {/* <Text style={styles.contactText}>Contact: {item.phone_number}</Text> */}
           </View>
@@ -245,7 +251,7 @@ const OrderTrackingScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading Orders...</Text>
+        <Text style={styles.loadingText}>{t("loading")}</Text>
       </View>
     );
   }
@@ -255,11 +261,11 @@ const OrderTrackingScreen = () => {
       <SectionList
         sections={[
           {
-            title: "Active Deliveries",
+            title: t("active"),
             data: orders.filter((o) => o.status !== "Delivered"),
           },
           {
-            title: "Completed Deliveries",
+            title: t("completed"),
             data: orders.filter((o) => o.status === "Delivered"),
           },
         ]}
@@ -271,7 +277,7 @@ const OrderTrackingScreen = () => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="assignment" size={48} color={COLORS.muted} />
-            <Text style={styles.emptyText}>No orders found</Text>
+            <Text style={styles.emptyText}>{t("noorder")}</Text>
           </View>
         }
         contentContainerStyle={styles.listContent}

@@ -22,8 +22,12 @@ import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useTranslation } from "react-i18next";
+
 
 const SignIn = () => {
+  const { t, i18n } = useTranslation('signin');
   const router = useRouter();
   const colorScheme = useColorScheme();
   const { setUser, setIsLogged } = useGlobalContext();
@@ -84,7 +88,7 @@ const SignIn = () => {
   useEffect(() => {
     async function checkOnboarding() {
       const check = await SecureStore.getItemAsync("onboardingCompleted");
-      console.log("Current language:", check);
+      console.log("onboardingCompleted:", check);
 
       if (check === "true") {
         await SecureStore.deleteItemAsync("onboardingCompleted");
@@ -107,8 +111,9 @@ const SignIn = () => {
 
         {/* Language Selector */}
         <View className="absolute top-8 right-4 flex-row gap-x-1 items-center ">
-          <MaterialIcons name="language" size={24} color="blue" />
-          <TouchableOpacity
+          <MaterialIcons name="language" size={24} color="#445399" />
+          <LanguageToggle bgcolor="#445399" textcolor="#445399" />
+          {/* <TouchableOpacity
             onPress={() =>
               setCurrentLanguage((prev) => (prev === "EN" ? "AM" : "EN"))
             }
@@ -127,7 +132,7 @@ const SignIn = () => {
             {/* <Text className="text-white text-[12px] ml-2 font-poppins-medium">
               {currentLanguage === "EN" ? "EN | አማ" : "አማ | EN"}
             </Text> */}
-          </TouchableOpacity>
+          {/* </TouchableOpacity> */} 
         </View>
 
         {/* Logo */}
@@ -144,12 +149,12 @@ const SignIn = () => {
       <View className="bg-white rounded-t-3xl -mt-24 flex-1 px-6 py-8">
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text className="text-3xl font-poppins-medium text-gray-900 mb-8">
-            Sign In
+            {t('signin')}
           </Text>
           <View className="px-4 py-2 border border-primary rounded-full mb-12 mt-4 border-xl">
             <TextInput
               // style={styles.input}
-              placeholder="Username"
+              placeholder={t('username')}
               value={form.username}
               onChangeText={(e) => setForm({ ...form, username: e })}
               placeholderTextColor="#888"
@@ -177,12 +182,12 @@ const SignIn = () => {
 
           <TouchableOpacity className="items-end mt-6 mr-2 mb-10">
             <Text className="text-primary font-poppins-medium">
-              Forgot Password?
+              {t('forgot')}
             </Text>
           </TouchableOpacity>
 
           <CustomButton
-            title="Sign In"
+            title={t('signin')}
             handlePress={submit}
             containerStyles=""
             isLoading={isSubmitting}
@@ -212,10 +217,10 @@ const SignIn = () => {
 
           <View className="flex-row justify-center mt-8">
             <Text className="text-gray-600 font-poppins-regular">
-              Don't have an account?{" "}
+              {t('dont')}{" "}
             </Text>
             <Link href="/sign-up" className="text-primary font-poppins-bold">
-              Sign Up
+              {t('title')}
             </Link>
           </View>
         </ScrollView>
