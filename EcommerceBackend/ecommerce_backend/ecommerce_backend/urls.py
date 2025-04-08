@@ -20,7 +20,7 @@ from accounts.views import CustomTokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-
+# from vendor.admin import vendor_admin_site
 # router = DefaultRouter()
 # router.register('auth/users', CustomUserRegistrationView, basename='user')
 
@@ -35,8 +35,10 @@ urlpatterns = [
     path('payment/', include('payment.urls')),
     path('delivery/', include('delivery.urls')),
     path('vendor/', include('vendor.urls')),
+    # path('vendor-admin/', include((vendor_admin_site.urls, 'vendor_admin'), namespace='vendor_admin')),
     path('notification/', include('notification.urls')), 
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

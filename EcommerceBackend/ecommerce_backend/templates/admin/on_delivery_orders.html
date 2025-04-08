@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+  <h1>On Delivery Orders</h1>
+
+  {% if orders %}
+    <table class="adminlist">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th>Scheduled Delivery</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.customer }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.payment_status }}</td>
+            <td>{{ order.scheduled_delivery }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No orders found.</p>
+  {% endif %}
+{% endblock %}

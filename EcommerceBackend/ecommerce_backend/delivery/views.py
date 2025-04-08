@@ -166,6 +166,28 @@ class AssignedOrdersListAPIView(generics.ListAPIView):
     def get_queryset(self):
         # Delivery person fetches orders assigned to their profile
         return Order.objects.filter(status='Assigned', delivery_person__user=self.request.user)
+class HistoryAcceptedOrdersListAPIView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsDeliveryPerson]
+
+    def get_queryset(self):
+        # Delivery person fetches orders assigned to their profile
+        return Order.objects.filter(status='Accepted', delivery_person__user=self.request.user)
+class HistoryDeliveredOrdersListAPIView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsDeliveryPerson]
+
+    def get_queryset(self):
+        # Delivery person fetches orders assigned to their profile
+        return Order.objects.filter(status='Delivered', delivery_person__user=self.request.user)
+
+class HistoryOrdersListAPIView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsDeliveryPerson]
+
+    def get_queryset(self):
+        # Delivery person fetches orders assigned to their profile
+        return Order.objects.filter(delivery_person__user=self.request.user)
 
 class AcceptOrderAPIView(APIView):
     permission_classes = [IsDeliveryPerson]

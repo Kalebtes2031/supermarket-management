@@ -1,7 +1,7 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Redirect, Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
+import { View, Text } from "react-native";
+import React from "react";
+import { Redirect, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useGlobalContext } from "@/context/GlobalProvider";
 
 const AuthLayout = () => {
@@ -12,23 +12,28 @@ const AuthLayout = () => {
   return (
     <>
       <Stack>
-        <Stack.Screen 
-          name='sign-in'
+        <Stack.Screen
+          name="sign-in"
           options={{
-            headerShown: false
+            headerShown: false,
           }}
         />
-        <Stack.Screen 
-          name='sign-up'
+        <Stack.Screen
+          name="sign-up"
           options={{
-            headerShown: false
+            headerShown: false,
           }}
         />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="otp-verification"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="new-password" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar backgroundColor='#161622' 
-      style='light' />
+      <StatusBar backgroundColor="#161622" style="light" />
     </>
-  )
-}
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;

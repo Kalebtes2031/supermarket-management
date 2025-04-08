@@ -59,6 +59,7 @@ const Welcome = () => {
   useEffect(() => {
     if (!loading && isLogged) {
       router.replace("/(tabs)/home");
+      // router.replace("/(tabs)/orderdelivery");
     }
   }, [loading, isLogged]);
 
@@ -103,6 +104,7 @@ const Welcome = () => {
 
   if (showOnboarding === null) return null;
   if (!loading && isLogged) return <Redirect href="/(tabs)/home" />;
+  // if (!loading && isLogged) return <Redirect href="/(tabs)/orderdelivery" />;
   if (!showOnboarding) return <Redirect href="/(auth)/sign-in" />;
 
   return (

@@ -15,6 +15,10 @@ django-cors-headers = "*"
 chapa = "*"
 requests = "*"
 firebase-admin = "*"
+django-otp = "*"
+twilio = "*"
+python-dotenv = "*"
+africastalking = "*"
 
 [dev-packages]
 

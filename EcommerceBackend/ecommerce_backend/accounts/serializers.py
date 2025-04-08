@@ -162,3 +162,12 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
             raise serializers.ValidationError("Username is already in use by another user.")
         return value
+
+
+class OTPSendSerializer(serializers.Serializer):
+    email_or_phone = serializers.CharField()
+    channel = serializers.ChoiceField(choices=['sms', 'email'])
+
+class OTPVerifySerializer(serializers.Serializer):
+    code = serializers.CharField(min_length=6, max_length=6)
+    email_or_phone = serializers.CharField()

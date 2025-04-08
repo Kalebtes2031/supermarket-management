@@ -22,6 +22,7 @@ import { fetchProducts } from "@/hooks/useFetch";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import SearchProducts from "@/components/SearchComponent";
 
 const Shop = () => {
   const { t, i18n } = useTranslation('shop');
@@ -74,50 +75,101 @@ const Shop = () => {
       <View style={styles.contentContainer}>
         {/* Image Background Section */}
         
-        <SearchComp />
+        {/* <SearchProducts /> */}
         
       </View>
     </View>
   );
   return (
-    <FlatList
-      data={products}
-      renderItem={({ item }) => (
-        <View style={{ width: "48%" }}>
-          <Card product={item} />
-        </View>
-      )}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={2} // This displays 2 cards per row
-      columnWrapperStyle={{
-        justifyContent: "space-between",
-        gap: 10,
-        marginBottom: 10,
-        paddingHorizontal: 16,
-        backgroundColor: "white",
-      }}
-      ListHeaderComponent={ListHeader}
-      onRefresh={onRefresh}
-      refreshing={refreshing}
-      contentContainerStyle={styles.flatListContainer}
-    />
+    <View style={styles.mainContainer}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+  
+        <Text style={styles.categoryTitle}>{t("products")}</Text>
+        <Text style={styles.categoryTitle2}>{products.length} {t('items')}</Text>
+      </View>
+  
+      {/* Fixed Search Container */}
+      <View style={styles.searchContainer}>
+        <SearchProducts />
+      </View>
+  
+      {/* Products List */}
+      <FlatList
+        data={products}
+        renderItem={({ item }) => (
+          <View style={styles.cardContainer}>
+            <Card product={item} />
+          </View>
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.flatListContent}
+        ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+      />
+    </View>
   );
+  
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  header: {
+    height: 200,
+    backgroundColor: '#445399',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  searchContainer: {
+    position: 'absolute',
+    top: 210, // Adjusted to appear below header titles
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    paddingHorizontal: 16,
+  },
+  flatListContent: {
+    paddingTop: 80, // Space for search bar
+    paddingBottom: 16,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+  },
+  cardContainer: {
+    width: '48%',
+    marginBottom: 12,
+  },
+  listHeaderSpacer: {
+    height: 60, // Space between search and first row
+  },
+
   container: {
     flex: 1,
     flexDirection: "column",
     backgroundColor: "#445399",
     padding: 0,
   },
-  header: {
-    height: 200,
-    backgroundColor: "#445399",
-    paddingHorizontal: 20,
-    paddingTop: 50,
+  // header: {
+  //   height: 200,
+  //   backgroundColor: "#445399",
+  //   paddingHorizontal: 20,
+  //   paddingTop: 50,
     
-  },
+  // },
   backButton: {
     position: "absolute",
     left: 20,

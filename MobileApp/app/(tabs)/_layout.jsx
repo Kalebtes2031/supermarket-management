@@ -167,6 +167,14 @@ export default function TabLayout() {
           gestureEnabled: false,
         }}
       />
+      {/* <Tabs.Screen
+        name="orderdelivery"
+        options={{
+          title: "home for delivery",
+          tabBarItemStyle: { display: "none" },
+          gestureEnabled: false,
+        }}
+      /> */}
     </Tabs>
   );
 }

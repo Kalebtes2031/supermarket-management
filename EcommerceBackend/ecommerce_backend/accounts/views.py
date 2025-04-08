@@ -1,17 +1,214 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
-from .models import CustomUser
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer
+from .models import OTP, CustomUser
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer, OTPSendSerializer, OTPVerifySerializer
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from rest_framework import status, generics
+from rest_framework import status, generics, serializers
 from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework_simplejwt.views import TokenObtainPairView
 from decouple import config
 import requests
 from djoser.views import UserViewSet
+from rest_framework.views import APIView
+from django.conf import settings
 from accounts.serializers import CustomUserCreateSerializer, CustomUserUpdateSerializer, CustomUserSerializer
+import random
+from datetime import timedelta
+from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.contrib.auth import get_user_model
+#for sending email
+from django.core.mail import send_mail
+from rest_framework.exceptions import ValidationError
+import africastalking
+
+import logging
+logger = logging.getLogger(__name__)
+
+# For sending SMS via Twilio
+from twilio.rest import Client
+
+User = get_user_model()
+
+def generate_password_reset_token(user):
+    """
+    Generate a JWT token to be used for password reset.
+    Here we use the access token from simplejwt.
+    """
+    refresh = RefreshToken.for_user(user)
+    return str(refresh.access_token)
+
+print("USERNAME:", settings.AFRICASTALKING_USERNAME)
+print("API_KEY:", settings.AFRICASTALKING_API_KEY)
+
+
+
+# africastalking.initialize(
+#     username=settings.AFRICASTALKING_USERNAME,
+#     api_key=settings.AFRICASTALKING_API_KEY
+# )
+# sms = africastalking.SMS
+
+# sms.send("Your OTP is 1234", ["+251970949140"])
+
+
+class SendOTPView(APIView):
+    throttle_scope = 'otp'
+    permission_classes = [AllowAny]  # Allow unauthenticated users
+
+    def post(self, request):
+        logger.debug("Request data: %s", request.data)
+        serializer = OTPSendSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email_or_phone = serializer.validated_data['email_or_phone']
+        channel = serializer.validated_data['channel']
+        
+        # Generate a random 6-digit code
+        code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        expires_at = timezone.now() + timedelta(minutes=15)
+        
+        # (Optional) Find the user if they exist
+        user = None
+        if channel == 'sms':
+            try:
+                user = User.objects.get(phone_number=email_or_phone)
+            except User.DoesNotExist:
+                return Response({'error': 'User with this phone number not found'}, status=status.HTTP_400_BAD_REQUEST)
+        elif channel == 'email':
+            try:
+                user = User.objects.get(email=email_or_phone)
+            except User.DoesNotExist:
+                return Response({'error': 'User with this email not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        
+        # Save the OTP in the database
+        OTP.objects.create(
+            user=user,
+            email_or_phone=email_or_phone,
+            code=code,
+            expires_at=expires_at,
+            channel=channel
+        )
+        
+        # Send OTP via SMS or Email
+        if channel == 'sms':
+            self._send_sms(code, email_or_phone)
+        else:
+            self._send_email(code, email_or_phone)
+            
+        return Response({'status': 'OTP sent'}, status=status.HTTP_200_OK)
+
+   
+    # def _send_sms(self, code, phone_number):
+    #     try:
+    #         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    #         message = f"Your OTP is {code}. It expires in 15 minutes."
+    #         client.messages.create(
+    #             body=message,
+    #             from_=settings.TWILIO_PHONE_NUMBER,
+    #             to=phone_number
+    #         )
+    #     except Exception as e:
+    #         raise ValidationError({'sms_error': str(e)})
+    def _send_sms(self, code, phone_number):
+         # Initialize Africa's Talking
+        africastalking.initialize(
+            username=settings.AFRICASTALKING_USERNAME,
+            api_key=settings.AFRICASTALKING_API_KEY
+        )
+        sms = africastalking.SMS
+
+        try:
+            message = f"Your OTP is {code}. It expires in 15 minutes."
+            response = sms.send(message, [phone_number], from_='AFRICASTKNG')  # Send to a list of numbers
+            print("Africa's Talking response:", response)
+        except Exception as e:
+            raise ValidationError({'sms_error': str(e)})
+        
+    def _send_email(self, code, email):
+        subject = "Your Password Reset OTP"
+        message = f"Your OTP is {code}. It expires in 15 minutes."
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email]
+        )
+
+
+class VerifyOTPView(APIView):
+    permission_classes = []  # Allow unauthenticated users
+
+    def post(self, request):
+        serializer = OTPVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email_or_phone = serializer.validated_data['email_or_phone']
+        code = serializer.validated_data['code']
+        
+        try:
+            otp = OTP.objects.get(
+                code=code,
+                email_or_phone=email_or_phone,
+                is_used=False,
+                expires_at__gt=timezone.now()
+            )
+        except OTP.DoesNotExist:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        otp.is_used = True
+        otp.save()
+        
+        # Lookup user based on channel
+        if '@' in email_or_phone:
+            try:
+                user = User.objects.get(email=email_or_phone)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                user = User.objects.get(phone_number=email_or_phone)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        reset_token = generate_password_reset_token(user)
+        return Response({
+            'reset_token': reset_token,
+            'expires_in': 900  # 15 minutes in seconds
+        }, status=status.HTTP_200_OK)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    reset_token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+
+
+class ResetPasswordView(APIView):
+    permission_classes = []  # Allow unauthenticated access via valid token
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        reset_token = serializer.validated_data['reset_token']
+        new_password = serializer.validated_data['new_password']
+        
+        # Verify the token and get the user
+        try:
+            access_token = AccessToken(reset_token)
+            user_id = access_token['user_id']
+            user = User.objects.get(id=user_id)
+        except Exception as e:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the user's password
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'status': 'Password updated successfully'}, status=status.HTTP_200_OK)
 
 
 class LoggedInUserView(generics.RetrieveAPIView):

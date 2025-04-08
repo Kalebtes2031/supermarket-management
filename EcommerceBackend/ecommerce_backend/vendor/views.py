@@ -80,16 +80,6 @@ class OnDeliveryPaymentOrdersListAPIView(generics.ListAPIView):
         )
         return queryset
     
-# class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
-#     """
-#     Returns a list of orders with status "Pending" for delivery personnel.
-#     """
-#     serializer_class = OrderSerializer
-#     permission_classes = [IsVendorPerson]
-
-#     def get_queryset(self):
-#         # Filter orders with status 'Pending'
-#         return Order.objects.filter(status='Pending', prepared=False, payment_status='Fully Paid')
 
 class UpdatePreparedStatusAPIView(APIView):
     """
@@ -149,3 +139,15 @@ class AssignOrderToDeliveryAPIView(APIView):
         # (Optional) You can also trigger a notification to the delivery person here
         
         return Response({"message": "Order assigned to delivery person successfully"}, status=status.HTTP_200_OK)
+
+
+# class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
+#     """
+#     Returns a list of orders with status "Pending" for delivery personnel.
+#     """
+#     serializer_class = OrderSerializer
+#     permission_classes = [IsVendorPerson]
+
+#     def get_queryset(self):
+#         # Filter orders with status 'Pending'
+#         return Order.objects.filter(status='Pending', prepared=False, payment_status='Fully Paid')

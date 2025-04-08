@@ -17,6 +17,8 @@ ORDER_STATUS_CHOICES = [
     ('Fully Paid', 'Fully Paid'),
     ('Cancelled', 'Cancelled'),
     ('Assigned', 'Assigned'),
+    ('Accepted', 'Accepted'),
+    ('Ignored', 'Ignored'),
     ('In Transit', 'In Transit'),
     ('Delivered', 'Delivered'),
 ]

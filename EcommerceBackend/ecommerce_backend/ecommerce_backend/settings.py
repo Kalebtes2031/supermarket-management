@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 import firebase_config
 
@@ -72,7 +74,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,6 +155,16 @@ EMAIL_HOST_PASSWORD = 'kozn pybk vpev vtnc'  # Your email password
 DEFAULT_FROM_EMAIL = 'kalebtesfaye2031@gmail.com'  # Default sender email address
 
 
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+
+AFRICASTALKING_USERNAME = 'sandbox'  # or your production username when you go live
+AFRICASTALKING_API_KEY = 'atsk_ba53a1f170eb701bad7ab3c71c51c06eca801fae375a5a5957f40c7fc6ba7fb532b69f90'
+AFRICASTALKING_PHONE_NUMBER = '+251942190828'  # Only needed if you're using a specific sender ID
+
+
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  
@@ -183,6 +195,14 @@ REST_FRAMEWORK = {
         'anon': '20000/minute',
         'user': '100000/minute'
     }
+    # 'DEFAULT_THROTTLE_CLASSES': [
+    #     'rest_framework.throttling.AnonRateThrottle',
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '3/hour',
+    #     'otp': '5/hour',
+    # }
+
 }
 
 # Simple JWT settings config

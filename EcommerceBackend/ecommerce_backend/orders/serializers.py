@@ -34,8 +34,16 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email', 'need_delivery']
 
     def get_user(self, obj):
-        return obj.user.username if obj.user else None
-
+        if obj.user:
+            return {
+                'username': obj.user.username,
+                'email': obj.user.email,
+                'phone_number': obj.user.phone_number,     # Ensure this field exists on your User model
+                'first_name': obj.user.first_name,
+                'last_name': obj.user.last_name,
+                'image': obj.user.image.url if obj.user.image else None
+            }
+        return None
     
 class PaymentSerializer(serializers.ModelSerializer):
     # user = serializers.SerializerMethodField()  # Add user field

@@ -48,4 +48,17 @@ class CustomUser(AbstractUser):
     
 #     def __str__(self):
 #         return self.username
-        
+
+
+class OTP(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    email_or_phone = models.CharField(max_length=255)  # To store the recipient
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    channel = models.CharField(max_length=10)  # sms/email
+    
+    def __str__(self):
+        return f"OTP {self.code} for {self.email_or_phone}"
+    

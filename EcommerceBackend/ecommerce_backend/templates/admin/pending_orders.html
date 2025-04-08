@@ -1,0 +1,28 @@
+{# templates/admin/pending_orders.html #}
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  {% if orders %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Scheduled Delivery</th>
+          <!-- Add other columns as needed -->
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.scheduled_delivery }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No pending orders found.</p>
+  {% endif %}
+{% endblock %}

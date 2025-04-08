@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Vendor Dashboard</h1>
+  <p>Welcome, {{ request.user }}!</p>
+
+  <p><a href="{% url 'admin:logout' %}">Logout</a></p>  <!-- ✅ This adds the logout -->
+
+  <!-- Your vendor links here -->
+  <ul>
+    <li><a href="{% url 'vendor-admin:pending-orders' %}">Pending Orders</a></li>
+    <li><a href="{% url 'vendor-admin:on-delivery-orders' %}">On Delivery Orders</a></li>
+    <!-- etc -->
+  </ul>
+{% endblock %}

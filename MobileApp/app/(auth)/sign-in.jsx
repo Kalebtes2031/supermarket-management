@@ -180,7 +180,10 @@ const SignIn = () => {
             placeholder="••••••••"
           />
 
-          <TouchableOpacity className="items-end mt-6 mr-2 mb-10">
+          <TouchableOpacity 
+            className="items-end mt-6 mr-2 mb-10"
+            onPress={()=>router.push('/(auth)/forgot-password')}  
+          >
             <Text className="text-primary font-poppins-medium">
               {t('forgot')}
             </Text>
