@@ -19,9 +19,11 @@ import axios from "axios";
 import { getAccessToken, updateUserProfile } from "@/hooks/useFetch";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 
 const ProfileScreen = () => {
+  const { t, i18n } = useTranslation('profile');
   const router = useRouter();
   const { user, setUser, logout } = useGlobalContext();
   const [editMode, setEditMode] = useState(false);
@@ -97,7 +99,7 @@ const ProfileScreen = () => {
     try {
       const token = await getAccessToken();
       const response = await axios.put(
-        "http://192.168.1.3:8000/account/user/profile/update/",
+        "http://192.168.1.4:8000/account/user/profile/update/",
         data,
         {
           headers: {
@@ -240,7 +242,7 @@ const ProfileScreen = () => {
                   className="font-poppins-medium"
                   style={styles.editButtonText}
                 >
-                  {editMode ? "Cancel" : "Edit Profile"}
+                  {editMode ? t("cancel") : t('edit')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.logoutButton} onPress={()=>handleLogout()}>
@@ -248,7 +250,7 @@ const ProfileScreen = () => {
                   style={styles.logoutButtonText}
                   className="font-poppins-medium"
                 >
-                  Sign Out
+                  {t('signout')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -261,7 +263,7 @@ const ProfileScreen = () => {
                 style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}
               >
                 <Text className="font-poppins-medium" style={styles.inputLabel}>
-                  First Name
+                  {t('first_name')}
                 </Text>
                 <TextInput
                   value={formData.first_name}
@@ -272,7 +274,7 @@ const ProfileScreen = () => {
               </View>
               <View style={[styles.inputContainer, { flex: 1 }]}>
                 <Text className="font-poppins-medium" style={styles.inputLabel}>
-                  Last Name
+                {t('last_name')}
                 </Text>
                 <TextInput
                   value={formData.last_name}
@@ -283,7 +285,7 @@ const ProfileScreen = () => {
               </View>
             </View>
 
-            {["username", "email", "phone_number"].map((field) => (
+            {[t("username"), t("email"), t("phone_number")].map((field) => (
               <View key={field} style={styles.inputContainer}>
                 <Text className="font-poppins-medium" style={styles.inputLabel}>
                   {field.replace("_", " ").toUpperCase()}
@@ -331,7 +333,7 @@ const ProfileScreen = () => {
                     className="font-poppins-medium"
                     style={styles.buttonText}
                   >
-                    Save Changes
+                    {t('save')}
                   </Text>
                 )}
               </TouchableOpacity>

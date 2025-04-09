@@ -10,5 +10,6 @@
     "summary":"Order Summary",
     "delivered":"Delivered",
     "prepared":"Prepared",
+    "accepted":"On the way",
     "confirmed":"Confirmed"
 }

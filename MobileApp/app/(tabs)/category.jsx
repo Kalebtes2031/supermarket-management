@@ -23,17 +23,26 @@ const CategoryScreen = () => {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const [categories, setCategories] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
+  const loadCategories = async () => {
+    try {
+      const response = await fetchCategory();
+      setCategories(response);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const response = await fetchCategory();
-        setCategories(response);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
     loadCategories();
+  }, []);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    loadCategories();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
   }, []);
 
   // const handleCategoryPress = (category) => {
@@ -44,14 +53,16 @@ const CategoryScreen = () => {
   // };
   const handleCategoryPress = async (categoryId, name, name_amh) => {
     router.push(
-      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(name)}&name_amh=${encodeURIComponent(name_amh)}`
+      `/(tabs)/categorydetail?categoryId=${categoryId}&name=${encodeURIComponent(
+        name
+      )}&name_amh=${encodeURIComponent(name_amh)}`
     );
   };
 
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => handleCategoryPress(item.id,item.name,item.name_amh)}
+      onPress={() => handleCategoryPress(item.id, item.name, item.name_amh)}
     >
       <Image
         source={{ uri: item.image }}
@@ -108,6 +119,8 @@ const CategoryScreen = () => {
           </View>
         }
         contentContainerStyle={styles.listContent}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
       />
     </View>
   );

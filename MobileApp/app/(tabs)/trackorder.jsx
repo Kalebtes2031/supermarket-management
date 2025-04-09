@@ -167,6 +167,30 @@ const OrderTrackingScreen = () => {
               styles.progressLine,
               {
                 backgroundColor:
+                  item.status === "Accepted" ? COLORS.success : COLORS.muted,
+              },
+            ]}
+          />
+
+          <View style={styles.progressStep}>
+            <Icon
+              name={
+                item.status === "Accepted"
+                  ? "check-circle"
+                  : "radio-button-unchecked"
+              }
+              size={20}
+              color={
+                item.status === "Accepted" ? COLORS.success : COLORS.muted
+              }
+            />
+            <Text style={styles.progressLabel}>{t('accepted')}</Text>
+          </View>
+          <View
+            style={[
+              styles.progressLine,
+              {
+                backgroundColor:
                   item.status === "Delivered" ? COLORS.success : COLORS.muted,
               },
             ]}

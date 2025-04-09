@@ -83,7 +83,7 @@ export default function HomeScreen() {
     try {
       const data = await fetchPopularProducts();
       // console.log("all data: ", data)
-      const firstFourPopularImages = data.slice(0, 4);
+      const firstFourPopularImages = data.slice(0, 6);
       setVeryPopular(firstFourPopularImages);
       console.log("first four:", firstFourPopularImages);
     } catch (error) {
@@ -100,6 +100,8 @@ export default function HomeScreen() {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    fetchNewCategories();
+    newPopular();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);

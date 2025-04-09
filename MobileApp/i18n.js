@@ -23,6 +23,7 @@ const resources = {
     signup: require("@/languages/eng/signup.json"),
     signin: require("@/languages/eng/signin.json"),
     track: require("@/languages/eng/track.json"),
+    profile: require("@/languages/eng/profile.json"),
   },
   amh: {
     welcome: require("@/languages/amh/welcome.json"),
@@ -44,6 +45,7 @@ const resources = {
     signup: require("@/languages/amh/signup.json"),
     signin: require("@/languages/amh/signin.json"),
     track: require("@/languages/amh/track.json"),
+    profile: require("@/languages/amh/profile.json"),
   },
 };
 

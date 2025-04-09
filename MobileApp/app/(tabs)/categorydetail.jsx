@@ -91,14 +91,14 @@ const CategoryDetail = () => {
         <Text style={styles.categoryTitle}>{i18n.language === "en"? name: name_amh} {t('category')}</Text>
         
         {/* Search Container */}
-        <View style={styles.searchContainer}>
+        {/* <View style={styles.searchContainer}>
           <TextInput
             placeholder={t('search')}
             style={styles.searchInput}
             placeholderTextColor="#999"
           />
           <Ionicons name="search" size={20} color="#445399" style={styles.searchIcon} />
-        </View>
+        </View> */}
       </View>
 
       {/* Product Grid */}

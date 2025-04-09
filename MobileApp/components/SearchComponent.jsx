@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: 'bold',
-    color: '#8B4513',
+    color: '#445399',
   },
   loadingText: {
     padding: 16,
