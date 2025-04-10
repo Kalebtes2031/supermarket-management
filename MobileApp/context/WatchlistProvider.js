@@ -33,24 +33,26 @@ export const WatchlistProvider = ({ children }) => {
   };
 
  // Check if a product is in the watchlist by its variation id
-const isFavorite = (variationId) => {
-    return watchlist.some((item) => item.variations[0].id === variationId);
-  };
+ const isFavorite = (variationId) => {
+  return watchlist.some((item) => item.variation.id === variationId);
+};
+
   
   // Add product to watchlist (using variation id as identifier)
   const addToWatchlist = (product) => {
-    // Optionally check to avoid duplicates if needed
-    if (!isFavorite(product.variations[0].id)) {
+    if (!isFavorite(product.variation.id)) {
       const updatedList = [...watchlist, product];
       saveWatchlist(updatedList);
     }
   };
   
+  
   // Remove product from watchlist by variation id
   const removeFromWatchlist = (variationId) => {
-    const updatedList = watchlist.filter((item) => item.variations[0].id !== variationId);
+    const updatedList = watchlist.filter((item) => item.variation.id !== variationId);
     saveWatchlist(updatedList);
   };
+  
   
   return (
     <WatchlistContext.Provider

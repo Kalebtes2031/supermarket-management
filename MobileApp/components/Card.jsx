@@ -27,11 +27,11 @@ const Card = ({ product }) => {
   const colorScheme = useColorScheme();
   const router = useRouter();
 
-  const isFavorited = isFavorite(product.variations[0].id);
+  const isFavorited = isFavorite(product.variation.id);
 
 const toggleFavorite = () => {
   if (isFavorited) {
-    removeFromWatchlist(product.variations[0].id);
+    removeFromWatchlist(product.variation.id);
     Toast.show({
       type: "info",
       text1:t('removed'),
@@ -57,7 +57,7 @@ const toggleFavorite = () => {
   const handleAddCartClick = async() => {
     try {
       console.log('product.variations.id', product)
-      await addItemToCart(product.variations[0].id, 1);
+      await addItemToCart(product.variation.id, 1);
       Toast.show({
         type: "success",
         text1: t('product'),
@@ -115,11 +115,11 @@ const toggleFavorite = () => {
           
           <View style={styles.priceContainer}>
             <Text style={styles.unitText}>
-              {parseInt(product?.variations[0]?.quantity)}{" "}
-              {product?.variations[0]?.unit}
+              {parseInt(product?.variation?.quantity)}{" "}
+              {product?.variation?.unit}
             </Text>
             <Text style={styles.priceText}>
-              {t('etb')} {product.variations[0].price}
+              {t('etb')} {product.variation?.price}
             </Text>
           </View>
         </View>

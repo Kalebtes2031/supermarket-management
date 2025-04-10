@@ -39,6 +39,8 @@ class Order(models.Model):
     last_name = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(unique=False, blank=True, null=True)
     need_delivery = models.BooleanField(default=True)
+    customer_latitude = models.FloatField(null=True, blank=True)
+    customer_longitude = models.FloatField(null=True, blank=True)
     
     def calculate_total(self):
         self.total = sum(item.get_total_price() for item in self.items.all())

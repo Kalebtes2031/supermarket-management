@@ -11,5 +11,7 @@
     "delivered":"Delivered",
     "prepared":"Prepared",
     "accepted":"On the way",
-    "confirmed":"Confirmed"
+    "confirmed":"Confirmed",
+    "nocompletedelivery":"There is no Completed Delivery",
+    "noactivedelivery":"There is no Active Delivery"
 }

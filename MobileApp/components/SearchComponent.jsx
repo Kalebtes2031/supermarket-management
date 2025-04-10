@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  TextInput, 
-  Text, 
-  TouchableOpacity, 
-  FlatList, 
-  StyleSheet, 
-  Keyboard, 
-  TouchableWithoutFeedback 
-} from 'react-native';
-import { Feather, FontAwesome } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
-import { fetchSearchProducts } from '@/hooks/useFetch';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
+import { fetchSearchProducts } from "@/hooks/useFetch";
 
 const SearchProducts = () => {
   const navigation = useRouter();
-  const { t, i18n } = useTranslation('header');
-  const [query, setQuery] = useState('');
+  const { t, i18n } = useTranslation("header");
+  const [query, setQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -40,7 +40,7 @@ const SearchProducts = () => {
         setShowDropdown(false);
         return;
       }
-      
+
       setLoading(true);
       try {
         const response = await fetchSearchProducts(debouncedQuery);
@@ -48,7 +48,7 @@ const SearchProducts = () => {
         // Only show dropdown if there is any input
         setShowDropdown(true);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }
@@ -59,12 +59,14 @@ const SearchProducts = () => {
 
   const highlightText = (text, highlight) => {
     if (!text) return text;
-    
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+
+    const parts = text.split(new RegExp(`(${highlight})`, "gi"));
     return parts.map((part, index) => (
       <Text
         key={index}
-        style={part.toLowerCase() === highlight.toLowerCase() ? styles.highlight : {}}
+        style={
+          part.toLowerCase() === highlight.toLowerCase() ? styles.highlight : {}
+        }
       >
         {part}
       </Text>
@@ -84,7 +86,7 @@ const SearchProducts = () => {
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.input}
-              placeholder={t('search')}
+              placeholder={t("search")}
               value={query}
               onChangeText={(text) => {
                 setQuery(text);
@@ -101,9 +103,9 @@ const SearchProducts = () => {
                 if (query.trim()) setShowDropdown(true);
               }}
             />
-            
+
             <TouchableOpacity
-              onPress={() => query && setQuery('')}
+              onPress={() => query && setQuery("")}
               style={styles.clearButton}
             >
               {query ? (
@@ -131,16 +133,47 @@ const SearchProducts = () => {
                     <TouchableOpacity
                       style={styles.item}
                       onPress={() => {
-                        navigation.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(item))}`);
-                        setQuery(i18n.language === 'en' ? item.item_name : item.item_name_amh);
+                        const wrappedProduct = {
+                          item_name: item.item_name,
+                          item_name_amh: item.item_name_amh,
+                          category: {
+                            name: item.category,
+                            name_amh: item.category,
+                          }, // adapt as needed
+                          image: item.image,
+                          variation: {
+                            id: item.id,
+                            quantity: item.quantity,
+                            unit: item.unit,
+                            price: item.price,
+                            in_stock: item.in_stock,
+                            stock_quantity: item.stock_quantity,
+                          },
+                        };
+
+                        navigation.push(
+                          `/carddetail?product=${encodeURIComponent(
+                            JSON.stringify(wrappedProduct)
+                          )}`
+                        );
+                        setQuery(
+                          i18n.language === "en"
+                            ? item.item_name
+                            : item.item_name_amh
+                        );
                         setShowDropdown(false);
                       }}
                     >
-                      <Text style={styles.itemText}>
-                        {i18n.language === 'en'
-                          ? highlightText(item.item_name, query)
-                          : highlightText(item.item_name_amh, query)}
-                      </Text>
+                      <View style={{flexDirection:"row" }}>
+                        <Text style={styles.itemText}>
+                          {i18n.language === "en"
+                            ? highlightText(item.item_name, query)
+                            : highlightText(item.item_name_amh, query)}
+                        </Text>
+                        <Text>
+                          {parseInt(item.quantity)} {item.unit}
+                        </Text>
+                      </View>
                       <Text style={styles.price}>${item.price}</Text>
                     </TouchableOpacity>
                   )}
@@ -163,20 +196,20 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     borderRadius: 25,
     paddingHorizontal: 16,
     height: 50,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: "#000",
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   clearButton: {
     padding: 8,
@@ -185,14 +218,14 @@ const styles = StyleSheet.create({
   searchButton: {
     paddingLeft: 12,
     borderLeftWidth: 1,
-    borderLeftColor: '#000',
+    borderLeftColor: "#000",
   },
   dropdown: {
-    position: 'absolute',
+    position: "absolute",
     top: 60,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     elevation: 4,
     maxHeight: 200,
@@ -200,36 +233,37 @@ const styles = StyleSheet.create({
   item: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    borderBottomColor: "#eee",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     zIndex: 10,
     marginBottom: 23,
   },
   itemText: {
     fontSize: 14,
-    color: '#333',
-    flex: 1,
+    color: "#333",
+    marginRight:6,
+    // flex: 1,
   },
   price: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginLeft: 8,
   },
   highlight: {
-    fontWeight: 'bold',
-    color: '#445399',
+    fontWeight: "bold",
+    color: "#445399",
   },
   loadingText: {
     padding: 16,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
   noResults: {
     padding: 16,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
 });
 

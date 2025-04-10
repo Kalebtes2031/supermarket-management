@@ -9,7 +9,7 @@ import {
 import { useWatchlist } from "@/context/WatchlistProvider";
 import Card from "@/components/Card";
 import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -17,7 +17,6 @@ const WatchlistScreen = () => {
   const { watchlist } = useWatchlist();
   const router = useRouter();
   const { t, i18n } = useTranslation("watchlist");
-
 
   return (
     <View style={styles.container}>
@@ -42,16 +41,11 @@ const WatchlistScreen = () => {
       {watchlist.length === 0 ? (
         <Text style={styles.emptyMessage}>{t('your')}</Text>
       ) : (
-        // <FlatList
-        //   data={watchlist}
-        //   renderItem={({ item }) => <Card product={item} />}
-        //   keyExtractor={(item) => item.id.toString()}
-        //   numColumns={2}
-        // />
+        // Render using a FlatList or map method
         <View style={styles.popularContainer}>
           {watchlist.length > 0 ? (
             watchlist.map((product, index) => (
-              <View key={product.id || index} style={styles.cardWrapper}>
+              <View key={product.variation.id || index} style={styles.cardWrapper}>
                 <Card product={product} />
               </View>
             ))
@@ -73,14 +67,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 10,
-    // borderBottomWidth: 1,
-    // borderBottomColor: "#eee",
   },
   iconWrapper: {
     position: "relative",
     marginRight: 16,
   },
-
   badge: {
     position: "absolute",
     top: -8,
@@ -92,26 +83,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    // zIndex: 10, // Ensures the badge is on top
   },
-
   badgeText: {
     color: "white",
     fontSize: 10,
     fontWeight: "bold",
   },
-  backButton: {
-    marginRight: 10,
-    paddingHorizontal: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
     textAlign: "center",
     color: "#445399",
     marginBottom: 30,
@@ -120,20 +100,23 @@ const styles = StyleSheet.create({
     marginBottom: 36,
     padding: 16,
     flexDirection: "row",
-    flexWrap: "wrap", // Allows wrapping to the next row
-    justifyContent: "space-between", // Adds spacing between cards
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   cardWrapper: {
-    // backgroundColor: "#fff",
     width: "48%",
-    marginBottom: 16, // Adds spacing between rows
+    marginBottom: 16,
   },
   loadingText: {
     fontSize: 16,
     textAlign: "center",
     color: "#555",
   },
-  emptyMessage: { fontSize: 16, color: "#888", textAlign: "center" },
+  emptyMessage: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
+  },
 });
 
 export default WatchlistScreen;

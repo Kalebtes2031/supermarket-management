@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .models import Order, OrderItem, Payment
 from shop.serializers import ProductSerializer, ProductVariantSerializer
 from django.utils import timezone
+from delivery.serializers import AvailableDeliverySerializer
+
 
 class ScheduleDeliverySerializer(serializers.Serializer):
     scheduled_delivery = serializers.DateTimeField()
@@ -28,10 +30,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.SerializerMethodField()
-
+    delivery_person = AvailableDeliverySerializer(read_only=True)
+    
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email', 'need_delivery']
+        fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email', 'need_delivery', 'customer_latitude', 'customer_longitude']
 
     def get_user(self, obj):
         if obj.user:

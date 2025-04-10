@@ -546,7 +546,9 @@ class OrderCreateView(generics.CreateAPIView):
             phone_number=self.request.data.get("phone_number"),
             first_name=self.request.data.get("first_name"),
             last_name=self.request.data.get("last_name"),
-            email=self.request.data.get("email")
+            email=self.request.data.get("email"),
+            customer_latitude=self.request.data.get('customer_latitude'),
+            customer_longitude=self.request.data.get('customer_longitude'),
         )
 
         # Add cart items to the order

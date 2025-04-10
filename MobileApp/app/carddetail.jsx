@@ -40,10 +40,10 @@ const ProductDetail = ({ route }) => {
     console.log('try to work is hard:', watchlist)
     console.log('try to work is nothard:', product)
   },[])
-  const isFavorited = isFavorite(product.variations[0].id);
+  const isFavorited = isFavorite(product.variation.id);
 const toggleFavorite = () => {
   if (isFavorited) {
-    removeFromWatchlist(product.variations[0].id);
+    removeFromWatchlist(product.variation.id);
     Toast.show({
       type: "info",
       text1:t('removed'),
@@ -69,8 +69,8 @@ const toggleFavorite = () => {
 
   const handleAddToCart = () => {
     console.log("quantity", quantity);
-    console.log("id", product.id);
-    addItemToCart(product.id, quantity);
+    console.log("id", product.variation.id);
+    addItemToCart(product.variation.id, quantity);
 
     Toast.show({
       type: "success",
@@ -131,14 +131,14 @@ const toggleFavorite = () => {
                 style={[
                   styles.stockStatus,
                   {
-                    backgroundColor: product.variations[0]?.in_stock
+                    backgroundColor: product.variation?.in_stock
                       ? "#4CAF50"
                       : "#F44336",
                   },
                 ]}
               >
                 <Text style={styles.stockText}>
-                  {product.variations[0]?.in_stock
+                  {product.variation?.in_stock
                     ? "In Stock"
                     : "Out of Stock"}
                 </Text>
@@ -168,7 +168,7 @@ const toggleFavorite = () => {
             className="text-primary absolute left-10 bottom-1 font-poppins-bold mt-6 mb-10"
             style={{ fontSize: 18, fontWeight: 700 }}
           >
-            {t('br')} {parseInt(product.variations[0]?.price)}
+            {t('br')} {parseInt(product.variation?.price)}
           </Text>
           <View
             style={styles.quantityContainer}

@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import SearchProducts from "@/components/SearchComponent";
 
 const Shop = () => {
-  const { t, i18n } = useTranslation('shop');
+  const { t, i18n } = useTranslation("shop");
   const { width, height } = Dimensions.get("window");
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
@@ -38,7 +38,6 @@ const Shop = () => {
     try {
       const data = await fetchProducts();
       setProducts(data);
-      
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -57,6 +56,17 @@ const Shop = () => {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  // After fetching products:
+  const flattenedProducts = products.flatMap((product) =>
+    product.variations.map((variation) => ({
+      ...product,
+      variation, // add a property for the specific variation
+    }))
+  );
+  const variationCount = products.reduce((acc, product) => acc + product.variations.length, 0);
+
+
   const ListHeader = () => (
     <View style={styles.container}>
       {/* Header Section */}
@@ -69,14 +79,17 @@ const Shop = () => {
         </TouchableOpacity>
 
         <Text style={styles.categoryTitle}> {t("products")}</Text>
-        <Text style={styles.categoryTitle2}> {products.length} {t('items')}</Text>
+        <Text style={styles.categoryTitle2}>
+          {" "}
+          {flattenedProducts.length} {t("items")}
+
+        </Text>
       </View>
       {/* Content Area */}
       <View style={styles.contentContainer}>
         {/* Image Background Section */}
-        
+
         {/* <SearchProducts /> */}
-        
       </View>
     </View>
   );
@@ -90,18 +103,20 @@ const Shop = () => {
         >
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-  
+
         <Text style={styles.categoryTitle}>{t("products")}</Text>
-        <Text style={styles.categoryTitle2}>{products.length} {t('items')}</Text>
+        <Text style={styles.categoryTitle2}>
+          {flattenedProducts.length} {t("items")}
+        </Text>
       </View>
-  
+
       {/* Fixed Search Container */}
       <View style={styles.searchContainer}>
         <SearchProducts />
       </View>
-  
+
       {/* Products List */}
-      <FlatList
+      {/* <FlatList
         data={products}
         renderItem={({ item }) => (
           <View style={styles.cardContainer}>
@@ -115,25 +130,39 @@ const Shop = () => {
         ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
         onRefresh={onRefresh}
         refreshing={refreshing}
+      /> */}
+      <FlatList
+        data={flattenedProducts}
+        renderItem={({ item }) => (
+          <View style={styles.cardContainer}>
+            <Card product={item} />
+          </View>
+        )}
+        keyExtractor={(item) => item.variation.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.flatListContent}
+        ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
       />
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   header: {
     height: 200,
-    backgroundColor: '#445399',
+    backgroundColor: "#445399",
     paddingHorizontal: 20,
     paddingTop: 50,
   },
   searchContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 210, // Adjusted to appear below header titles
     left: 0,
     right: 0,
@@ -145,12 +174,12 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   columnWrapper: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     gap: 12,
     paddingHorizontal: 16,
   },
   cardContainer: {
-    width: '48%',
+    width: "48%",
     marginBottom: 12,
   },
   listHeaderSpacer: {
@@ -168,7 +197,7 @@ const styles = StyleSheet.create({
   //   backgroundColor: "#445399",
   //   paddingHorizontal: 20,
   //   paddingTop: 50,
-    
+
   // },
   backButton: {
     position: "absolute",
@@ -181,8 +210,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 2,
-    borderWidth:1,
-    borderColor:"white",
+    borderWidth: 1,
+    borderColor: "white",
   },
   categoryTitle: {
     position: "absolute",
@@ -206,8 +235,8 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    marginTop:0,
-    padding:10,
+    marginTop: 0,
+    padding: 10,
     backgroundColor: "white",
     borderTopLeftRadius: 38,
     borderTopRightRadius: 38,

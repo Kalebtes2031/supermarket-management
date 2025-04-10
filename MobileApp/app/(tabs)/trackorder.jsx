@@ -1,4 +1,4 @@
-import { fetchDeliveryNeedOrderHistory } from "@/hooks/useFetch";
+import { confirmOrder, fetchDeliveryNeedOrderHistory } from "@/hooks/useFetch";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Animated,
+  TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -27,6 +28,12 @@ const COLORS = {
   muted: "#94A3B8",
 };
 
+const handleprsss = async (id) => {
+  const response = await confirmOrder(id);
+  loadData();
+  console.log("is it confirmed", response);
+};
+
 const OrderTrackingScreen = () => {
   const { t, i18n } = useTranslation("track");
   const [orders, setOrders] = useState([]);
@@ -36,26 +43,25 @@ const OrderTrackingScreen = () => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    fetchDeliveryNeedOrderHistory();
+    loadData();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
   }, []);
 
+  const loadData = async () => {
+    try {
+      const data = await fetchDeliveryNeedOrderHistory();
+      // Sort orders descending by id
+      const sortedData = data.sort((a, b) => b.id - a.id);
+      setOrders(sortedData);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchDeliveryNeedOrderHistory();
-        // Sort orders descending by id
-        const sortedData = data.sort((a, b) => b.id - a.id);
-        setOrders(sortedData);
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -109,6 +115,21 @@ const OrderTrackingScreen = () => {
           <View style={styles.headerLeft}>
             <Text style={styles.orderNumber}>ORDER #{item.id}</Text>
           </View>
+          <View
+            style={{
+              padding: 1,
+              // height:200,
+            }}
+          >
+            <Image
+              style={{
+                padding: 1,
+                height: 150,
+                width: 300,
+              }}
+              source={require("@/assets/images/yasonmap.jpg")}
+            />
+          </View>
           <View style={styles.countdownWrapper}>
             {item.status === "Delivered" ? (
               <View style={styles.deliveredBadge}>
@@ -141,7 +162,7 @@ const OrderTrackingScreen = () => {
         <View style={styles.progressContainer}>
           <View style={styles.progressStep}>
             <Icon name="check-circle" size={20} color="#4CAF50" />
-            <Text style={styles.progressLabel}>{t('confirmed')}</Text>
+            <Text style={styles.progressLabel}>{t("confirmed")}</Text>
           </View>
 
           <View
@@ -159,15 +180,19 @@ const OrderTrackingScreen = () => {
               size={20}
               color={item.prepared ? COLORS.success : COLORS.muted}
             />
-            <Text style={styles.progressLabel}>{t('prepared')}</Text>
+            <Text style={styles.progressLabel}>{t("prepared")}</Text>
           </View>
 
           <View
             style={[
               styles.progressLine,
               {
+                // backgroundColor:
+                //   item.status === "Accepted" ? COLORS.success : COLORS.muted,
                 backgroundColor:
-                  item.status === "Accepted" ? COLORS.success : COLORS.muted,
+                  item.status === "Accepted" || item.status === "Delivered"
+                    ? COLORS.success
+                    : COLORS.muted,
               },
             ]}
           />
@@ -180,11 +205,18 @@ const OrderTrackingScreen = () => {
                   : "radio-button-unchecked"
               }
               size={20}
+              // color={
+              //   item.status === "Accepted"
+              //     ? COLORS.success
+              //     : COLORS.muted
+              // }
               color={
-                item.status === "Accepted" ? COLORS.success : COLORS.muted
+                item.status === "Accepted" || item.status === "Delivered"
+                  ? COLORS.success
+                  : COLORS.muted
               }
             />
-            <Text style={styles.progressLabel}>{t('accepted')}</Text>
+            <Text style={styles.progressLabel}>{t("accepted")}</Text>
           </View>
           <View
             style={[
@@ -208,13 +240,13 @@ const OrderTrackingScreen = () => {
                 item.status === "Delivered" ? COLORS.success : COLORS.muted
               }
             />
-            <Text style={styles.progressLabel}>{t('delivered')}</Text>
+            <Text style={styles.progressLabel}>{t("delivered")}</Text>
           </View>
         </View>
 
         {/* Order Details */}
         <View style={styles.detailsContainer}>
-          <Text style={styles.sectionTitle}>{t('summary')}</Text>
+          <Text style={styles.sectionTitle}>{t("summary")}</Text>
 
           {item.items.map((product, index) => (
             <View key={`item-${item.id}-${index}`} style={styles.productItem}>
@@ -241,7 +273,7 @@ const OrderTrackingScreen = () => {
                   </Text>
                 </View>
                 <View>
-                  <Text style={styles.productName}>{t('subtotal')}</Text>
+                  <Text style={styles.productName}>{t("subtotal")}</Text>
 
                   <Text style={styles.productMeta}>
                     Br{product.total_price}
@@ -252,20 +284,77 @@ const OrderTrackingScreen = () => {
           ))}
 
           <View style={styles.totalContainer}>
-            <Text style={styles.totalLabel}>{t('totalamount')}:</Text>
-            <Text style={styles.totalValue}>{t('br')}{item.total}</Text>
+            <Text style={styles.totalLabel}>{t("totalamount")}:</Text>
+            <Text style={styles.totalValue}>
+              {t("br")}
+              {item.total}
+            </Text>
           </View>
         </View>
 
         {/* Delivery Info */}
         <View style={styles.deliveryInfo}>
           <Icon name="local-shipping" size={20} color={COLORS.secondary} />
-          <View style={styles.deliveryDetails}>
-            <Text style={styles.driverText}>
+          {/* <View style={styles.deliveryDetails}> */}
+          {/* <Text style={styles.driverText}>
               {item.delivery_person || t("await")}
-            </Text>
-            {/* <Text style={styles.contactText}>Contact: {item.phone_number}</Text> */}
+            </Text> */}
+          {/* <Text style={styles.contactText}>Contact: {item.phone_number}</Text> */}
+          {/* </View> */}
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "start",
+              alignItems: "center",
+            }}
+          >
+            <View>
+              {item?.user?.image ? (
+                <Image
+                  source={{
+                    uri: item?.delivery_person?.user?.image,
+                  }}
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 38,
+                    marginRight: 12,
+                    borderWidth: 1,
+                  }}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 38,
+                    marginRight: 12,
+                    borderWidth: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Icon name="person" size={40} color="#666" />
+                </View>
+              )}
+            </View>
+            <View>
+              <Text>
+                {item?.delivery_person?.user?.first_name}{" "}
+                {item?.delivery_person?.user?.last_name}
+              </Text>
+              <Text>{item?.delivery_person?.user.phone_number}</Text>
+            </View>
           </View>
+          {item.status === "Accepted" && (
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: "#4CAF50" }]}
+              onPress={() => handleprsss(item.id)}
+            >
+              <Text style={styles.buttonText}>Confirm</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -297,6 +386,22 @@ const OrderTrackingScreen = () => {
         renderSectionHeader={({ section }) => (
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
+        // Add renderSectionFooter to handle empty sections
+        renderSectionFooter={({ section }) => {
+          if (section.data.length === 0) {
+            return (
+              <View style={styles.emptySectionContainer}>
+                <Text style={styles.emptySectionText}>
+                  {section.title === t("active")
+                    ? t("noactivedelivery") // for example, "No active deliveries"
+                    : t("nocompletedelivery")}{" "}
+                  {/* e.g. "No completed deliveries" */}
+                </Text>
+              </View>
+            );
+          }
+          return null;
+        }}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -339,6 +444,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+  },
+  button: {
+    width: 90,
+    marginLeft: 22,
+    paddingVertical: 10,
+    borderRadius: 58,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 15,
   },
   orderNumber: {
     fontSize: 14,

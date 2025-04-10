@@ -8,7 +8,6 @@ import {
   TouchableOpacity, 
   Dimensions,
   TextInput,
-  NativeModules
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { fetchSameCategoryProducts } from "@/hooks/useFetch";
@@ -22,22 +21,43 @@ const CategoryDetail = () => {
   const { categoryId, name, name_amh } = useLocalSearchParams();
   const [products, setProducts] = useState([]);
   const router = useRouter();
+    const [refreshing, setRefreshing] = useState(false);
 
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    loadProducts();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+  useEffect(()=>{
+    loadProducts();
+  },[])
+
+  const loadProducts = async () => {
+    try {
+      const data = await fetchSameCategoryProducts(Number(categoryId));
+      setProducts(data);
+      console.log("Category name:", name);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const data = await fetchSameCategoryProducts(Number(categoryId));
-        setProducts(data);
-        console.log("i want to know so badly the name:", name)
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
     loadProducts();
   }, [categoryId]);
 
-  const handlePress = (items) => {
-    router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(items))}`);
+  // Flatten the array to have one item per variation
+  const flattenedProducts = products.flatMap(product =>
+    product.variations.map(variation => ({
+      ...product,
+      variation,  // attach specific variation details
+    }))
+  );
+
+  const handlePress = (item) => {
+    router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(item))}`);
   };
 
   const renderItem = ({ item, index }) => (
@@ -45,12 +65,14 @@ const CategoryDetail = () => {
       style={[
         styles.card,
         { marginLeft: index % 2 === 0 ? 0 : 32 }, // Adjust horizontal margin
-        { marginTop: index % 2 === 0 ? 20 : 55 } // Alternating top margin for zig-zag effect
+        { marginTop: index % 2 === 0 ? 20 : 55 } // Alternating top margin for a zig-zag effect
       ]}
       onPress={() => handlePress(item)}
     >
       {/* Product Name */}
-      <Text style={styles.productName}>{i18n.language === "en"?item.item_name:item.item_name_amh}</Text>
+      <Text style={styles.productName}>
+        {i18n.language === "en" ? item.item_name : item.item_name_amh}
+      </Text>
       
       {/* Image Container */}
       <View style={styles.imageContainer}>
@@ -61,14 +83,17 @@ const CategoryDetail = () => {
         />
       </View>
   
-      {/* Price Circle */}
+      {/* Price Circle using specific variation info */}
       <View style={styles.priceCircle}>
-        <Text style={styles.priceText}>{t('br')} {parseInt(item.variations[0].price)}</Text>
-        <Text style={styles.unitText}>/{item.variations[0].unit}</Text>
+        <Text style={styles.priceText}>
+          {t('br')} {parseInt(item.variation.price)}
+        </Text>
+        <Text style={styles.unitText}>
+        {parseInt(item.variation.quantity)}  /{item.variation.unit}
+        </Text>
       </View>
     </TouchableOpacity>
   );
-  
 
   return (
     <View style={styles.container}>
@@ -83,29 +108,20 @@ const CategoryDetail = () => {
               router.push("/(tabs)/home");
             }
           }}
-          
         >
           <Ionicons name="arrow-back" size={24} color="#445399" />
         </TouchableOpacity>
 
-        <Text style={styles.categoryTitle}>{i18n.language === "en"? name: name_amh} {t('category')}</Text>
-        
-        {/* Search Container */}
-        {/* <View style={styles.searchContainer}>
-          <TextInput
-            placeholder={t('search')}
-            style={styles.searchInput}
-            placeholderTextColor="#999"
-          />
-          <Ionicons name="search" size={20} color="#445399" style={styles.searchIcon} />
-        </View> */}
+        <Text style={styles.categoryTitle}>
+          {i18n.language === "en" ? name : name_amh} {t('category')}
+        </Text>
       </View>
 
       {/* Product Grid */}
       <FlatList
-        data={products}
+        data={flattenedProducts}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.variation.id.toString()} 
         numColumns={2}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
@@ -113,6 +129,8 @@ const CategoryDetail = () => {
             <Text style={styles.emptyText}>{t('noproduct')}</Text>
           </View>
         }
+        onRefresh={onRefresh}
+        refreshing={refreshing}
       />
     </View>
   );
@@ -145,7 +163,7 @@ const styles = StyleSheet.create({
   categoryTitle: {
     position: "absolute",
     top: 100,
-    left: 20,
+    left: 120,
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",

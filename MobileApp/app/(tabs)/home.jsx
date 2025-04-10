@@ -82,14 +82,25 @@ export default function HomeScreen() {
   const newPopular = async () => {
     try {
       const data = await fetchPopularProducts();
-      // console.log("all data: ", data)
-      const firstFourPopularImages = data.slice(0, 6);
-      setVeryPopular(firstFourPopularImages);
-      console.log("first four:", firstFourPopularImages);
+  
+      // Flatten all products into product+variation combos
+      const flattenedAll = data.flatMap(product =>
+        product.variations.map(variation => ({
+          ...product,
+          variation,
+        }))
+      );
+  
+      // Take only the first 6 variation-based cards
+      const limitedPopular = flattenedAll.slice(0, 6);
+  
+      setVeryPopular(limitedPopular);
+      console.log("Limited Popular Items:", limitedPopular);
     } catch (error) {
       console.error("Error fetching new popular images", error);
     }
   };
+  
 
   useEffect(() => {
     newestImages();
@@ -101,7 +112,7 @@ export default function HomeScreen() {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchNewCategories();
-    newPopular();
+    // newPopular();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -339,7 +350,10 @@ export default function HomeScreen() {
         <View style={styles.popularContainer}>
           {veryPopular.length > 0 ? (
             veryPopular.map((product, index) => (
-              <View key={product.id || index} style={styles.cardWrapper}>
+              <View
+                key={product.variation.id || index}
+                style={styles.cardWrapper}
+              >
                 <Card product={product} />
               </View>
             ))
@@ -362,21 +376,21 @@ const styles = StyleSheet.create({
     height: 96, // same as above
     // borderLeftWidth: 1,
     // borderRightWidth: 1,
-    borderColor: 'rgba(0,0,0,0.2)', // slight border on left/right
+    borderColor: "rgba(0,0,0,0.2)", // slight border on left/right
     borderRadius: 24,
-    backgroundColor: '#fff', // important for shadows
+    backgroundColor: "#fff", // important for shadows
     // Shadow for iOS:
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 }, // pushes shadow downward
     shadowOpacity: 0.3,
     shadowRadius: 1, // keep radius small so the top isn't blurred
     // For Android:
-    elevation: 4,// for Android shadow
-    // padding:2, 
+    elevation: 4, // for Android shadow
+    // padding:2,
   },
   image1: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 24,
   },
   popularContainer: {

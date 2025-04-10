@@ -14,6 +14,30 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         model = ProductVariation
         fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'product']
 
+# serializers.py
+
+class ProductVariationNewSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source="variations.item_name")
+    item_name_amh = serializers.CharField(source="variations.item_name_amh")
+    category = serializers.StringRelatedField(source="variations.category")
+    image = serializers.ImageField(source="variations.image")
+
+    class Meta:
+        model = ProductVariation
+        fields = [
+            "id",
+            "item_name",
+            "item_name_amh",
+            "category",
+            "image",
+            "quantity",
+            "unit",
+            "price",
+            "in_stock",
+            "stock_quantity",
+        ]
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category

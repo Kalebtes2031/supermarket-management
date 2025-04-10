@@ -28,11 +28,16 @@ import * as ImagePicker from "expo-image-picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import Octicons from "@expo/vector-icons/Octicons";
-import { getAccessToken, updateUserProfile, updateUserProfileImage } from "@/hooks/useFetch";
+import {
+  getAccessToken,
+  updateUserProfile,
+  updateUserProfileImage,
+} from "@/hooks/useFetch";
 import axios from "axios";
 import { useWatchlist } from "@/context/WatchlistProvider";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "@/components/LanguageToggle";
+import SearchComponent from "@/components/SearchComponent";
 
 const Header = () => {
   const { t, i18n } = useTranslation("header");
@@ -50,6 +55,12 @@ const Header = () => {
   const cartSlideAnim = useRef(new Animated.Value(300)).current;
   const [editMode, setEditMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState("EN");
+
+  const [showSearch, setShowSearch] = useState(false);
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+  };
 
   // Function to toggle the modal
   const toggleModal = () => {
@@ -116,12 +127,12 @@ const Header = () => {
     try {
       const token = await getAccessToken();
       const formData = new FormData();
-  
+
       // Check if the imageUri is local (i.e., starts with "file://")
       if (imageUri && imageUri.startsWith("file://")) {
         const uriParts = imageUri.split(".");
         const fileType = uriParts[uriParts.length - 1];
-  
+
         formData.append("image", {
           uri: imageUri,
           name: `profile.${fileType}`,
@@ -132,9 +143,9 @@ const Header = () => {
         // Optionally handle non-local URIs or exit early
         return;
       }
-  
-      const response = await updateUserProfileImage(formData)
-  
+
+      const response = await updateUserProfileImage(formData);
+
       if (response.status === 200) {
         setUser(response.data);
       }
@@ -146,7 +157,7 @@ const Header = () => {
       );
     }
   };
-  
+
   const handleLanguageToggle = () => {
     const newLangCode = currentLanguage === "EN" ? "amh" : "en";
     setCurrentLanguage(currentLanguage === "EN" ? "AM" : "EN");
@@ -180,17 +191,29 @@ const Header = () => {
 
         {/* Icons on the right */}
         {/* Icons on the right */}
+        <View style={{position:"relative"}}>
+
         <ThemedView
           style={[
             styles.iconContainer,
             { backgroundColor: colorScheme === "dark" ? "#333" : "#fff" },
           ]}
         >
-          <MaterialIcons
-            name="search"
-            size={24}
-            style={{ color: colorScheme === "dark" ? "#fff" : "#445399" }}
-          />
+          <View>
+            
+          </View>
+          {/* <TouchableOpacity onPress={toggleSearch}>
+            <MaterialIcons
+              name="search"
+              size={24}
+              style={{ color: colorScheme === "dark" ? "#fff" : "#445399" }}
+            />
+          </TouchableOpacity> */}
+          {/* {showSearch && (
+            <View style={styles.searchOverlay}>
+              <SearchComponent />
+            </View>
+          )} */}
 
           <View style={styles.iconWrapper}>
             <TouchableOpacity
@@ -208,6 +231,7 @@ const Header = () => {
             <Ionicons name="person" size={24} color="#445399" />
           </TouchableOpacity>
         </ThemedView>
+        </View>
       </ThemedView>
 
       {/* Slide-in menu Modal in left side */}
@@ -368,7 +392,7 @@ const Header = () => {
             >
               <AntDesign name="setting" size={24} color="#445399" />
               <Text className="font-poppins-mediu" style={styles.linkText}>
-                {t('settings')}
+                {t("settings")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -386,7 +410,7 @@ const Header = () => {
             >
               <SimpleLineIcons name="note" size={24} color="#445399" />
               <Text className="font-poppins-mediu" style={styles.linkText}>
-                {t('terms')}
+                {t("terms")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -395,7 +419,7 @@ const Header = () => {
             >
               <MaterialIcons name="question-answer" size={24} color="#445399" />
               <Text className="font-poppins-mediu" style={styles.linkText}>
-                {t('faq')}
+                {t("faq")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -404,7 +428,7 @@ const Header = () => {
             >
               <MaterialIcons name="privacy-tip" size={24} color="#445399" />
               <Text className="font-poppins-mediu" style={styles.linkText}>
-                {t('privacy')}
+                {t("privacy")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -413,7 +437,7 @@ const Header = () => {
             >
               <MaterialIcons name="delete" size={24} color="#445399" />
               <Text className="font-poppins-mediu" style={styles.linkText}>
-                {t('remove')}
+                {t("remove")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -434,6 +458,13 @@ const styles = StyleSheet.create({
     // position: "absolute",
     // top: 0,
     // zIndex: 1000,
+  },
+  searchOverlay: {
+    position: "absolute",
+    top:20,       // adjust as needed
+    left:-120,   // if you want full screen overlay, or just position relative to your header
+    backgroundColor: "rgba(0,0,0,0.5)", // optional semi-transparent background
+    // additional styling (padding, etc.) if needed
   },
   profileHeader: {
     alignItems: "start",
@@ -502,6 +533,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: 100,
     marginRight: 10,
+  
   },
   iconWrapper: {
     position: "relative",

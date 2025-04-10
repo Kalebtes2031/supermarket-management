@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import RetrieveAPIView, ListAPIView
-from .models import Product, Category,Size, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage
+from .models import Product, ProductVariation, Category,Size, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage
 from .serializers import (
     ProductSerializer, 
     CategorySerializer,
@@ -12,6 +12,7 @@ from .serializers import (
     ExploreFamilyImageSerializer,
     EventImageSerializer,
     DiscoverEthiopianImageSerializer,
+    ProductVariationNewSerializer
 )
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -22,18 +23,22 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Min
 
 
+# views.py
+
 class ProductSearchView(ListAPIView):
-    serializer_class = ProductSerializer
+    serializer_class = ProductVariationNewSerializer
     pagination_class = PageNumberPagination
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        query = self.request.query_params.get('q', '').strip()  # Fetch and strip the 'q' parameter
-        return Product.objects.filter(
-            Q(item_name__icontains=query) |
-            Q(item_name_amh__icontains=query) |
-            Q(category__name__icontains=query) | 
-            Q(category__name_amh__icontains=query)
+        query = self.request.query_params.get('q', '').strip()
+        
+        # Filter ProductVariation based on parent Product fields
+        return ProductVariation.objects.filter(
+            Q(variations__item_name__icontains=query) |
+            Q(variations__item_name_amh__icontains=query) |
+            Q(variations__category__name__icontains=query) |
+            Q(variations__category__name_amh__icontains=query)
         )
 
 
