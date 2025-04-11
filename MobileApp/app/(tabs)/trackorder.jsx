@@ -1,5 +1,5 @@
 import { confirmOrder, fetchDeliveryNeedOrderHistory } from "@/hooks/useFetch";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,10 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import AnimatedCountdown from "@/components/AnimatedCountdown";
 import { useTranslation } from "react-i18next";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import { ref, onValue } from "firebase/database";
+import { database } from "@/firebaseConfig";
+import OrderMapView from "@/components/OrderMapView";
 
 // Color Constants
 const COLORS = {
@@ -40,6 +44,7 @@ const OrderTrackingScreen = () => {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [refreshing, setRefreshing] = useState(false);
+  
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -121,14 +126,16 @@ const OrderTrackingScreen = () => {
               // height:200,
             }}
           >
-            <Image
+            {/* <Image
               style={{
                 padding: 1,
                 height: 150,
                 width: 300,
               }}
               source={require("@/assets/images/yasonmap.jpg")}
-            />
+            /> */}
+            <OrderMapView order={item} />
+
           </View>
           <View style={styles.countdownWrapper}>
             {item.status === "Delivered" ? (

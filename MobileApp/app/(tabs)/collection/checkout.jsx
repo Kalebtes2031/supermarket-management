@@ -10,12 +10,19 @@ import {
   TextInput,
   Image,
   StyleSheet,
+  Modal,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { createOrder, USER_PROFILE } from "@/hooks/useFetch";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { useTranslation } from "react-i18next";
+import * as Location from 'expo-location';
+// import { GebetaMap, MapMarker } from "@gebeta/tiles";
+import MapView, { Marker } from 'react-native-maps';
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+
+const GOOGLE_PLACES_API_KEY = "YOUR_GOOGLE_PLACES_API_KEY";
 
 const CheckoutPage = () => {
   const { t, i18n } = useTranslation("checkout");
@@ -35,6 +42,11 @@ const CheckoutPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [currentLocation, setCurrentLocation] = useState(null);
+ // selectedLocation: {latitude: number, longitude: number}
+ const [selectedLocation, setSelectedLocation] = useState(null);
+ const [locationChoice, setLocationChoice] = useState("current"); 
+ const [showMap, setShowMap] = useState(false);
 
   const choiceofpayment = () => {
     handleBankPayment();
@@ -74,7 +86,27 @@ const CheckoutPage = () => {
   };
   useEffect(() => {
     fetchCustomerProfile();
-  }, []);
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Toast.show({
+          type: "error",
+          text1: "Location permission not granted",
+          visibilityTime: 2000,
+        });
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setCurrentLocation(coords);
+      // Set the default selected location to current location
+      setSelectedLocation(coords);
+    })();
+  }, [user]);
+
 
   const handlePlaceOrder = async () => {
     // setShowModal(true);
@@ -87,13 +119,22 @@ const CheckoutPage = () => {
       });
       return;
     }
-
+    if (!selectedLocation) {
+      Toast.show({
+        type: "error",
+        text1: "Please select your delivery location.",
+        visibilityTime: 2000,
+      });
+      return;
+    }
     setIsLoading(true); // Show loading spinner
     const orderinfo = {
       phone_number: phone,
       first_name: firstName,
       last_name: lastName,
       email: email,
+      customer_latitude: selectedLocation.latitude,
+      customer_longitude: selectedLocation.longitude,
     };
 
     try {
@@ -154,6 +195,55 @@ const CheckoutPage = () => {
       setIsLoading(false);
     }
   };
+
+   // The map modal for custom location selection
+   const renderMapModal = () => (
+    <Modal visible={mapVisible} animationType="slide">
+      <View style={styles.mapContainer}>
+        <Text style={styles.mapHeader}>Select Your Location</Text>
+        {selectedLocation ? (
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: selectedLocation.latitude,
+              longitude: selectedLocation.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+            onPress={(e) => {
+              // When user taps on the map, update the marker location
+              const { latitude, longitude } = e.nativeEvent.coordinate;
+              setSelectedLocation({ latitude, longitude });
+            }}
+          >
+            <Marker
+              coordinate={selectedLocation}
+              draggable
+              onDragEnd={(e) => {
+                const { latitude, longitude } = e.nativeEvent.coordinate;
+                setSelectedLocation({ latitude, longitude });
+              }}
+            />
+          </MapView>
+        ) : (
+          <Text>Loading map...</Text>
+        )}
+        {/* Confirm and Cancel buttons */}
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => setMapVisible(false)}
+        >
+          <Text style={styles.confirmButtonText}>Confirm Location</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => setMapVisible(false)}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
 
   return (
     <View style={styles.container}>
@@ -226,6 +316,78 @@ const CheckoutPage = () => {
               onChangeText={setEmail}
             />
           </View>
+            {/* Location Choice Section */}
+        
+        {/* Location Choice Section */}
+        <View style={styles.locationSection}>
+          <Text style={styles.label}>Select Delivery Location:</Text>
+          <View style={styles.choiceContainer}>
+            <TouchableOpacity
+              style={[
+                styles.choiceButton,
+                locationChoice === "current" && styles.selectedChoice,
+              ]}
+              onPress={() => {
+                setLocationChoice("current");
+                if (currentLocation) {
+                  setSelectedLocation(currentLocation);
+                  setShowMap(false);
+                }
+              }}
+            >
+              <Text>Use Current Location</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.choiceButton,
+                locationChoice === "custom" && styles.selectedChoice,
+              ]}
+              onPress={() => {
+                setLocationChoice("custom");
+                // Toggle showing the inline map
+                setShowMap(true);
+              }}
+            >
+              <Text>Select on Map</Text>
+            </TouchableOpacity>
+          </View>
+          {selectedLocation && (
+            <Text style={styles.locationText}>
+              Selected: {selectedLocation.latitude.toFixed(4)},{" "}
+              {selectedLocation.longitude.toFixed(4)}
+            </Text>
+          )}
+
+          {/* Display inline map if custom location is selected */}
+          {showMap && locationChoice === "custom" && (
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: selectedLocation ? selectedLocation.latitude : 0,
+                  longitude: selectedLocation ? selectedLocation.longitude : 0,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                onPress={(e) => {
+                  const { latitude, longitude } = e.nativeEvent.coordinate;
+                  setSelectedLocation({ latitude, longitude });
+                }}
+              >
+                {selectedLocation && (
+                  <Marker
+                    coordinate={selectedLocation}
+                    draggable
+                    onDragEnd={(e) => {
+                      const { latitude, longitude } = e.nativeEvent.coordinate;
+                      setSelectedLocation({ latitude, longitude });
+                    }}
+                  />
+                )}
+              </MapView>
+            </View>
+          )}
+        </View>
         </View>
         <Text
           className="font-poppins-bold text-center text-primary mb-4"
@@ -768,6 +930,45 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12, // text-[12px]
   },
+   locationSection: { marginVertical: 16 },
+  label: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
+  choiceContainer: { flexDirection: "row", marginBottom: 8 },
+  choiceButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
+    marginHorizontal: 4,
+    borderRadius: 4,
+  },
+  selectedChoice: { backgroundColor: "#d0e8ff" },
+  locationText: { marginTop: 8, fontSize: 14 },
+  mapContainer: {
+    width: 300,
+    height: 250,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  map: { width: "100%", height: "100%" },
+  confirmButton: {
+    backgroundColor: "#445399",
+    padding: 12,
+    borderRadius: 8,
+    margin: 16,
+    alignItems: "center"
+  },
+  confirmButtonText: { color: "#fff", fontSize: 16 },
+  cancelButton: {
+    padding: 12,
+    borderRadius: 8,
+    margin: 16,
+    alignItems: "center"
+  },
+  cancelButtonText: { color: "#445399", fontSize: 16 },
 });
 
 export default CheckoutPage;

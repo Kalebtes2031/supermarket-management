@@ -21,11 +21,12 @@ class DeliveryUserCreateSerializer(UserCreateSerializer):
 
 
 class DeliveryPersonUserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='pk', read_only=True)
     image = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'phone_number', 'image']
+        fields = ['id','first_name', 'last_name', 'phone_number', 'image']
 
     def get_image(self, obj):
         if obj.image:
