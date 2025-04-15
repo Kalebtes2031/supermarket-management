@@ -1,5 +1,5 @@
 # orders/urls.py
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -12,6 +12,10 @@ urlpatterns = [
     path("payment/initiate", views.InitiatePaymentView.as_view(), name="initiate-payment"),
     path("payment/callback", views.PaymentCallbackView.as_view(), name="payment-callback"),
     path('orders/', views.OrderListView.as_view(), name='order-list'),
+    path('orders/all/', views.AllOrderListView.as_view(), name='all-order-list'),
+    path('orders/status/count/', views.order_status_counts, name='count-all-order-status'),
+    path('orders/status/pending/', views.PendingOrdersListView.as_view(), name='all-pending-order-status'),
+    path('orders/status/delivered/', views.DeliveredOrdersListView.as_view(), name='all-delivered-order-status'),
     path('orders/need-delivery/', views.DeliveryOrderListView.as_view(), name='orders-need-delivery'),
     path('payment-history/', views.PaymentListView.as_view(), name='payment-list'),
     path('payment-history/<int:order_id>/', views.PaymentDetailView.as_view(), name='payment-detail'),

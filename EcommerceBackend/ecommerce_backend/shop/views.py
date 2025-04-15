@@ -12,7 +12,8 @@ from .serializers import (
     ExploreFamilyImageSerializer,
     EventImageSerializer,
     DiscoverEthiopianImageSerializer,
-    ProductVariationNewSerializer
+    ProductVariationNewSerializer,
+    ProductVariantSerializer
 )
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -21,7 +22,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Min
-
+from accounts.permissions import IsAdminOrSuperUser
 
 # views.py
 
@@ -66,9 +67,22 @@ class ProductDetailView(RetrieveAPIView):
     queryset = Product.objects.prefetch_related('variations')
     serializer_class = ProductSerializer
 
-class CategoryViewSet(ModelViewSet):
+class AdminCategoryViewSet(ModelViewSet):
+    """
+    API endpoint for admin users to manage categories.
+    Only accessible to admin users.
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrSuperUser]
+    
+class ProductVariantViewSet(ModelViewSet):
+    """
+    API endpoint that allows product variations to be viewed or edited.
+    """
+    queryset = ProductVariation.objects.all()
+    serializer_class = ProductVariantSerializer
+    permission_classes = [IsAdminOrSuperUser]
     
 class ProductView(ModelViewSet):
     queryset = Product.objects.all()

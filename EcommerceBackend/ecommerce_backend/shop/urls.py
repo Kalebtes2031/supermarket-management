@@ -1,6 +1,5 @@
 from django.urls import path, include
 from .views import (ProductDetailView, 
-                    CategoryViewSet,
                     ProductView, 
                     SizeViewSet, 
                     CartView, 
@@ -14,13 +13,17 @@ from .views import (ProductDetailView,
                     DiscoverEthiopianImageListCreateView,
                     ProductSearchView,
                     CategoryListView,
+                    AdminCategoryViewSet,
+                    ProductVariantViewSet
                     )
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'category', CategoryViewSet, basename= 'category')
-router.register(r'products', ProductView)
+router.register(r'admin/category', AdminCategoryViewSet, basename= 'category')
+router.register(r'products', ProductView, basename='products')
+router.register(r'admin/products', ProductVariantViewSet, basename='admin-products')
 router.register(r'size', SizeViewSet)
+
 
 urlpatterns = [
     path('category-list/', CategoryListView.as_view(), name='category-list'),

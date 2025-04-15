@@ -3,11 +3,12 @@ from rest_framework import generics, permissions, status
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from .models import Order, OrderItem, Payment
-from shop.models import Cart, Product, ProductVariation
+from shop.models import Cart, Product, ProductVariation, Category
+from shop.serializers import CategorySerializer,ProductVariantSerializer
 from .serializers import OrderSerializer, PaymentSerializer, ScheduleDeliverySerializer
 from chapa import Chapa
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 import requests
@@ -25,7 +26,53 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from notifications import send_notification  # your custom notification function
+from django.db.models import Count
+from accounts.permissions import IsAdminOrSuperUser
+from rest_framework import viewsets
 
+
+
+    
+    
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def order_status_counts(request):
+    # Aggregate counts for each order status
+    counts = Order.objects.values('status').annotate(count=Count('id'))
+    
+    # Create a mapping from order status to its count, with defaults for statuses that might not be present
+    statuses = ['Pending', 'Waiting', 'Delivered', 'Cancelled', 'Assigned', 'Accepted', 'Ignored', 'In Transit']
+    data = { status: 0 for status in statuses }
+    
+    for entry in counts:
+        status = entry['status']
+        data[status] = entry['count']
+    
+    return Response(data)
+
+class PendingOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'pending'.
+        queryset = Order.objects.filter(status='Pending')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+    
+class DeliveredOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'delivered'.
+        queryset = Order.objects.filter(status='Delivered')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
 
 
 class ScheduleDeliveryAPIView(APIView):
@@ -582,6 +629,17 @@ class OrderListView(generics.ListAPIView):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
 
+class AllOrderListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # If the user is an admin, return all orders. For non-admins, return only their orders.
+        if user.is_staff or user.is_superuser:
+            return Order.objects.all()
+        return Order.objects.filter(user=user)
+    
 class DeliveryOrderListView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]

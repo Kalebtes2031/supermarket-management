@@ -42,6 +42,33 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         user.save()  # Explicit save to ensure the instance is saved
         return user  # Ensure the saved instance is returned
     
+    
+class CustomerSerializer(serializers.ModelSerializer):
+    total_orders = serializers.SerializerMethodField()
+    total_order_amount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        # Include the fields you need; note that you can include additional fields if necessary.
+        fields = [
+            'id', 
+            'username', 
+            'email', 
+            'phone_number', 
+            'image', 
+            'total_orders', 
+            'total_order_amount'
+        ]
+
+    def get_total_orders(self, obj):
+        # `orders` is the reverse relation defined in your Order model (related_name='orders')
+        return obj.orders.count() if obj.orders.exists() else 0
+
+    def get_total_order_amount(self, obj):
+        # Sum the total amount from each order in the user's orders queryset
+        # Note: This assumes that the Order model's `total` field is up-to-date.
+        return sum(order.total for order in obj.orders.all()) 
+    
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -61,7 +88,8 @@ class UserSerializer(BaseUserSerializer):
                   'image',
                   'is_active',
                   'is_deactivated',
-                  'date_joined', 'Date_Joined'
+                  'date_joined', 'Date_Joined',
+                  'role',
                   ]
 
     def get_Date_Joined(self, obj):

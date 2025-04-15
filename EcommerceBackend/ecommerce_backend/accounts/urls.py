@@ -1,8 +1,25 @@
-from django.urls import path
-from .views import UserListAPIView, UpdateCustomerProfile, CustomUserCreateView, UpdateUserProfileView, LoggedInUserView, SendOTPView, VerifyOTPView, ResetPasswordView
 
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (UserListAPIView, 
+                    UpdateCustomerProfile, 
+                    CustomUserCreateView, 
+                    UpdateUserProfileView, 
+                    LoggedInUserView, 
+                    SendOTPView, 
+                    VerifyOTPView, 
+                    ResetPasswordView, 
+                    AdminCustomerViewSet,
+                    AdminEmployeeViewSet,
+                    )
+
+router = DefaultRouter()
+# Register with a unique basename to prevent conflicts with other viewsets.
+router.register(r'admin/customers', AdminCustomerViewSet, basename='admin-customers')
+router.register(r'admin/vendors', AdminEmployeeViewSet, basename='admin-vendors')
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('users/', UserListAPIView.as_view(), name='user-list'),
     path('user/profile/update/', UpdateUserProfileView.as_view(), name='user-profile-update'),
     path('user/profile/', UpdateCustomerProfile.as_view(), name='user-profile-update'),

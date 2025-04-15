@@ -1,6 +1,6 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
 from .models import OTP, CustomUser
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer, OTPSendSerializer, OTPVerifySerializer
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer, OTPSendSerializer, OTPVerifySerializer, CustomerSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -23,7 +23,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from rest_framework.exceptions import ValidationError
 import africastalking
-
+from .permissions import IsAdminOrSuperUser
+from rest_framework import viewsets
 import logging
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,17 @@ def generate_password_reset_token(user):
 print("USERNAME:", settings.AFRICASTALKING_USERNAME)
 print("API_KEY:", settings.AFRICASTALKING_API_KEY)
 
+class AdminCustomerViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only viewset to manage customers (users with role 'customer').
+    This endpoint allows admin/superuser to list, retrieve, and delete customer users.
+    """
+    serializer_class = CustomerSerializer
+    permission_classes = [IsAdminOrSuperUser]
 
+    def get_queryset(self):
+        # Fetch only users that have a customer role
+        return User.objects.filter(role='customer', is_staff=False, is_superuser=False)
 
 # africastalking.initialize(
 #     username=settings.AFRICASTALKING_USERNAME,
@@ -275,6 +286,18 @@ class UpdateUserProfileView(generics.UpdateAPIView):
 class UserListAPIView(ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+
+class AdminEmployeeViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only viewset to manage vendor (users with role 'vendor').
+    This endpoint allows admin/superuser to list, retrieve, and delete vendor users.
+    """
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+    def get_queryset(self):
+        # Fetch only users that have a vendor role
+        return User.objects.filter(role='vendor')
 
 class UpdateCustomerProfile(UpdateAPIView):
     queryset= CustomUser.objects.all()
