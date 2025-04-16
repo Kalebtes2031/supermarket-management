@@ -298,6 +298,17 @@ class AdminEmployeeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Fetch only users that have a vendor role
         return User.objects.filter(role='vendor')
+class AdminDeliverymanViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only viewset to manage delivery (users with role 'delivery').
+    This endpoint allows admin/superuser to list, retrieve, and delete delivery users.
+    """
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+    def get_queryset(self):
+        # Fetch only users that have a delivery role
+        return User.objects.filter(role='delivery')
 
 class UpdateCustomerProfile(UpdateAPIView):
     queryset= CustomUser.objects.all()

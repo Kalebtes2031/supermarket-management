@@ -21,3 +21,14 @@ class IsAdminOrSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
         # Ensure that the user is authenticated and is either staff or a superuser.
         return request.user and (request.user.is_staff or request.user.is_superuser)
+class IsVendorOrAdminOrSuperUser(permissions.BasePermission):
+    """
+    Custom permission to allow access if the user is a vendor, admin, or superuser.
+    """
+    def has_permission(self, request, view):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+
+        return (user.role == 'vendor') or user.is_staff or user.is_superuser
+    

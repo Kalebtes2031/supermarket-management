@@ -11,12 +11,14 @@ from .views import (UserListAPIView,
                     ResetPasswordView, 
                     AdminCustomerViewSet,
                     AdminEmployeeViewSet,
+                    AdminDeliverymanViewSet,
                     )
 
 router = DefaultRouter()
 # Register with a unique basename to prevent conflicts with other viewsets.
 router.register(r'admin/customers', AdminCustomerViewSet, basename='admin-customers')
 router.register(r'admin/vendors', AdminEmployeeViewSet, basename='admin-vendors')
+router.register(r'admin/delivery', AdminDeliverymanViewSet, basename='admin-delivery')
 
 urlpatterns = [
     path('', include(router.urls)),

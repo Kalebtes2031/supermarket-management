@@ -4,7 +4,7 @@ from accounts.models import CustomUser
 from .serializers import VendorUserCreateSerializer
 from orders.models import Order
 from orders.serializers import OrderSerializer, OrderItemSerializer
-from accounts.permissions import IsVendorPerson
+from accounts.permissions import IsVendorPerson, IsAdminOrSuperUser, IsVendorOrAdminOrSuperUser
 import logging
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
@@ -85,7 +85,7 @@ class UpdatePreparedStatusAPIView(APIView):
     """
     Update the 'prepared' field of an order to True based on the order's ID.
     """
-    permission_classes = [IsVendorPerson]
+    permission_classes = [IsVendorOrAdminOrSuperUser]
 
     def patch(self, request, pk):
         try:
@@ -93,6 +93,20 @@ class UpdatePreparedStatusAPIView(APIView):
             order.prepared = True
             order.save()
             return Response({"message": "Order prepared status updated successfully"}, status=status.HTTP_200_OK)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+class UpdateOrderStatusToConfirmAPIView(APIView):
+    """
+    Update the 'status' field of an order to Confirmed based on the order's ID.
+    """
+    permission_classes = [IsVendorOrAdminOrSuperUser]
+
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            order.status = "Confirmed"
+            order.save()
+            return Response({"message": "Order status updated successfully"}, status=status.HTTP_200_OK)
         except Order.DoesNotExist:
             return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -112,7 +126,7 @@ class UpdatePaymentStatusAPIView(APIView):
             return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class AssignOrderToDeliveryAPIView(APIView):
-    permission_classes = [IsVendorPerson]
+    permission_classes = [IsVendorOrAdminOrSuperUser]
 
     def post(self, request, order_id):
         delivery_person_id = request.data.get("delivery_person_id")
@@ -120,25 +134,40 @@ class AssignOrderToDeliveryAPIView(APIView):
             return Response({"error": "Delivery person id is required"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Ensure order is pending and has been prepared
-            order = Order.objects.get(id=order_id, status='Pending', prepared=True)
+            # Ensure order is confirmed and prepared
+            order = Order.objects.get(id=order_id, status='Confirmed', prepared=True)
         except Order.DoesNotExist:
             return Response({"error": "Order not available for assignment"}, status=status.HTTP_404_NOT_FOUND)
         
-        # Assuming you have a model for delivery profiles (or similar)
         try:
-            # Here we assume DeliveryProfile is linked to the CustomUser for delivery persons
             delivery_profile = AvailableDelivery.objects.get(user__id=delivery_person_id)
         except AvailableDelivery.DoesNotExist:
             return Response({"error": "Delivery person not found"}, status=status.HTTP_404_NOT_FOUND)
         
         order.status = "Assigned"
-        order.delivery_person = delivery_profile  # Assign to the dedicated field
+        order.delivery_person = delivery_profile
         order.save()
         
-        # (Optional) You can also trigger a notification to the delivery person here
+        # Serialize order data (assumes you have a serializer or can build a dict)
+        updated_order_data = {
+        "id": order.id,
+        "status": order.status,
+        "delivery_person": {
+            "user": {
+                "id": delivery_profile.user.id,
+                "first_name": delivery_profile.user.first_name,
+                "last_name": delivery_profile.user.last_name,
+                "phone_number": delivery_profile.user.phone_number,
+                # Add other fields as needed
+            },
+        },
+    }
+
         
-        return Response({"message": "Order assigned to delivery person successfully"}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Order assigned to delivery person successfully", "order": updated_order_data},
+            status=status.HTTP_200_OK
+        )
 
 
 # class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):

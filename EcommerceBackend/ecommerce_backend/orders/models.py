@@ -13,6 +13,7 @@ from delivery.models import AvailableDelivery
     
 ORDER_STATUS_CHOICES = [
     ('Pending', 'Pending'),
+    ('Confirmed', 'Confirmed'),
     ('Waiting', 'Waiting'),
     ('Fully Paid', 'Fully Paid'),
     ('Cancelled', 'Cancelled'),
