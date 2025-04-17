@@ -33,7 +33,7 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 import { useRouter } from "expo-router";
 import { useCart } from "@/context/CartProvider";
 import { Ionicons } from "@expo/vector-icons";
-
+import { groupVariationsByProduct } from "@/utils/groupByProducts";
 import LocationTracker from "@/LocationTracker";
 import { useTranslation } from "react-i18next";
 
@@ -81,27 +81,41 @@ export default function HomeScreen() {
 
   const newPopular = async () => {
     try {
-      const data = await fetchPopularProducts();
+      const variations = await fetchPopularProducts();
   
-      // Flatten all products into product+variation combos
-      const flattenedAll = data.flatMap(product =>
-        product.variations.map(variation => ({
-          ...product,
-          variation,
-        }))
-      );
+      // Turn each variation into a "product-with-variation" object
+      const products = variations.map((v) => ({
+        id:               v.product.id,
+        item_name:        v.product.item_name,
+        item_name_amh:    v.product.item_name_amh,
+        image:            v.product.image,
+        // if you need the other image_* fields (full, left, etc), 
+        // you’ll have to include them in your ProductVariantSerializer
+        // and then spread them here:
+        // image_full:     v.product.image_full,
+        // image_left:     v.product.image_left,
+        // …etc.
   
-      // Take only the first 6 variation-based cards
-      const limitedPopular = flattenedAll.slice(0, 6);
+        category:         v.product.category, // only if your serializer includes it
   
-      setVeryPopular(limitedPopular);
-      console.log("Limited Popular Items:", limitedPopular);
+        variation: {
+          id:             v.id,
+          quantity:       v.quantity,
+          unit:           v.unit,
+          price:          v.price,
+          in_stock:       v.in_stock,
+          stock_quantity: v.stock_quantity,
+          popularity:     v.popularity,
+        }
+      }));
+  
+      setVeryPopular(products);
+      console.log("Popular Products w/ Variations:", products);
     } catch (error) {
-      console.error("Error fetching new popular images", error);
+      console.error("Error fetching popular items", error);
     }
   };
   
-
   useEffect(() => {
     newestImages();
     newPopular();
@@ -112,7 +126,7 @@ export default function HomeScreen() {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     fetchNewCategories();
-    // newPopular();
+    newPopular();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);

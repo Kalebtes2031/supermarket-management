@@ -36,7 +36,6 @@ class Product(models.Model):
     image_left = models.ImageField(upload_to='products/', blank=True, null=True)
     image_right = models.ImageField(upload_to='products/', blank=True, null=True)
     image_back = models.ImageField(upload_to='products/', blank=True, null=True)
-    popularity = models.PositiveIntegerField(default=0)
     # description = models.TextField(blank=True, null=True)
     
     @property
@@ -71,6 +70,7 @@ class ProductVariation(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     in_stock = models.BooleanField(default=True)
     stock_quantity = models.PositiveIntegerField(default=0)
+    popularity = models.PositiveIntegerField(default=0)
 
     # def price_in_dollar(self):
     #     rate = Decimal(ExchangeRate.get_current_rate())

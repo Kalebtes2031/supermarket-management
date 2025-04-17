@@ -14,7 +14,8 @@ from .views import (ProductDetailView,
                     ProductSearchView,
                     CategoryListView,
                     AdminCategoryViewSet,
-                    ProductVariantViewSet
+                    ProductVariantViewSet,
+                    PopularProductVariationsView
                     )
 from rest_framework.routers import DefaultRouter
 
@@ -26,6 +27,7 @@ router.register(r'size', SizeViewSet)
 
 
 urlpatterns = [
+    path('popular-variations/', PopularProductVariationsView.as_view(), name='popular-variations'),
     path('category-list/', CategoryListView.as_view(), name='category-list'),
     path('productdetail/', ProductDetailView.as_view(), name='create_order'),
     path('', include(router.urls)),

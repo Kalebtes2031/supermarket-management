@@ -25,7 +25,7 @@ class ProductVariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['item_name', 'item_name_amh', 'min_price', 'popularity']
+    list_display = ['item_name', 'item_name_amh', 'min_price']
     inlines = [ProductVariantInline]
 
     def min_price(self, obj):
@@ -50,7 +50,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(ProductVariation)
 class ProductVariantAdmin(admin.ModelAdmin):
     # Instead of using 'product' directly, we define a custom method to display product information.
-    list_display = ['product_name', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity']
+    list_display = ['product_name', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'popularity']
 
     def product_name(self, obj):
         return obj.variations.item_name if obj.variations else "N/A"

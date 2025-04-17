@@ -21,10 +21,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
-from django.db.models import Min
+from django.db.models import Min,Max,Sum
 from accounts.permissions import IsAdminOrSuperUser
 
 # views.py
+
+class PopularProductVariationsView(generics.ListAPIView):
+    serializer_class = ProductVariantSerializer
+
+    def get_queryset(self):
+        return ProductVariation.objects.filter(in_stock=True).order_by('-popularity')[:6]
 
 class ProductSearchView(ListAPIView):
     serializer_class = ProductVariationNewSerializer
@@ -110,8 +116,14 @@ class ProductView(ModelViewSet):
                 queryset = queryset.order_by('min_price')
             elif sort == 'price_desc':
                 queryset = queryset.order_by('-min_price')
+        # elif sort == 'popularity':
+        #     queryset = queryset.order_by('-popularity')
         elif sort == 'popularity':
-            queryset = queryset.order_by('-popularity')
+            queryset = (
+                queryset
+                .annotate(popularity_score=Sum('variations__popularity'))
+                .order_by('-popularity_score')[:6]
+            )
         elif sort == 'latest':
             queryset = queryset.order_by('-id')
  

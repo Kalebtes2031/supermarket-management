@@ -35,7 +35,7 @@ class PendingAndPreparedOrdersListAPIView(generics.ListAPIView):
     and fully paid. Vendors can filter these orders by scheduled delivery date.
     """
     serializer_class = OrderSerializer
-    permission_classes = [IsVendorPerson]
+    permission_classes = [IsVendorOrAdminOrSuperUser]
 
     def get_queryset(self):
         queryset = Order.objects.filter(

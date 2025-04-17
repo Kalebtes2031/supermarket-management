@@ -12,7 +12,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductVariation
-        fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'product']
+        fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'product','popularity']
 
 # serializers.py
 
@@ -70,7 +70,7 @@ class ProductSerializer(serializers.ModelSerializer):
     variations = ProductVariantSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ['id', 'item_name','item_name_amh', 'image','image_full','image_left','image_right','image_back', 'category','popularity', 'variations']
+        fields = ['id', 'item_name','item_name_amh', 'image','image_full','image_left','image_right','image_back', 'category', 'variations']
 
 
 

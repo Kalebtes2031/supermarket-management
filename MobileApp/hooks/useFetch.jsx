@@ -163,9 +163,10 @@ export const fetchSameCategoryProducts = async (categoryId) => {
 };
 
 export const fetchPopularProducts = async () => {
-    const res = await api.get("products/?sort=popularity");
-    return res.data;
+  const res = await api.get("popular-variations/");
+  return res.data;
 };
+
 
 export const fetchNewImages = async () => {
     const res = await api.get("products/?sort=latest");

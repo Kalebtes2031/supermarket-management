@@ -92,17 +92,24 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.user.username} payment for Order #{self.order.id} - {self.transaction_id}"
     
-@receiver(post_save, sender=Order)
-def update_product_popularity(sender, instance, created, **kwargs):
-    """
-    Updates product popularity whenever an order is created.
-    """
-    if instance.payment_status == 'Fully Paid':  # Ensure that we only update popularity for delivered orders
-        for item in instance.items.all():
-            product = item.variations.variations
-            product.popularity += item.quantity  # Increment popularity by ordered quantity
-            product.save()
-            
+# @receiver(post_save, sender=Order)
+# def update_product_popularity(sender, instance, created, **kwargs):
+#     """
+#     Updates product popularity whenever an order is created.
+#     """
+#     if instance.payment_status == 'Fully Paid':  # Ensure that we only update popularity for delivered orders
+#         for item in instance.items.all():
+#             product = item.variations.variations
+#             product.popularity += item.quantity  # Increment popularity by ordered quantity
+#             product.save()
+# @receiver(post_save, sender=Order)
+# def update_variation_popularity(sender, instance, **kwargs):
+#     # Only run when the order becomes Pending
+#     if instance.status == 'Pending':
+#         for item in instance.items.all():
+#             variation = item.variations
+#             variation.popularity = variation.popularity + item.quantity
+#             variation.save(update_fields=['popularity'])           
 
 @receiver(post_save, sender=Payment)
 def update_order_payment_status(sender, instance, created, **kwargs):

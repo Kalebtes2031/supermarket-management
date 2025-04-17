@@ -29,25 +29,35 @@ from notifications import send_notification  # your custom notification function
 from django.db.models import Count
 from accounts.permissions import IsAdminOrSuperUser
 from rest_framework import viewsets
-
-
-
+from accounts.permissions import IsVendorOrAdminOrSuperUser
+from django.db.models import F
     
     
 @api_view(['GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsVendorOrAdminOrSuperUser])
 def order_status_counts(request):
-    # Aggregate counts for each order status
+    # 1) Aggregate counts for each status in the database
     counts = Order.objects.values('status').annotate(count=Count('id'))
     
-    # Create a mapping from order status to its count, with defaults for statuses that might not be present
-    statuses = ['Pending', 'Waiting', 'Delivered', 'Cancelled', 'Assigned', 'Accepted', 'Ignored', 'In Transit']
+    # 2) Prepare our result dict with all possible statuses + "Prepared"
+    statuses = [
+        'Pending', 'Confirmed', 'Delivered', 'Cancelled',
+        'Assigned', 'Accepted', 'Ignored', 'In Transit',
+        'Prepared',
+    ]
     data = { status: 0 for status in statuses }
     
+    # 3) Fill in the raw status counts
     for entry in counts:
-        status = entry['status']
-        data[status] = entry['count']
+        data[entry['status']] = entry['count']
     
+    # 4) Compute “Prepared” as those marked prepared=True AND having status Confirmed or Assigned
+    prepared_count = Order.objects.filter(
+        prepared=True,
+        status__in=['Confirmed', 'Assigned']
+    ).count()
+    data['Prepared'] = prepared_count
+
     return Response(data)
 
 class PendingOrdersListView(generics.ListAPIView):
@@ -61,6 +71,45 @@ class PendingOrdersListView(generics.ListAPIView):
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             queryset = queryset.filter(user=self.request.user)
         return queryset
+  
+class ConfirmedOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'pending'.
+        queryset = Order.objects.filter(status='Confirmed')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+    
+class PreparedOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'pending'.
+        queryset = Order.objects.filter(
+            prepared=True,
+            status__in=['Confirmed','Assigned']
+        )
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+      
+class OutDeliveryOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'pending'.
+        queryset = Order.objects.filter(status='Accepted')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
     
 class DeliveredOrdersListView(generics.ListAPIView):
     serializer_class = OrderSerializer
@@ -69,6 +118,18 @@ class DeliveredOrdersListView(generics.ListAPIView):
     def get_queryset(self):
         # Fetch orders with status 'delivered'.
         queryset = Order.objects.filter(status='Delivered')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+    
+class CancelledOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'Cancelled'.
+        queryset = Order.objects.filter(status='Cancelled')
         # If the user is not an admin, restrict to their own orders.
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             queryset = queryset.filter(user=self.request.user)
@@ -612,6 +673,11 @@ class OrderCreateView(generics.CreateAPIView):
         # Bulk create order items
         OrderItem.objects.bulk_create(order_items)
 
+        for oi in order_items:
+            # Atomic update in the DB via F‑expressions
+            ProductVariation.objects.filter(pk=oi.variations.pk).update(
+                popularity=F('popularity') + oi.quantity
+            )
         # Calculate and save the total price
         order.calculate_total()
         # order.calculate_advance_payment()
