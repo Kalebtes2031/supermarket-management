@@ -148,3 +148,10 @@ class ExchangeRate(models.Model):
         rate_instance, created = ExchangeRate.objects.get_or_create(id=1)  # Singleton pattern
         return rate_instance.rate
     
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='announcements/')
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

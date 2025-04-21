@@ -6,14 +6,37 @@ from django.utils import timezone
 from delivery.serializers import AvailableDeliverySerializer
 
 
-class ScheduleDeliverySerializer(serializers.Serializer):
-    scheduled_delivery = serializers.DateTimeField()
+# class ScheduleDeliverySerializer(serializers.Serializer):
+#     scheduled_delivery = serializers.DateTimeField()
+
+#     def validate_scheduled_delivery(self, value):
+#         if value <= timezone.now():
+#             raise serializers.ValidationError("Scheduled delivery time must be in the future.")
+#         return value
+class ScheduleDeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            'scheduled_delivery',
+            'customer_latitude',
+            'customer_longitude',
+        ]
 
     def validate_scheduled_delivery(self, value):
         if value <= timezone.now():
             raise serializers.ValidationError("Scheduled delivery time must be in the future.")
         return value
 
+    def validate_customer_latitude(self, value):
+        # Optional: enforce valid latitude range
+        if not (-90 <= value <= 90):
+            raise serializers.ValidationError("Latitude must be between -90 and 90.")
+        return value
+
+    def validate_customer_longitude(self, value):
+        if not (-180 <= value <= 180):
+            raise serializers.ValidationError("Longitude must be between -180 and 180.")
+        return value
 
 class OrderItemSerializer(serializers.ModelSerializer):
     variant = ProductVariantSerializer(source="variations", read_only=True)

@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -179,7 +180,8 @@ const DirectBankTransfer = () => {
       setIsSubmitting(false);
     }
   };
-  const handleSchedule = () => {
+  const handleSchedule = async () => {
+    // if (isSubmitting) return;
     if (!bankPaymentForm.bank) {
       Alert.alert("Error", "Please Select a Bank");
       return;
@@ -188,11 +190,20 @@ const DirectBankTransfer = () => {
       Alert.alert("Error", "Please upload a receipt");
       return;
     }
-    handleSubmit();
-    // router.push("./schedule");
+
+    setIsSubmitting(true);                  // <-- enter loading state
+  try {
+    await handleSubmit();                 // <-- wait for backend call
+    // only navigate once the POST completes
     router.push(
       `./schedule?orderId=${encodeURIComponent(JSON.stringify(orderId))}`
     );
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Error", "Something went wrong, please try again.");
+  } finally {
+    setIsSubmitting(false);               // <-- exit loading state
+  }
   };
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -284,29 +295,30 @@ const DirectBankTransfer = () => {
           }}
         >
           <TouchableOpacity
-            style={[
-              i18n.language === "en"
-                ? styles.submitButton
-                : styles.submitButton1,
-              // isSubmitting && styles.disabledButton
-            ]}
-            onPress={() => {
-              handleSchedule();
-            }}
-            // onPress={handleSubmit}
-            // disabled={isSubmitting}
-          >
-            <Text
-              style={
-                i18n.language === "en"
-                  ? styles.submitButtonText
-                  : styles.submitButtonText1
-              }
-            >
-              {/* {isSubmitting ? "Processing..." : "Submit Payment"} */}
-              {t("schedule")}
-            </Text>
-          </TouchableOpacity>
+  style={[
+    i18n.language === "en"
+      ? styles.submitButton
+      : styles.submitButton1,
+    isSubmitting && { opacity: 0.6 }   // visual feedback when disabled
+  ]}
+  onPress={handleSchedule}
+  disabled={isSubmitting}              // prevents double‑taps
+>
+  {isSubmitting ? (
+    <ActivityIndicator color="#fff" />
+  ) : (
+    <Text
+      style={
+        i18n.language === "en"
+          ? styles.submitButtonText
+          : styles.submitButtonText1
+      }
+    >
+      {t("schedule")}
+    </Text>
+  )}
+</TouchableOpacity>
+
           {/* <TouchableOpacity
             onPress={() =>
               navigation.push(

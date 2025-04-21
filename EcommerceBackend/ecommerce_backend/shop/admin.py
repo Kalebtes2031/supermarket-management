@@ -11,7 +11,9 @@ from .models import (
     ExploreFamilyImage,
     EventImage,
     DiscoverEthiopianImage
+    
 )
+from shop.models import Announcement
 
 # @admin.register(ExchangeRate)
 # class ExchangeRateAdmin(admin.ModelAdmin):
@@ -38,6 +40,7 @@ class ProductAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'name_amh']
 
+admin.site.register(Announcement)
 
 # Register additional models for easy management in the admin.
 # admin.site.register(Size)

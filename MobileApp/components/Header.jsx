@@ -202,18 +202,18 @@ const Header = () => {
           <View>
             
           </View>
-          {/* <TouchableOpacity onPress={toggleSearch}>
+          <TouchableOpacity onPress={toggleSearch}>
             <MaterialIcons
               name="search"
               size={24}
               style={{ color: colorScheme === "dark" ? "#fff" : "#445399" }}
             />
-          </TouchableOpacity> */}
-          {/* {showSearch && (
+          </TouchableOpacity>
+          {showSearch && (
             <View style={styles.searchOverlay}>
               <SearchComponent />
             </View>
-          )} */}
+          )}
 
           <View style={styles.iconWrapper}>
             <TouchableOpacity
@@ -461,10 +461,14 @@ const styles = StyleSheet.create({
   },
   searchOverlay: {
     position: "absolute",
-    top:20,       // adjust as needed
-    left:-120,   // if you want full screen overlay, or just position relative to your header
-    backgroundColor: "rgba(0,0,0,0.5)", // optional semi-transparent background
+    top:28,       // adjust as needed
+    right:0,   // if you want full screen overlay, or just position relative to your header
+    backgroundColor: "white", // optional semi-transparent background
     // additional styling (padding, etc.) if needed
+    borderRadius:43,
+    width:340,
+    zIndex:10,
+    // padding:0,
   },
   profileHeader: {
     alignItems: "start",
@@ -530,9 +534,11 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    gap:10,
     width: 100,
     marginRight: 10,
+    // marginTop:8,
   
   },
   iconWrapper: {

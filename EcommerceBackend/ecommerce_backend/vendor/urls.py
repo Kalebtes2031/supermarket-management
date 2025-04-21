@@ -7,7 +7,8 @@ from .views import (
     AssignOrderToDeliveryAPIView, 
     UpdatePaymentStatusAPIView, 
     OnDeliveryPaymentOrdersListAPIView,
-    UpdateOrderStatusToConfirmAPIView
+    UpdateOrderStatusToConfirmAPIView,
+    UpdateOrderStatusToOutDeliveryAPIView
     )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path('orders/on-delivery-payment/', OnDeliveryPaymentOrdersListAPIView.as_view(), name='on-delivery-orders'),
     path('orders/<int:pk>/update-prepared/', UpdatePreparedStatusAPIView.as_view(), name='update-prepared'),
     path('orders/<int:pk>/update-confirmed/', UpdateOrderStatusToConfirmAPIView.as_view(), name='update-confirmed'),
+    path('orders/<int:pk>/update-out-delivery/', UpdateOrderStatusToOutDeliveryAPIView.as_view(), name='update-out-delivery'),
     path('orders/<int:order_id>/assign/', AssignOrderToDeliveryAPIView.as_view(), name='assign_order'),
     path('orders/<int:pk>/update-payment/', UpdatePaymentStatusAPIView.as_view(), name='update-payment'),
 ]

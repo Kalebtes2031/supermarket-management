@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import RetrieveAPIView, ListAPIView
-from .models import Product, ProductVariation, Category,Size, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage
+from rest_framework.generics import RetrieveAPIView, ListAPIView, GenericAPIView
+from .models import Product, ProductVariation, Category,Size, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage, Announcement
 from .serializers import (
     ProductSerializer, 
     CategorySerializer,
@@ -13,7 +13,14 @@ from .serializers import (
     EventImageSerializer,
     DiscoverEthiopianImageSerializer,
     ProductVariationNewSerializer,
-    ProductVariantSerializer
+    ProductVariantSerializer,
+    ProductNestedSerializer,
+    NewProductSerializer,
+    NewProductVariationSerializer,
+    ProductFinalSerializer,
+    ProductVariationFinalSerializer,
+    GlobalSearchSerializer,
+    AnnouncementSerializer,
 )
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -22,15 +29,129 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Min,Max,Sum
-from accounts.permissions import IsAdminOrSuperUser
-
+from accounts.permissions import IsAdminOrSuperUser, IsVendorOrAdminOrSuperUser
+from orders.models import Order, Payment
+from accounts.models import CustomUser
+from rest_framework import viewsets
+from rest_framework.parsers import MultiPartParser, FormParser
 # views.py
+
+class AnnouncementViewSet(viewsets.ModelViewSet):
+    queryset = Announcement.objects.order_by('-created')
+    serializer_class = AnnouncementSerializer
+    parser_classes   = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        # SAFE_METHODS are GET, HEAD, OPTIONS
+        if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
+            perms = [AllowAny]
+        else:
+            perms = [IsVendorOrAdminOrSuperUser]
+        return [p() for p in perms]
+    
+class GlobalSearchView(GenericAPIView):
+    serializer_class = GlobalSearchSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+    def get(self, request):
+        query = request.query_params.get('q', '').strip()
+        results = {
+            'products': [],
+            'orders': [],
+            'payments': [],
+            'categories': [],
+            'users': {
+                'customers': [],
+                'vendors': [],
+                'deliveries': []
+            }
+        }
+
+        if query:
+            # Product Search (including variations)
+            products = Product.objects.filter(
+                Q(item_name__icontains=query) |
+                Q(item_name_amh__icontains=query)
+            ).select_related('category')[:5]
+            results['products'] = products
+
+            # Order Search
+            orders = Order.objects.filter(
+                Q(id__icontains=query) |
+                Q(user__username__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
+            )[:5]
+            results['orders'] = orders
+
+            # Payment Search
+            payments = Payment.objects.filter(
+                Q(transaction_id__icontains=query) |
+                Q(order__id__icontains=query) |
+                Q(user__username__icontains=query)
+            )[:5]
+            results['payments'] = payments
+
+            # Category Search
+            categories = Category.objects.filter(
+                Q(name__icontains=query) |
+                Q(name_amh__icontains=query)
+            )[:5]
+            results['categories'] = categories
+            
+            # User Search
+            users = CustomUser.objects.filter(
+                Q(username__icontains=query) |
+                Q(email__icontains=query) |
+                Q(phone_number__icontains=query)
+            )[:10]  # Limit to 10 users
+
+            # Categorize users by role
+            results['users']['customers'] = [u for u in users if u.role == 'customer']
+            results['users']['vendors'] = [u for u in users if u.role == 'vendor']
+            results['users']['deliveries'] = [u for u in users if u.role == 'delivery']
+
+        serializer = self.get_serializer(results)
+        return Response(serializer.data)
+
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrSuperUser]
+    
+class ProductFinalViewSet(ModelViewSet):
+    queryset = Product.objects.all().prefetch_related('variations')
+    serializer_class = ProductFinalSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+class ProductVariationFinalViewSet(ModelViewSet):
+    serializer_class = ProductVariationFinalSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+    def get_queryset(self):
+        # only show variations for product_pk
+        return ProductVariation.objects.filter(
+            variations_id=self.kwargs['product_pk']
+        )
+
+    def perform_create(self, serializer):
+        # inject the product FK from the URL
+        serializer.save(variations_id=self.kwargs['product_pk'])
+
+    def update(self, request, *args, **kwargs):
+        # allow partial updates via PUT if you like
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
+
+
 
 class PopularProductVariationsView(generics.ListAPIView):
     serializer_class = ProductVariantSerializer
 
     def get_queryset(self):
-        return ProductVariation.objects.filter(in_stock=True).order_by('-popularity')[:6]
+        return ProductVariation.objects.filter(in_stock=True).order_by('-popularity')[:4]
 
 class ProductSearchView(ListAPIView):
     serializer_class = ProductVariationNewSerializer
@@ -88,6 +209,30 @@ class ProductVariantViewSet(ModelViewSet):
     """
     queryset = ProductVariation.objects.all()
     serializer_class = ProductVariantSerializer
+    permission_classes = [IsAdminOrSuperUser]
+    
+class NewProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductNestedSerializer
+    permission_classes = [IsAdminOrSuperUser]
+
+
+class NewProductVariationViewSet(ModelViewSet):
+    queryset = ProductVariation.objects.all()
+    serializer_class = NewProductVariationSerializer
+    permission_classes = [IsAdminOrSuperUser]    
+
+class AdminProductViewSet(ModelViewSet):
+    """
+    GET    /admin/products/          → list all (with nested variations)
+    POST   /admin/products/          → create product + variations
+    GET    /admin/products/{id}/     → retrieve single product
+    PUT    /admin/products/{id}/     → full update (incl variations)
+    PATCH  /admin/products/{id}/     → partial update
+    DELETE /admin/products/{id}/     → delete product (+ cascade variations)
+    """
+    queryset = Product.objects.all()
+    serializer_class = ProductNestedSerializer
     permission_classes = [IsAdminOrSuperUser]
     
 class ProductView(ModelViewSet):

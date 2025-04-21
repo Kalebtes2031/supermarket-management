@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  Image, 
-  StyleSheet, 
-  FlatList, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
   Dimensions,
   TextInput,
 } from "react-native";
@@ -17,31 +17,36 @@ import { useTranslation } from "react-i18next";
 const { width, height } = Dimensions.get("window");
 
 const CategoryDetail = () => {
-  const { t, i18n } = useTranslation('categorydetail');
+  const { t, i18n } = useTranslation("categorydetail");
   const { categoryId, name, name_amh } = useLocalSearchParams();
   const [products, setProducts] = useState([]);
   const router = useRouter();
-    const [refreshing, setRefreshing] = useState(false);
-
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    setLoading(true);
     loadProducts();
     setTimeout(() => {
       setRefreshing(false);
+      setLoading(false);
     }, 2000);
   }, []);
-  useEffect(()=>{
+  useEffect(() => {
     loadProducts();
-  },[])
+  }, []);
 
   const loadProducts = async () => {
     try {
       const data = await fetchSameCategoryProducts(Number(categoryId));
       setProducts(data);
       console.log("Category name:", name);
+      setLoading(false);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -49,23 +54,31 @@ const CategoryDetail = () => {
   }, [categoryId]);
 
   // Flatten the array to have one item per variation
-  const flattenedProducts = products.flatMap(product =>
-    product.variations.map(variation => ({
+  const flattenedProducts = products.flatMap((product) =>
+    product.variations.map((variation) => ({
       ...product,
-      variation,  // attach specific variation details
+      variation, // attach specific variation details
     }))
   );
 
   const handlePress = (item) => {
-    router.push(`/carddetail?product=${encodeURIComponent(JSON.stringify(item))}`);
+    router.push(
+      `/carddetail?product=${encodeURIComponent(JSON.stringify(item))}`
+    );
   };
-
+  const SkeletonCard = () => (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonImage} />
+      <View style={styles.skeletonLine} />
+      <View style={styles.skeletonLineShort} />
+    </View>
+  );
   const renderItem = ({ item, index }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
         styles.card,
         { marginLeft: index % 2 === 0 ? 0 : 32 }, // Adjust horizontal margin
-        { marginTop: index % 2 === 0 ? 20 : 55 } // Alternating top margin for a zig-zag effect
+        { marginTop: index % 2 === 0 ? 20 : 55 }, // Alternating top margin for a zig-zag effect
       ]}
       onPress={() => handlePress(item)}
     >
@@ -73,23 +86,23 @@ const CategoryDetail = () => {
       <Text style={styles.productName}>
         {i18n.language === "en" ? item.item_name : item.item_name_amh}
       </Text>
-      
+
       {/* Image Container */}
       <View style={styles.imageContainer}>
-        <Image 
-          source={{ uri: item.image }} 
+        <Image
+          source={{ uri: item.image }}
           style={styles.productImage}
           resizeMode="contain"
         />
       </View>
-  
+
       {/* Price Circle using specific variation info */}
       <View style={styles.priceCircle}>
         <Text style={styles.priceText}>
-          {t('br')} {parseInt(item.variation.price)}
+          {t("br")} {parseInt(item.variation.price)}
         </Text>
         <Text style={styles.unitText}>
-        {parseInt(item.variation.quantity)}  /{item.variation.unit}
+          {parseInt(item.variation.quantity)} /{item.variation.unit}
         </Text>
       </View>
     </TouchableOpacity>
@@ -99,7 +112,7 @@ const CategoryDetail = () => {
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => {
             if (router.canGoBack()) {
@@ -113,25 +126,40 @@ const CategoryDetail = () => {
         </TouchableOpacity>
 
         <Text style={styles.categoryTitle}>
-          {i18n.language === "en" ? name : name_amh} {t('category')}
+          {i18n.language === "en" ? name : name_amh} {t("category")}
         </Text>
       </View>
 
       {/* Product Grid */}
-      <FlatList
-        data={flattenedProducts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.variation.id.toString()} 
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t('noproduct')}</Text>
-          </View>
-        }
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-      />
+      {loading ? (
+        <FlatList
+          data={Array.from({ length: 6 })} // show 6 skeleton cards
+          renderItem={() => (
+            <View style={styles.card}>
+              <SkeletonCard />
+            </View>
+          )}
+          keyExtractor={(_, index) => index.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+        />
+      ) : (
+        <FlatList
+          data={flattenedProducts}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.variation.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>{t("noproduct")}</Text>
+            </View>
+          }
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+        />
+      )}
     </View>
   );
 };
@@ -141,12 +169,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  skeletonCard: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 8,
+    // borderBottomRadius:32,
+    padding: 10,
+    // margin: 8,
+    marginTop: 55,
+    width: "100%",
+  },
+
+  skeletonImage: {
+    height: 100,
+    backgroundColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  // skeletonLine: {
+  //   height: 12,
+  //   backgroundColor: "#ccc",
+  //   marginBottom: 6,
+  //   borderRadius: 6,
+  // },
+
+  skeletonLineShort: {
+    height:12,
+    backgroundColor: "#ccc",
+    width: "60%",
+    borderRadius: 6,
+  },
   header: {
     height: height * 0.27,
     backgroundColor: "#445399",
     paddingHorizontal: 20,
     paddingTop: 50,
-    
   },
   backButton: {
     position: "absolute",
@@ -204,7 +261,7 @@ const styles = StyleSheet.create({
     height: 230, // Set a fixed height to ensure uniform card dimensions
     zIndex: 50,
   },
-  
+
   imageContainer: {
     backgroundColor: "#D6F3D5",
     borderBottomLeftRadius: 48,
@@ -213,7 +270,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
-    
   },
   productImage: {
     width: "100%",
@@ -256,7 +312,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     paddingHorizontal: 5,
     // backgroundColor: "red",
-    marginTop:-0,
+    marginTop: -0,
     // zIndex: 40,
   },
   emptyContainer: {

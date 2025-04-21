@@ -1,5 +1,6 @@
 {
-  "products": "Products",
+  "products": "All Products",
   "items": "Items",
-  "search":"Search here"
+  "searchPlaceholder":"Search products here",
+  "no_products_found":"No Product Found"
 }

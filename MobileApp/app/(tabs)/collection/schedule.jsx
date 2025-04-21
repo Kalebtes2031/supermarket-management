@@ -157,7 +157,7 @@
 // }); console.log('orderId am:',orderId)
 
 // @/screens/ScheduleDeliveryScreen.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -186,12 +186,16 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Feather, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
+import * as Location from "expo-location";
+// import { GebetaMap, MapMarker } from "@gebeta/tiles";
+import MapView, { Marker } from "react-native-maps";
+import Toast from "react-native-toast-message";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const ScheduleDeliveryScreen = () => {
   const { t, i18n } = useTranslation("schedule");
   const { orderId } = useLocalSearchParams();
-  // let num = 40;
-  // const orderId = num;
+  const { user } = useGlobalContext();
   const navigation = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -202,6 +206,34 @@ const ScheduleDeliveryScreen = () => {
   const [text, setText] = useState("");
   const [product, setProduct] = useState({});
   const [selectedOption, setSelectedOption] = useState("needDelivery");
+  const [currentLocation, setCurrentLocation] = useState(null);
+  // selectedLocation: {latitude: number, longitude: number}
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [locationChoice, setLocationChoice] = useState("current");
+  const [showMap, setShowMap] = useState(true);
+
+  useEffect(() => {
+    // fetchCustomerProfile();
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Toast.show({
+          type: "error",
+          text1: "Location permission not granted",
+          visibilityTime: 2000,
+        });
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setCurrentLocation(coords);
+      // Set the default selected location to current location
+      setSelectedLocation(coords);
+    })();
+  }, [user]);
 
   const fetchOrderData = async () => {
     const response = await fetchOrderDetail(orderId);
@@ -248,10 +280,24 @@ const ScheduleDeliveryScreen = () => {
 
   const handleSchedule = async () => {
     if (!validateDateTime()) return;
-
+    if (!selectedLocation) {
+      Toast.show({
+        type: "error",
+        text1: "Please select your delivery location.",
+        visibilityTime: 2000,
+      });
+      return;
+    }
+    let customer_latitude = selectedLocation.latitude;
+    let customer_longitude = selectedLocation.longitude;
     setLoading(true);
     try {
-      await scheduleDelivery(orderId, selectedDate.toISOString());
+      await scheduleDelivery(
+        orderId,
+        selectedDate.toISOString(),
+        customer_latitude,
+        customer_longitude
+      );
       navigation.push(
         `/(tabs)/orderinfo?orderId=${encodeURIComponent(
           JSON.stringify(orderId)
@@ -323,13 +369,93 @@ const ScheduleDeliveryScreen = () => {
         onChangeText={(value) => setText(value)}
         value={text}
       />
-      <View
+      {/* <View
         style={{
           padding: 10,
         }}
       >
         <Image source={require("@/assets/images/map.png")} />
-      </View>
+      </View> */}
+      {/* Location Choice Section */}
+      <View style={styles.locationSection}>
+  <View style={styles.choiceContainer}>
+    <TouchableOpacity
+      style={[
+        styles.choiceButton,
+        locationChoice === "current" && styles.selectedChoice,
+      ]}
+      onPress={() => {
+        setLocationChoice("current");
+        if (currentLocation) {
+          setSelectedLocation(currentLocation);
+        }
+      }}
+    >
+      <Text>Use Current Location</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={[
+        styles.choiceButton,
+        locationChoice === "custom" && styles.selectedChoice,
+      ]}
+      onPress={() => {
+        setLocationChoice("custom");
+        // optionally preset to currentLocation:
+        if (!selectedLocation && currentLocation) {
+          setSelectedLocation(currentLocation);
+        }
+      }}
+    >
+      <Text>Select on Map</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Always show the map once a choice is made */}
+  {(locationChoice === "current" || locationChoice === "custom") && (
+    <View style={styles.mapContainer}>
+      <MapView
+        style={styles.map}
+        region={
+           selectedLocation && {
+             latitude:    selectedLocation.latitude,
+             longitude:   selectedLocation.longitude,
+             latitudeDelta:  0.01,
+             longitudeDelta: 0.01,
+           }
+          }
+        // only allow tapping when in "custom" mode:
+        onPress={
+          locationChoice === "custom"
+            ? e => {
+                const { latitude, longitude } = e.nativeEvent.coordinate;
+                setSelectedLocation({ latitude, longitude });
+              }
+            : undefined
+        }
+        // in "current" mode, make the map static:
+        scrollEnabled={locationChoice === "custom"}
+        zoomEnabled={locationChoice === "custom"}
+      >
+        {selectedLocation && (
+          <Marker
+            coordinate={selectedLocation}
+            draggable={locationChoice === "custom"}
+            onDragEnd={
+              locationChoice === "custom"
+                ? e => {
+                    const { latitude, longitude } = e.nativeEvent.coordinate;
+                    setSelectedLocation({ latitude, longitude });
+                  }
+                : undefined
+            }
+          />
+        )}
+      </MapView>
+    </View>
+  )}
+</View>
+
       <Text
         style={{ fontSize: 18, paddingLeft: 8, marginTop: 15 }}
         className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
@@ -356,26 +482,63 @@ const ScheduleDeliveryScreen = () => {
             padding: 4,
           }}
         >
-          <View style={styles.calendarContainer}>
+          <View 
+          style={[
+            styles.calendarContainer,
+            // { width: 220, height: 220, overflow: 'hidden' },
+          ]}
+          >
             {calendarOpen && (
               <Calendar
-                minDate={format(new Date(), "yyyy-MM-dd")}
-                onDayPress={handleDateSelect}
-                markedDates={{
-                  [format(selectedDate, "yyyy-MM-dd")]: { selected: true },
-                }}
-                theme={{
-                  backgroundColor: "#ffffff",
-                  calendarBackground: "#ffffff",
-                  selectedDayBackgroundColor: "#445399",
-                  todayTextColor: "#445399",
-                  arrowColor: "#445399",
-                  monthTextColor: "#2d4150",
-                  textDayFontWeight: "300",
-                  textMonthFontWeight: "bold",
-                  textDayHeaderFontWeight: "300",
-                }}
-              />
+              // only fix the overall width; height will adjust
+              style={{ width: 220, alignSelf: 'center' }}
+              
+              // keep your existing props…
+              minDate={format(new Date(), "yyyy-MM-dd")}
+              onDayPress={handleDateSelect}
+              markedDates={{
+                [format(selectedDate, "yyyy-MM-dd")]: { selected: true },
+              }}
+            
+              // now the magic: shrink fonts & cell sizes
+              theme={{
+                // smaller month header
+                textMonthFontSize:       16,
+                textMonthFontWeight:     '600',
+                // smaller weekday names (Sun, Mon…)
+                textDayHeaderFontSize:   12,
+                // smaller day numbers
+                textDayFontSize:         10,
+            
+                // shrink the arrows
+                arrowSize:               16,
+            
+                // override the calendar’s internal styles:
+                'stylesheet.calendar.main': {
+                  // tighten up each row
+                  week: {
+                    marginTop:    2,
+                    marginBottom: 2,
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                  },
+                },
+                'stylesheet.day.basic': {
+                  // shrink each day cell
+                  base: {
+                    width:    28,
+                    height:   28,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  },
+                  text: {
+                    marginTop: 0,
+                    fontSize: 10,
+                  },
+                },
+              }}
+            />
+            
             )}
           </View>
 
@@ -486,8 +649,33 @@ const styles = StyleSheet.create({
   container: {
     // flex: 1,
     backgroundColor: "#f8f9fa",
-    padding: 15,
+    padding: 5,
+    // height:200,
   },
+  locationSection: { marginBottom: 16 },
+  label: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
+  choiceContainer: { flexDirection: "row", marginBottom: 8 },
+  choiceButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
+    marginHorizontal: 4,
+    borderRadius: 4,
+  },
+  selectedChoice: { backgroundColor: "#d0e8ff" },
+  locationText: { marginTop: 8, fontSize: 14 },
+  mapContainer: {
+    width: 350,
+    height: 150,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  map: { width: "100%", height: "100%" },
   title: {
     marginBottom: 8,
     color: "#2d4150",
@@ -502,6 +690,7 @@ const styles = StyleSheet.create({
   calendarContainer: {
     borderRadius: 15,
     overflow: "hidden",
+    alignSelf:"center",
     marginBottom: 25,
     elevation: 3,
     backgroundColor: "white",

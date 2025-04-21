@@ -99,13 +99,25 @@ class PreparedOrdersListView(generics.ListAPIView):
             queryset = queryset.filter(user=self.request.user)
         return queryset
       
-class OutDeliveryOrdersListView(generics.ListAPIView):
+class AcceptedOrdersListView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         # Fetch orders with status 'pending'.
         queryset = Order.objects.filter(status='Accepted')
+        # If the user is not an admin, restrict to their own orders.
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+    
+class OutDeliveryOrdersListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch orders with status 'pending'.
+        queryset = Order.objects.filter(status='In Transit')
         # If the user is not an admin, restrict to their own orders.
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             queryset = queryset.filter(user=self.request.user)
@@ -136,24 +148,50 @@ class CancelledOrdersListView(generics.ListAPIView):
         return queryset
 
 
+# class ScheduleDeliveryAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def patch(self, request, order_id):
+#         # Retrieve the order and ensure it belongs to the authenticated user
+#         order = get_object_or_404(Order, id=order_id)
+#         if request.user != order.user:
+#             return Response({"detail": "Not authorized to schedule this order."}, status=status.HTTP_403_FORBIDDEN)
+        
+#         serializer = ScheduleDeliverySerializer(data=request.data)
+#         if serializer.is_valid():
+#             order.scheduled_delivery = serializer.validated_data['scheduled_delivery']
+#             order.save()
+#             return Response({"detail": "Delivery scheduled successfully.", "scheduled_delivery": order.scheduled_delivery},
+#                             status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class ScheduleDeliveryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, order_id):
-        # Retrieve the order and ensure it belongs to the authenticated user
         order = get_object_or_404(Order, id=order_id)
+
         if request.user != order.user:
-            return Response({"detail": "Not authorized to schedule this order."}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = ScheduleDeliverySerializer(data=request.data)
+            return Response(
+                {"detail": "Not authorized to schedule this order."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = ScheduleDeliverySerializer(
+            order, data=request.data, partial=True
+        )
         if serializer.is_valid():
-            order.scheduled_delivery = serializer.validated_data['scheduled_delivery']
-            order.save()
-            return Response({"detail": "Delivery scheduled successfully.", "scheduled_delivery": order.scheduled_delivery},
-                            status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+            serializer.save()  # updates scheduled_delivery and lat/long
+            return Response(
+                {
+                    "detail": "Delivery scheduled successfully.",
+                    **serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
 class ScheduleDeliveryAndPickFromStoreAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -655,8 +693,8 @@ class OrderCreateView(generics.CreateAPIView):
             first_name=self.request.data.get("first_name"),
             last_name=self.request.data.get("last_name"),
             email=self.request.data.get("email"),
-            customer_latitude=self.request.data.get('customer_latitude'),
-            customer_longitude=self.request.data.get('customer_longitude'),
+            # customer_latitude=self.request.data.get('customer_latitude'),
+            # customer_longitude=self.request.data.get('customer_longitude'),
         )
 
         # Add cart items to the order

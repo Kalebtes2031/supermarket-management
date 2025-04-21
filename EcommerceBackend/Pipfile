@@ -19,6 +19,7 @@ django-otp = "*"
 twilio = "*"
 python-dotenv = "*"
 africastalking = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 

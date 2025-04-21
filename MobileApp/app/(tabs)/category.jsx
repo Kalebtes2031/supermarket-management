@@ -24,13 +24,17 @@ const CategoryScreen = () => {
   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadCategories = async () => {
     try {
+      setIsLoading(true);
       const response = await fetchCategory();
       setCategories(response);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    }finally{
+      setIsLoading(false);
     }
   };
   useEffect(() => {
@@ -80,6 +84,14 @@ const CategoryScreen = () => {
     </TouchableOpacity>
   );
 
+  const SkeletonCard = () => (
+      <View style={styles.skeletonCard}>
+        <View style={styles.skeletonImage} />
+        <View style={styles.skeletonLine} />
+        {/* <View style={styles.skeletonLineShort} /> */}
+      </View>
+    );
+   
   return (
     <View style={styles.container}>
       {/* Custom Header */}
@@ -107,6 +119,20 @@ const CategoryScreen = () => {
       </View>
 
       {/* Category Grid */}
+       {isLoading ? (
+              <FlatList
+                data={Array.from({ length: 6 })} // show 6 skeleton cards
+                renderItem={() => (
+                  <View style={styles.cardContainer}>
+                    <SkeletonCard />
+                  </View>
+                )}
+                keyExtractor={(_, index) => index.toString()}
+                numColumns={3}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.listContent}
+              />
+            ) : (
       <FlatList
         data={categories}
         renderItem={renderCategoryItem}
@@ -121,7 +147,7 @@ const CategoryScreen = () => {
         contentContainerStyle={styles.listContent}
         onRefresh={onRefresh}
         refreshing={refreshing}
-      />
+      />)}
     </View>
   );
 };
@@ -131,6 +157,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  cardContainer: {
+    width: "30%",
+    marginBottom: 12,
+    marginRight: 12,
+  },
+  skeletonCard: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 8,
+    padding: 10,
+    margin: 8,
+    // marginTop:55,
+    width: "100%",
+  },
+
+  skeletonImage: {
+    height: 100,
+    backgroundColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  skeletonLine: {
+    height: 12,
+    backgroundColor: "#ccc",
+    marginBottom: 6,
+    borderRadius: 6,
+  },
+
+  skeletonLineShort: {
+    height: 12,
+    backgroundColor: "#ccc",
+    width: "60%",
+    borderRadius: 6,
+  },
+
   header: {
     flexDirection: "row",
     alignItems: "center",

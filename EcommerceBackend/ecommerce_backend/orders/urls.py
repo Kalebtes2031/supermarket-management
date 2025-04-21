@@ -17,6 +17,7 @@ urlpatterns = [
     path('orders/status/pending/', views.PendingOrdersListView.as_view(), name='all-pending-order-status'),
     path('orders/status/confirmed/', views.ConfirmedOrdersListView.as_view(), name='all-confirmed-order-status'),
     path('orders/status/prepared/', views.PreparedOrdersListView.as_view(), name='all-prepared-order-status'),
+    path('orders/status/accepted/', views.AcceptedOrdersListView.as_view(), name='all-accepted-order-status'),
     path('orders/status/out-delivery/', views.OutDeliveryOrdersListView.as_view(), name='all-out-delivery-order-status'),
     path('orders/status/delivered/', views.DeliveredOrdersListView.as_view(), name='all-delivered-order-status'),
     path('orders/status/cancelled/', views.CancelledOrdersListView.as_view(), name='all-cancelled-order-status'),

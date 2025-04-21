@@ -27,6 +27,7 @@ import {
   fetchPopularProducts,
   fetchSameCategoryProducts,
   USER_PROFILE,
+  fetchAnnouncements,
 } from "@/hooks/useFetch";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useGlobalContext } from "@/context/GlobalProvider";
@@ -52,12 +53,32 @@ export default function HomeScreen() {
   const [newImages, setNewImages] = useState([]);
   const [greeting, setGreeting] = useState("");
   const [category, setCategory] = useState([]);
-  const [product, setProduct] = useState(null);
+  // const [image, setImages] = useState([]);
+  const scrollViewRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleCartClick = (id) => {
-    // navigate(`/shop/${id}`); // Redirect to /shop/:id
-    console.log("Cart clicked!", id);
+  const fetchAllAnnouncements = async () => {
+    try {
+      const result = await fetchAnnouncements();
+      setAnnouncements(result);
+      setLoading(false);
+      console.log("all announcements", result);
+    } catch (error) {
+      console.error("Error fetching announcements", error);
+      setLoading(false);
+    }
   };
+
+  // Auto scrolling
+  useEffect(() => {
+    if (loading || announcements.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((i) => (i + 1) % announcements.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [loading, announcements]);
 
   const fetchNewCategories = async () => {
     try {
@@ -82,53 +103,57 @@ export default function HomeScreen() {
   const newPopular = async () => {
     try {
       const variations = await fetchPopularProducts();
-  
+
       // Turn each variation into a "product-with-variation" object
       const products = variations.map((v) => ({
-        id:               v.product.id,
-        item_name:        v.product.item_name,
-        item_name_amh:    v.product.item_name_amh,
-        image:            v.product.image,
-        // if you need the other image_* fields (full, left, etc), 
+        id: v.product.id,
+        item_name: v.product.item_name,
+        item_name_amh: v.product.item_name_amh,
+        image: v.product.image,
+        // if you need the other image_* fields (full, left, etc),
         // you’ll have to include them in your ProductVariantSerializer
         // and then spread them here:
         // image_full:     v.product.image_full,
         // image_left:     v.product.image_left,
         // …etc.
-  
-        category:         v.product.category, // only if your serializer includes it
-  
+
+        category: v.product.category, // only if your serializer includes it
+
         variation: {
-          id:             v.id,
-          quantity:       v.quantity,
-          unit:           v.unit,
-          price:          v.price,
-          in_stock:       v.in_stock,
+          id: v.id,
+          quantity: v.quantity,
+          unit: v.unit,
+          price: v.price,
+          in_stock: v.in_stock,
           stock_quantity: v.stock_quantity,
-          popularity:     v.popularity,
-        }
+          popularity: v.popularity,
+        },
       }));
-  
+
       setVeryPopular(products);
       console.log("Popular Products w/ Variations:", products);
     } catch (error) {
       console.error("Error fetching popular items", error);
     }
   };
-  
+
   useEffect(() => {
-    newestImages();
+    // newestImages();
     newPopular();
     fetchNewCategories();
+    fetchAllAnnouncements();
     console.log("am i logged in: ", isLogged);
   }, []);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    setLoading(true);
     fetchNewCategories();
     newPopular();
+    fetchAllAnnouncements();
     setTimeout(() => {
       setRefreshing(false);
+      setLoading(false);
     }, 2000);
   }, []);
 
@@ -153,17 +178,14 @@ export default function HomeScreen() {
     },
   ];
 
-  const scrollViewRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   // Auto-scroll every 4 seconds
-  useEffect(() => {
-    if (images.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [images]);
+  // useEffect(() => {
+  //   if (images.length === 0) return;
+  //   const interval = setInterval(() => {
+  //     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  //   }, 4000);
+  //   return () => clearInterval(interval);
+  // }, [images]);
 
   // Scroll to the current index when it changes
   useEffect(() => {
@@ -174,31 +196,7 @@ export default function HomeScreen() {
       });
     }
   }, [currentIndex]);
-  let most = "Most Popular";
-  let newest = "Newest Products";
 
-  // // Redirect if user is not authenticated
-  // useEffect(() => {
-  //   if (!user) {
-  //     route.push('/(auth)/sign-in');
-  //   }
-  // }, [user, route]);
-
-  // // If there's no user, don't render the rest of the UI
-  // if (!user) {
-  //   return null;
-  // }
-  // useEffect(() => {
-  //   const currentHour = new Date().getHours();
-
-  //   if (currentHour < 12) {
-  //     setGreeting("Good morning");
-  //   } else if (currentHour < 18) {
-  //     setGreeting("Good afternoon");
-  //   } else {
-  //     setGreeting("Good evening");
-  //   }
-  // }, []);
   useEffect(() => {
     const currentHour = new Date().getHours();
 
@@ -221,6 +219,34 @@ export default function HomeScreen() {
     );
   };
 
+  const SkeletonCard = () => (
+    <View style={styles.card}>
+      <View style={[styles.image, { backgroundColor: "#E5E7EB" }]} />
+      <View
+        style={[
+          styles.textContainer,
+          { backgroundColor: "#E5E7EB", height: 20, width: "60%" },
+        ]}
+      />
+    </View>
+  );
+  const SkeletonCategoryCard = () => (
+    <View style={styles.skeletonCategoryCard}>
+      <View style={styles.skeletonCategoryImage} />
+      <View style={styles.skeletonCategoryLine} />
+      {/* <View style={styles.skeletonLineShort} /> */}
+    </View>
+  );
+  const ProductCardSkeleton = () => (
+    <View
+      style={{
+        width: "100%",
+        height: 200, // Adjust based on actual Card height
+        backgroundColor: "#E5E7EB", // Tailwind gray-200
+        borderRadius: 12,
+      }}
+    />
+  );
   return (
     <ScrollView
       refreshControl={
@@ -249,7 +275,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Horizontal Image Carousel */}
-      <ScrollView
+      {/* <ScrollView
         ref={scrollViewRef}
         horizontal
         pagingEnabled
@@ -259,11 +285,11 @@ export default function HomeScreen() {
       >
         {images.map((img, index) => (
           <View key={index} style={styles.card}>
-            {/* Background image */}
+           
             <Image source={img.image} style={styles.image} />
-            {/* Semi-transparent overlay */}
+           
             <View style={styles.overlay} />
-            {/* Text overlay */}
+           
             <View style={styles.textContainer}>
               <Text className="font-poppins-bold" style={styles.text}>
                 {img.text}
@@ -271,6 +297,29 @@ export default function HomeScreen() {
             </View>
           </View>
         ))}
+      </ScrollView> */}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingRight: 60 }}
+      >
+        {loading
+          ? // show 3 skeletons (or any number you like)
+            [0, 1, 2].map((i) => <SkeletonCard key={i} />)
+          : announcements.map((item, index) => (
+              <View key={item.id} style={styles.card}>
+                <Image source={{ uri: item.image_url }} style={styles.image} />
+                <View style={styles.overlay} />
+                <View style={styles.textContainer}>
+                  <Text className="font-poppins-bold" style={styles.text}>
+                    {item.title}
+                  </Text>
+                </View>
+              </View>
+            ))}
       </ScrollView>
 
       {/* categories*/}
@@ -295,48 +344,75 @@ export default function HomeScreen() {
             <Ionicons name="arrow-forward-sharp" size={32} color="#445399" />
           </TouchableOpacity>
         </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="px-8 "
-          contentContainerStyle={{ paddingRight: 40 }}
-        >
-          {category && category.length > 0 ? (
-            category.map((product, index) => (
-              <TouchableOpacity
-                key={product.id || index}
-                onPress={() =>
-                  handlecategory(product.id, product.name, product.name_amh)
-                }
-                className="flex justify-center items-center mx-2"
-              >
-                {/* <Image
-                  source={{ uri: product.image }}
-                  className="w-24 h-24 rounded-3xl"
-                  resizeMode="cover"
-                /> */}
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: product.image }}
-                    style={styles.image1}
-                    resizeMode="cover"
+        {loading ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="px-8"
+            contentContainerStyle={{ paddingRight: 40 }}
+          >
+            {Array.from({ length: 6 }).map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 96,
+                  height: 96,
+                  backgroundColor: "#E5E7EB", // Tailwind gray-200
+                  borderRadius: 12,
+                  marginRight: 16,
+                }}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="px-8"
+            contentContainerStyle={{ paddingRight: 40 }}
+          >
+            {category && category.length > 0
+              ? category.map((product, index) => (
+                  <TouchableOpacity
+                    key={product.id || index}
+                    onPress={() =>
+                      handlecategory(product.id, product.name, product.name_amh)
+                    }
+                    className="flex justify-center items-center mx-2"
+                  >
+                    <View
+                      style={{
+                        width: 96,
+                        height: 96,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: product.image }}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
+                    </View>
+                    <Text className="text-sm font-medium mt-2 text-center">
+                      {i18n.language === "en" ? product.name : product.name_amh}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              : Array.from({ length: 6 }).map((_, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      width: 96,
+                      height: 96,
+                      backgroundColor: "#E5E7EB",
+                      borderRadius: 12,
+                      marginRight: 16,
+                    }}
                   />
-                </View>
-
-                <Text className="text-sm font-medium mt-2">
-                  {i18n.language === "en" ? product.name : product.name_amh}
-                </Text>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View className="w-full justify-center items-center py-6">
-              <Text className="text-gray-500 text-base">
-                Loading categories...
-              </Text>
-            </View>
-          )}
-        </ScrollView>
+                ))}
+          </ScrollView>
+        )}
       </View>
 
       {/* Recommended Products */}
@@ -362,18 +438,54 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.popularContainer}>
-          {veryPopular.length > 0 ? (
-            veryPopular.map((product, index) => (
-              <View
-                key={product.variation.id || index}
-                style={styles.cardWrapper}
-              >
-                <Card product={product} />
-              </View>
-            ))
-          ) : (
-            <Text style={styles.loadingText}>{t("loading")}</Text>
-          )}
+          {loading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <View key={index} style={styles.cardWrapper}>
+                  <ProductCardSkeleton />
+                </View>
+              ))
+            : veryPopular.length > 0
+            ? veryPopular.map((product, index) => (
+                <View
+                  key={product.variation.id || index}
+                  style={styles.cardWrapper}
+                >
+                  <Card product={product} />
+                </View>
+              ))
+            : null}
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginHorizontal: 18,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              route.push("/(tabs)/shop");
+            }}
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#445399",
+              padding: 16,
+              marginBottom: 22,
+              borderRadius: 42,
+              width: "100%",
+            }}
+          >
+            <Text
+              style={{ color: "white", fontSize: 18 }}
+              className="font-poppins-medium"
+            >
+              {" "}
+              MORE
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -385,6 +497,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
   },
+  cardCategoryContainer: {
+    width: 96,
+    marginBottom: 12,
+    marginRight: 12,
+  },
+  skeletonCategoryCard: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 8,
+    padding: 10,
+    margin: 8,
+    // marginTop:55,
+    width: "100%",
+  },
+
+  skeletonCategoryImage: {
+    height: 100,
+    backgroundColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  skeletonCategoryLine: {
+    height: 12,
+    backgroundColor: "#ccc",
+    marginBottom: 6,
+    borderRadius: 6,
+  },
+
   imageContainer: {
     width: 96, // or 'w-24' converted to pixels, e.g., 96px
     height: 96, // same as above
@@ -408,7 +548,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   popularContainer: {
-    marginBottom: 36,
+    marginBottom: 6,
     padding: 16,
     flexDirection: "row",
     flexWrap: "wrap", // Allows wrapping to the next row

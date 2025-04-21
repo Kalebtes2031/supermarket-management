@@ -1,6 +1,108 @@
 from rest_framework import serializers
-from .models import Product, ProductVariation, Category, Size, Style, Cart, CartItem, TraditionalDressingImage, ExploreFamilyImage, EventImage, DiscoverEthiopianImage
+from .models import (
+    Product, 
+    ProductVariation, 
+    Category, Size, 
+    Style, Cart, 
+    CartItem, 
+    TraditionalDressingImage, 
+    ExploreFamilyImage, 
+    EventImage, DiscoverEthiopianImage,
+    Announcement
+    )
+from orders.models import  Order, Payment
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name','name_amh', 'image']
+       
+       
+class ProductVariationFinalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariation
+        fields = '__all__'
+        extra_kwargs = {
+            'variations': {'read_only': True}
+        }
+
+class ProductFinalSerializer(serializers.ModelSerializer):
+    variations = ProductVariationFinalSerializer(many=True, read_only=True)
+    category    = CategorySerializer(read_only=True)
+
+    # for POST/PUT: accept an integer id
+    category_id = serializers.PrimaryKeyRelatedField(
+        source='category',      # maps this field to .category on the model
+        write_only=True,
+        queryset=Category.objects.all()
+    )
+    
+    class Meta:
+        model = Product
+        fields = '__all__'
+        # depth = 1
+        
+class NewProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'item_name', 'item_name_amh',
+            'category',
+            'image', 'image_full',
+            'image_left', 'image_right', 'image_back',
+        ]
+
+class NewProductVariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariation
+        fields = ['id', 'variations', 'quantity', 'unit',
+                  'price', 'in_stock', 'stock_quantity', 'popularity']
+        read_only_fields = ['id', 'popularity']
+        
+class ProductVariationNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariation
+        # omit `product`/`variations` FK here—handled by nesting
+        fields = ['id', 'quantity', 'unit', 'price', 'in_stock', 'stock_quantity', 'popularity']
+        read_only_fields = ['id', 'popularity']
+
+class ProductNestedSerializer(serializers.ModelSerializer):
+    variations = ProductVariationNestedSerializer(many=True)
+    
+    class Meta:
+        model = Product
+        fields = [
+          'id',
+          'item_name','item_name_amh',
+          'category',      # or CategorySerializer if you want full nested
+          'image','image_full','image_left','image_right','image_back',
+          'variations',
+        ]
+    
+    def create(self, validated_data):
+        variations_data = validated_data.pop('variations', [])
+        product = Product.objects.create(**validated_data)
+        # create each variation, linking back
+        for var in variations_data:
+            ProductVariation.objects.create(variations=product, **var)
+        return product
+
+    def update(self, instance, validated_data):
+        variations_data = validated_data.pop('variations', [])
+        # 1) update top‑level product fields
+        for attr, val in validated_data.items():
+            setattr(instance, attr, val)
+        instance.save()
+
+        # 2) reconcile variations: simple approach—delete all then re‑create
+        #    (you can do fancier diff‑by‑id logic if you want)
+        instance.variations.all().delete()
+        for var in variations_data:
+            ProductVariation.objects.create(variations=instance, **var)
+        return instance
+    
+    
 class SimpleProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -38,11 +140,7 @@ class ProductVariationNewSerializer(serializers.ModelSerializer):
         ]
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name','name_amh', 'image']
-        
+ 
 class StyleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Style
@@ -172,3 +270,43 @@ class DiscoverEthiopianImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiscoverEthiopianImage
         fields = '__all__'
+
+
+
+class GlobalSearchSerializer(serializers.Serializer):
+    products = serializers.SerializerMethodField()
+    orders = serializers.SerializerMethodField()
+    payments = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
+    users = serializers.SerializerMethodField()
+
+    def get_users(self, obj):
+        from accounts.serializers import UserSerializer  # Local import
+        return {
+            'customers': UserSerializer(obj['users']['customers'], many=True).data,
+            'vendors': UserSerializer(obj['users']['vendors'], many=True).data,
+            'deliveries': UserSerializer(obj['users']['deliveries'], many=True).data
+        }
+    def get_products(self, obj):
+        from .serializers import ProductSerializer
+        return ProductSerializer(obj['products'], many=True).data
+
+    def get_orders(self, obj):
+        from orders.serializers import OrderSerializer
+        return OrderSerializer(obj['orders'], many=True).data
+
+    def get_payments(self, obj):
+        from orders.serializers import PaymentSerializer
+        return PaymentSerializer(obj['payments'], many=True).data
+
+    def get_categories(self, obj):
+        from .serializers import CategorySerializer
+        return CategorySerializer(obj['categories'], many=True).data
+    
+class AnnouncementSerializer(serializers.ModelSerializer):
+    image       = serializers.ImageField(write_only=True)
+    image_url   = serializers.ImageField(source='image', read_only=True)
+
+    class Meta:
+        model  = Announcement
+        fields = ['id', 'title', 'image', 'image_url', 'created']

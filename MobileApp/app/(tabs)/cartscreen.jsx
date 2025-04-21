@@ -104,7 +104,7 @@ const CartScreen = () => {
             </TouchableOpacity>
             <View style={styles.iconWrapper}>
               <TouchableOpacity
-                // onPress={() => router.push("/(tabs)/watchlistscreen")}
+                onPress={() => router.push("/(tabs)/watchlistscreen")}
               >
                 <MaterialIcons
                   name="favorite-border"
@@ -114,7 +114,7 @@ const CartScreen = () => {
               </TouchableOpacity>
               <View style={styles.badge}>
                 {/* <Text style={styles.badgeText}>0</Text> */}
-                <Text style={styles.badgeText}>{cart.length}</Text>
+                <Text style={styles.badgeText}>{watchlist.length}</Text>
               </View>
             </View>
           </View>

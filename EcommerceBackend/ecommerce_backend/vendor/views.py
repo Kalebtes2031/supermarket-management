@@ -109,6 +109,20 @@ class UpdateOrderStatusToConfirmAPIView(APIView):
             return Response({"message": "Order status updated successfully"}, status=status.HTTP_200_OK)
         except Order.DoesNotExist:
             return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+class UpdateOrderStatusToOutDeliveryAPIView(APIView):
+    """
+    Update the 'status' field of an order to Confirmed based on the order's ID.
+    """
+    permission_classes = [IsVendorOrAdminOrSuperUser]
+
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            order.status = "In Transit"
+            order.save()
+            return Response({"message": "Order status updated successfully"}, status=status.HTTP_200_OK)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UpdatePaymentStatusAPIView(APIView):
     """

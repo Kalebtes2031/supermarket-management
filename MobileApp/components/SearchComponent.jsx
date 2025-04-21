@@ -97,7 +97,7 @@ const SearchProducts = () => {
                   setShowDropdown(false);
                 }
               }}
-              placeholderTextColor="#666"
+              placeholderTextColor="#445399"
               onFocus={() => {
                 // Only open dropdown if there's input already
                 if (query.trim()) setShowDropdown(true);
@@ -109,7 +109,7 @@ const SearchProducts = () => {
               style={styles.clearButton}
             >
               {query ? (
-                <FontAwesome name="times" size={18} color="#666" />
+                <FontAwesome name="times" size={18} color="#445399" />
               ) : null}
             </TouchableOpacity>
 
@@ -117,7 +117,7 @@ const SearchProducts = () => {
               style={styles.searchButton}
               onPress={() => Keyboard.dismiss()}
             >
-              <Feather name="search" size={20} color="black" />
+              <Feather name="search" size={20} color="#445399" />
             </TouchableOpacity>
           </View>
 
@@ -191,8 +191,8 @@ const SearchProducts = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginHorizontal: 14,
+    marginVertical: 6,
     zIndex: 1,
   },
   searchContainer: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     height: 50,
     elevation: 2,
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: "#445399",
   },
   input: {
     flex: 1,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   searchButton: {
     paddingLeft: 12,
     borderLeftWidth: 1,
-    borderLeftColor: "#000",
+    borderLeftColor: "#445399",
   },
   dropdown: {
     position: "absolute",

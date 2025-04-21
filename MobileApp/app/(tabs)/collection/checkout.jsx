@@ -11,15 +11,16 @@ import {
   Image,
   StyleSheet,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
 import { createOrder, USER_PROFILE } from "@/hooks/useFetch";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { useTranslation } from "react-i18next";
-import * as Location from 'expo-location';
+import * as Location from "expo-location";
 // import { GebetaMap, MapMarker } from "@gebeta/tiles";
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker } from "react-native-maps";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
 const GOOGLE_PLACES_API_KEY = "YOUR_GOOGLE_PLACES_API_KEY";
@@ -43,10 +44,10 @@ const CheckoutPage = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [currentLocation, setCurrentLocation] = useState(null);
- // selectedLocation: {latitude: number, longitude: number}
- const [selectedLocation, setSelectedLocation] = useState(null);
- const [locationChoice, setLocationChoice] = useState("current"); 
- const [showMap, setShowMap] = useState(false);
+  // selectedLocation: {latitude: number, longitude: number}
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [locationChoice, setLocationChoice] = useState("current");
+  const [showMap, setShowMap] = useState(false);
 
   const choiceofpayment = () => {
     handleBankPayment();
@@ -86,27 +87,26 @@ const CheckoutPage = () => {
   };
   useEffect(() => {
     fetchCustomerProfile();
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Toast.show({
-          type: "error",
-          text1: "Location permission not granted",
-          visibilityTime: 2000,
-        });
-        return;
-      }
-      const location = await Location.getCurrentPositionAsync({});
-      const coords = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setCurrentLocation(coords);
-      // Set the default selected location to current location
-      setSelectedLocation(coords);
-    })();
+    // (async () => {
+    //   const { status } = await Location.requestForegroundPermissionsAsync();
+    //   if (status !== "granted") {
+    //     Toast.show({
+    //       type: "error",
+    //       text1: "Location permission not granted",
+    //       visibilityTime: 2000,
+    //     });
+    //     return;
+    //   }
+    //   const location = await Location.getCurrentPositionAsync({});
+    //   const coords = {
+    //     latitude: location.coords.latitude,
+    //     longitude: location.coords.longitude,
+    //   };
+    //   setCurrentLocation(coords);
+    //   // Set the default selected location to current location
+    //   setSelectedLocation(coords);
+    // })();
   }, [user]);
-
 
   const handlePlaceOrder = async () => {
     // setShowModal(true);
@@ -119,22 +119,22 @@ const CheckoutPage = () => {
       });
       return;
     }
-    if (!selectedLocation) {
-      Toast.show({
-        type: "error",
-        text1: "Please select your delivery location.",
-        visibilityTime: 2000,
-      });
-      return;
-    }
+    // if (!selectedLocation) {
+    //   Toast.show({
+    //     type: "error",
+    //     text1: "Please select your delivery location.",
+    //     visibilityTime: 2000,
+    //   });
+    //   return;
+    // }
     setIsLoading(true); // Show loading spinner
     const orderinfo = {
       phone_number: phone,
       first_name: firstName,
       last_name: lastName,
       email: email,
-      customer_latitude: selectedLocation.latitude,
-      customer_longitude: selectedLocation.longitude,
+      // customer_latitude: selectedLocation.latitude,
+      // customer_longitude: selectedLocation.longitude,
     };
 
     try {
@@ -164,7 +164,7 @@ const CheckoutPage = () => {
           paymentStatus: payment_status,
         });
       } else {
-        let orderId=id
+        let orderId = id;
         route.push(
           `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
             JSON.stringify(orderId)
@@ -196,8 +196,8 @@ const CheckoutPage = () => {
     }
   };
 
-   // The map modal for custom location selection
-   const renderMapModal = () => (
+  // The map modal for custom location selection
+  const renderMapModal = () => (
     <Modal visible={mapVisible} animationType="slide">
       <View style={styles.mapContainer}>
         <Text style={styles.mapHeader}>Select Your Location</Text>
@@ -316,10 +316,10 @@ const CheckoutPage = () => {
               onChangeText={setEmail}
             />
           </View>
-            {/* Location Choice Section */}
-        
-        {/* Location Choice Section */}
-        <View style={styles.locationSection}>
+          {/* Location Choice Section */}
+
+          {/* Location Choice Section */}
+          {/* <View style={styles.locationSection}>
           <Text style={styles.label}>Select Delivery Location:</Text>
           <View style={styles.choiceContainer}>
             <TouchableOpacity
@@ -344,7 +344,6 @@ const CheckoutPage = () => {
               ]}
               onPress={() => {
                 setLocationChoice("custom");
-                // Toggle showing the inline map
                 setShowMap(true);
               }}
             >
@@ -358,7 +357,7 @@ const CheckoutPage = () => {
             </Text>
           )}
 
-          {/* Display inline map if custom location is selected */}
+          
           {showMap && locationChoice === "custom" && (
             <View style={styles.mapContainer}>
               <MapView
@@ -387,7 +386,7 @@ const CheckoutPage = () => {
               </MapView>
             </View>
           )}
-        </View>
+        </View> */}
         </View>
         <Text
           className="font-poppins-bold text-center text-primary mb-4"
@@ -433,10 +432,13 @@ const CheckoutPage = () => {
                     {item.variations.unit}
                   </Text>
                 </View>
-                <Text style={styles.quantity}>{t('qty')}: {item.quantity}</Text>
+                <Text style={styles.quantity}>
+                  {t("qty")}: {item.quantity}
+                </Text>
               </View>
               <Text style={styles.itemPrice}>
-                {t('br')}{item.total_price.toFixed(2)}
+                {t("br")}
+                {item.total_price.toFixed(2)}
               </Text>
             </View>
           ))}
@@ -447,8 +449,11 @@ const CheckoutPage = () => {
               <Text style={styles.totalValue}>{cart.total_items}</Text>
             </View> */}
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{t('total')}:</Text>
-              <Text style={styles.grandTotal}>{t('br')}{cart.total.toFixed(2)}</Text>
+              <Text style={styles.totalLabel}>{t("total")}:</Text>
+              <Text style={styles.grandTotal}>
+                {t("br")}
+                {cart.total.toFixed(2)}
+              </Text>
             </View>
           </View>
         </View>
@@ -495,7 +500,7 @@ const CheckoutPage = () => {
                 ]}
               />
             </View>
-            <Text style={styles.radioText}>{t('direct')}</Text>
+            <Text style={styles.radioText}>{t("direct")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.radioLabel}
@@ -514,7 +519,7 @@ const CheckoutPage = () => {
                 ]}
               />
             </View>
-            <Text style={styles.radioText}>{t('cash')}</Text>
+            <Text style={styles.radioText}>{t("cash")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -522,15 +527,26 @@ const CheckoutPage = () => {
       {/* Place Order Button */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.placeOrderButton}
+          style={[
+            styles.placeOrderButton,
+            isLoading && { opacity: 0.6 }, // Optional visual feedback
+          ]}
           onPress={handlePlaceOrder}
-          // onPress={()=>route.push("./directpayment")}
-          //   disabled={isLoading}
+          disabled={isLoading} // Prevent multiple taps
         >
-          <Text style={i18n.language === "en"?styles.placeOrderText:styles.placeOrderText1}>
-            {/* {isLoading ? "Pay Now" : "Pay Now"} */}
-            {selectedOption === "cashondelivery"? t('schedule'): t('pay')}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              style={
+                i18n.language === "en"
+                  ? styles.placeOrderText
+                  : styles.placeOrderText1
+              }
+            >
+              {selectedOption === "cashondelivery" ? t("schedule") : t("pay")}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -930,7 +946,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12, // text-[12px]
   },
-   locationSection: { marginVertical: 16 },
+  locationSection: { marginVertical: 16 },
   label: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   choiceContainer: { flexDirection: "row", marginBottom: 8 },
   choiceButton: {
@@ -959,14 +975,14 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     margin: 16,
-    alignItems: "center"
+    alignItems: "center",
   },
   confirmButtonText: { color: "#fff", fontSize: 16 },
   cancelButton: {
     padding: 12,
     borderRadius: 8,
     margin: 16,
-    alignItems: "center"
+    alignItems: "center",
   },
   cancelButtonText: { color: "#445399", fontSize: 16 },
 });

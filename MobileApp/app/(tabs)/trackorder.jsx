@@ -19,7 +19,8 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import { ref, onValue } from "firebase/database";
 import { database } from "@/firebaseConfig";
 import OrderMapView from "@/components/OrderMapView";
-
+import ShopTracking from "@/components/ShopTracking";
+import { useRouter } from "expo-router";
 // Color Constants
 const COLORS = {
   primary: "#2D4150",
@@ -32,20 +33,15 @@ const COLORS = {
   muted: "#94A3B8",
 };
 
-const handleprsss = async (id) => {
-  const response = await confirmOrder(id);
-  loadData();
-  console.log("is it confirmed", response);
-};
-
 const OrderTrackingScreen = () => {
   const { t, i18n } = useTranslation("track");
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [refreshing, setRefreshing] = useState(false);
-  
-
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     loadData();
@@ -56,6 +52,7 @@ const OrderTrackingScreen = () => {
 
   const loadData = async () => {
     try {
+      setLoading(true);
       const data = await fetchDeliveryNeedOrderHistory();
       // Sort orders descending by id
       const sortedData = data.sort((a, b) => b.id - a.id);
@@ -66,6 +63,39 @@ const OrderTrackingScreen = () => {
       setLoading(false);
     }
   };
+  const handleReschedule = async (orderId) => {
+
+    setConfirmingId(orderId);
+    try {
+      setIsLoading(true)
+      router.push(
+                      `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
+                        JSON.stringify(orderId)
+                      )}`
+                    ) 
+    } catch (err) {
+      console.error("Confirm failed", err);
+    } finally {
+      // setConfirmingId(null);
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirm = async (orderId) => {
+
+    setConfirmingId(orderId);
+    try {
+      // setIsLoading(true)
+      await confirmOrder(orderId);
+      await loadData(); // re‑fetch to update sections
+    } catch (err) {
+      console.error("Confirm failed", err);
+    } finally {
+      setConfirmingId(null);
+      // setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -99,16 +129,23 @@ const OrderTrackingScreen = () => {
   };
 
   const renderOrderItem = ({ item }) => {
-    const timeInfo =
-      item.status === "Delivered"
-        ? {
-            status: "Delivered",
-            color: COLORS.success,
-            details: `Delivered on ${new Date(
-              item.scheduled_delivery
-            ).toLocaleDateString()}`,
-          }
-        : formatCountdown(item.scheduled_delivery);
+    const nowDate = new Date(now);
+const scheduled = new Date(item.scheduled_delivery);
+const isMissed = scheduled < nowDate && item.status !== "Delivered";
+
+const timeInfo = item.status === "Delivered"
+  ? {
+      status: "Delivered",
+      color: COLORS.success,
+      details: `Delivered on ${scheduled.toLocaleDateString()}`,
+    }
+  : isMissed
+  ? {
+      status: "Missed",
+      color: COLORS.error,
+      details: `Scheduled for ${scheduled.toLocaleDateString()}`,
+    }
+  : formatCountdown(item.scheduled_delivery);
 
     return (
       <View style={styles.card}>
@@ -135,7 +172,20 @@ const OrderTrackingScreen = () => {
               source={require("@/assets/images/yasonmap.jpg")}
             /> */}
             <OrderMapView order={item} />
-
+            {new Date(item.scheduled_delivery) < new Date() &&
+              item.status !== "Delivered" && (
+                <TouchableOpacity
+                  onPress={() =>
+                    handleReschedule(item.id)
+                  }
+                  style={[
+                    styles.button2,
+                    { backgroundColor: COLORS.error, marginTop: 10 },
+                  ]}
+                >
+                  <Text style={styles.buttonText}>{t("reschedule")}</Text>
+                </TouchableOpacity>
+              )}
           </View>
           <View style={styles.countdownWrapper}>
             {item.status === "Delivered" ? (
@@ -166,90 +216,7 @@ const OrderTrackingScreen = () => {
         </View> */}
 
         {/* Delivery Progress */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressStep}>
-            <Icon name="check-circle" size={20} color="#4CAF50" />
-            <Text style={styles.progressLabel}>{t("confirmed")}</Text>
-          </View>
-
-          <View
-            style={[
-              styles.progressLine,
-              {
-                backgroundColor: item.prepared ? COLORS.success : COLORS.muted,
-              },
-            ]}
-          />
-
-          <View style={styles.progressStep}>
-            <Icon
-              name={item.prepared ? "check-circle" : "radio-button-unchecked"}
-              size={20}
-              color={item.prepared ? COLORS.success : COLORS.muted}
-            />
-            <Text style={styles.progressLabel}>{t("prepared")}</Text>
-          </View>
-
-          <View
-            style={[
-              styles.progressLine,
-              {
-                // backgroundColor:
-                //   item.status === "Accepted" ? COLORS.success : COLORS.muted,
-                backgroundColor:
-                  item.status === "Accepted" || item.status === "Delivered"
-                    ? COLORS.success
-                    : COLORS.muted,
-              },
-            ]}
-          />
-
-          <View style={styles.progressStep}>
-            <Icon
-              name={
-                item.status === "Accepted"
-                  ? "check-circle"
-                  : "radio-button-unchecked"
-              }
-              size={20}
-              // color={
-              //   item.status === "Accepted"
-              //     ? COLORS.success
-              //     : COLORS.muted
-              // }
-              color={
-                item.status === "Accepted" || item.status === "Delivered"
-                  ? COLORS.success
-                  : COLORS.muted
-              }
-            />
-            <Text style={styles.progressLabel}>{t("accepted")}</Text>
-          </View>
-          <View
-            style={[
-              styles.progressLine,
-              {
-                backgroundColor:
-                  item.status === "Delivered" ? COLORS.success : COLORS.muted,
-              },
-            ]}
-          />
-
-          <View style={styles.progressStep}>
-            <Icon
-              name={
-                item.status === "Delivered"
-                  ? "check-circle"
-                  : "radio-button-unchecked"
-              }
-              size={20}
-              color={
-                item.status === "Delivered" ? COLORS.success : COLORS.muted
-              }
-            />
-            <Text style={styles.progressLabel}>{t("delivered")}</Text>
-          </View>
-        </View>
+        <ShopTracking status={item.status} prepared={item.prepared} />
 
         {/* Order Details */}
         <View style={styles.detailsContainer}>
@@ -317,33 +284,38 @@ const OrderTrackingScreen = () => {
             }}
           >
             <View>
-              {item?.user?.image ? (
-                <Image
-                  source={{
-                    uri: item?.delivery_person?.user?.image,
-                  }}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 38,
-                    marginRight: 12,
-                    borderWidth: 1,
-                  }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 38,
-                    marginRight: 12,
-                    borderWidth: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Icon name="person" size={40} color="#666" />
-                </View>
+              {item?.delivery_person ? (
+
+                item?.delivery_person?.user?.image ? (
+                  <Image
+                    source={{
+                      uri: item?.delivery_person?.user?.image,
+                    }}
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 38,
+                      marginRight: 12,
+                      borderWidth: 1,
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 38,
+                      marginRight: 12,
+                      borderWidth: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Icon name="person" size={40} color="#666" />
+                  </View>
+                )
+              ):(
+                <Text>Delivery Person Not Assigned</Text>
               )}
             </View>
             <View>
@@ -354,12 +326,15 @@ const OrderTrackingScreen = () => {
               <Text>{item?.delivery_person?.user.phone_number}</Text>
             </View>
           </View>
-          {item.status === "Accepted" && (
+          {item.status === "In Transit" && (
             <TouchableOpacity
               style={[styles.button, { backgroundColor: "#4CAF50" }]}
-              onPress={() => handleprsss(item.id)}
+              onPress={() => handleConfirm(item.id)}
+              disabled={confirmingId === item.id}
             >
-              <Text style={styles.buttonText}>Confirm</Text>
+              <Text style={styles.buttonText}>
+                {confirmingId === item.id ? t("waiting") : t("confirm")}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -380,13 +355,25 @@ const OrderTrackingScreen = () => {
     <View style={styles.container}>
       <SectionList
         sections={[
+         
           {
             title: t("active"),
-            data: orders.filter((o) => o.status !== "Delivered"),
-          },
+            data: orders.filter(
+              (o) =>
+                o.status !== "Delivered" &&
+                new Date(o.scheduled_delivery) >= new Date()
+            ),
+          }, 
           {
             title: t("completed"),
             data: orders.filter((o) => o.status === "Delivered"),
+          },{
+            title: t("missed"), // Overdue Deliveries
+            data: orders.filter(
+              (o) =>
+                o.status !== "Delivered" &&
+                new Date(o.scheduled_delivery) < new Date()
+            ),
           },
         ]}
         renderItem={renderOrderItem}
@@ -454,6 +441,13 @@ const styles = StyleSheet.create({
   },
   button: {
     width: 90,
+    marginLeft: 22,
+    paddingVertical: 10,
+    borderRadius: 58,
+    alignItems: "center",
+  },
+  button2: {
+    width: 130,
     marginLeft: 22,
     paddingVertical: 10,
     borderRadius: 58,

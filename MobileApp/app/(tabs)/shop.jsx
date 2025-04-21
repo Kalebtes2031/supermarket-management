@@ -23,19 +23,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import SearchProducts from "@/components/SearchComponent";
+import useDebounce from "@/hooks/useDebounce";
+import SearchLocal from "@/components/SearchLocal";
 
 const Shop = () => {
   const { t, i18n } = useTranslation("shop");
   const { width, height } = Dimensions.get("window");
   const [refreshing, setRefreshing] = useState(false);
   const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedValue, setSelectedValue] = useState("option1");
   const colorScheme = useColorScheme();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadProducts = async () => {
     try {
+      setIsLoading(true);
       const data = await fetchProducts();
       setProducts(data);
     } catch (error) {
@@ -64,8 +71,31 @@ const Shop = () => {
       variation, // add a property for the specific variation
     }))
   );
-  const variationCount = products.reduce((acc, product) => acc + product.variations.length, 0);
 
+  // after loadProducts + flattening:
+  const filteredProducts = flattenedProducts.filter((item) => {
+    const name =
+      i18n.language === "en"
+        ? item.item_name.toLowerCase()
+        : item.item_name_amh.toLowerCase();
+    return name.includes(searchTerm.trim().toLowerCase());
+  });
+
+  useEffect(() => {
+    setSearchTerm(debouncedSearch);
+  }, [debouncedSearch]);
+
+  const variationCount = products.reduce(
+    (acc, product) => acc + product.variations.length,
+    0
+  );
+  const SkeletonCard = () => (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonImage} />
+      <View style={styles.skeletonLine} />
+      <View style={styles.skeletonLineShort} />
+    </View>
+  );
 
   const ListHeader = () => (
     <View style={styles.container}>
@@ -82,7 +112,6 @@ const Shop = () => {
         <Text style={styles.categoryTitle2}>
           {" "}
           {flattenedProducts.length} {t("items")}
-
         </Text>
       </View>
       {/* Content Area */}
@@ -112,40 +141,55 @@ const Shop = () => {
 
       {/* Fixed Search Container */}
       <View style={styles.searchContainer}>
-        <SearchProducts />
+        <SearchLocal
+          value={searchInput}
+          onChangeText={setSearchInput}
+          placeholder={t("searchPlaceholder")}
+          clearSearch={() => setSearchInput("")}
+        />
       </View>
 
-      {/* Products List */}
-      {/* <FlatList
-        data={products}
-        renderItem={({ item }) => (
-          <View style={styles.cardContainer}>
-            <Card product={item} />
-          </View>
-        )}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.flatListContent}
-        ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-      /> */}
-      <FlatList
-        data={flattenedProducts}
-        renderItem={({ item }) => (
-          <View style={styles.cardContainer}>
-            <Card product={item} />
-          </View>
-        )}
-        keyExtractor={(item) => item.variation.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.flatListContent}
-        ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-      />
+      {isLoading ? (
+        <FlatList
+          data={Array.from({ length: 6 })} // show 6 skeleton cards
+          renderItem={() => (
+            <View style={styles.cardContainer}>
+              <SkeletonCard />
+            </View>
+          )}
+          keyExtractor={(_, index) => index.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.flatListContent}
+        />
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={({ item }) => (
+            <View style={styles.cardContainer}>
+              <Card product={item} />
+            </View>
+          )}
+          keyExtractor={(item) => item.variation.id.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.flatListContent}
+          ListHeaderComponent={<View style={styles.listHeaderSpacer} />}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>{t("no_products_found")}</Text>
+            </View>
+          }
+        />
+      )}
+      {/* {filteredProducts.length === 0 && searchTerm.trim() !== "" && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>{t("no_products_found")}</Text>
+        </View>
+      )} */}
+
     </View>
   );
 };
@@ -155,6 +199,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  emptyContainer: {
+    alignItems: "start",
+    justifyContent: "start",
+    marginBottom: 50,
+    padding: 20,
+  },
+  skeletonCard: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 8,
+    padding: 10,
+    // margin: 8,
+    marginTop:55,
+    width: "100%",
+  },
+
+  skeletonImage: {
+    height: 200,
+    backgroundColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  skeletonLine: {
+    height: 22,
+    backgroundColor: "#ccc",
+    marginBottom: 6,
+    borderRadius: 6,
+  },
+
+  skeletonLineShort: {
+    height: 22,
+    backgroundColor: "#ccc",
+    width: "60%",
+    borderRadius: 6,
+  },
+
+  emptyText: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+
   header: {
     height: 200,
     backgroundColor: "#445399",
@@ -170,7 +257,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   flatListContent: {
-    paddingTop: 80, // Space for search bar
+    paddingTop: 40, // Space for search bar
     paddingBottom: 16,
   },
   columnWrapper: {
@@ -214,12 +301,11 @@ const styles = StyleSheet.create({
     borderColor: "white",
   },
   categoryTitle: {
-    position: "absolute",
-    top: 100,
-    left: 20,
+    textAlign:"center",
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
+    marginTop:32,
   },
   categoryTitle2: {
     position: "absolute",

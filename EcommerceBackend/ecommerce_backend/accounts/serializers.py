@@ -5,6 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from datetime import datetime
+from django.contrib.auth.password_validation import validate_password
 
 # class CustomUserSerializer(serializers.ModelSerializer):
 #     phone_number = serializers.CharField(required=True)
@@ -168,18 +169,35 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 #             raise ValidationError("Username is already in use by another user.")
 #         return value
 
+# class CustomUserUpdateSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomUser
+#         fields = ('first_name', 'last_name', 'phone_number', 'email', 'username', 'image')
+#         extra_kwargs = {
+#             'first_name': {'required': False},
+#             'last_name': {'required': False},
+#             'phone_number': {'required': False},
+#             'email': {'required': False},
+#             'username': {'required': False},
+#             'image': {'required': False},
+#         }
+
+#     def validate_email(self, value):
+#         if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
+#             raise serializers.ValidationError("Email is already in use by another user.")
+#         return value
+
+#     def validate_username(self, value):
+#         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
+#             raise serializers.ValidationError("Username is already in use by another user.")
+#         return value
 class CustomUserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'phone_number', 'email', 'username', 'image')
-        extra_kwargs = {
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'phone_number': {'required': False},
-            'email': {'required': False},
-            'username': {'required': False},
-            'image': {'required': False},
-        }
+        fields = ('first_name', 'last_name', 'phone_number', 'email', 'username', 'image', 'password')
+        extra_kwargs = {field: {'required': False} for field in fields}
 
     def validate_email(self, value):
         if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
@@ -190,6 +208,15 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
             raise serializers.ValidationError("Username is already in use by another user.")
         return value
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 
 class OTPSendSerializer(serializers.Serializer):
