@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .models import Order, OrderItem, Payment
 from shop.models import Cart, Product, ProductVariation, Category
 from shop.serializers import CategorySerializer,ProductVariantSerializer
-from .serializers import OrderSerializer, PaymentSerializer, ScheduleDeliverySerializer
+from .serializers import OrderSerializer, PaymentSerializer, ScheduleDeliverySerializer, PaymentAdminSerializer
 from chapa import Chapa
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -32,7 +32,22 @@ from rest_framework import viewsets
 from accounts.permissions import IsVendorOrAdminOrSuperUser
 from django.db.models import F
     
-    
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.select_related('user','order').order_by('-created_at')
+    serializer_class = PaymentAdminSerializer
+    permission_classes = [IsVendorOrAdminOrSuperUser]
+    http_method_names = ['get','patch','put']  # no create/delete from admin panel
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # optional filters:
+        status = self.request.query_params.get('status')
+        if status:
+            qs = qs.filter(status=status)
+        return qs
+
 @api_view(['GET'])
 @permission_classes([IsVendorOrAdminOrSuperUser])
 def order_status_counts(request):
@@ -66,7 +81,7 @@ class PendingOrdersListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Fetch orders with status 'pending'.
-        queryset = Order.objects.filter(status='Pending')
+        queryset = Order.objects.filter(status='Pending', payments__isnull=False).distinct()
         # If the user is not an admin, restrict to their own orders.
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             queryset = queryset.filter(user=self.request.user)
@@ -234,7 +249,7 @@ class ConfirmDeliveryAPIView(APIView):
 
         # Update the order status to 'Delivered'
         order.status = "Delivered"
-        order.payment_status = "On Delivery"
+        # order.payment_status = "On Delivery"
         order.save()
 
         # Optional: Send notification to the delivery person indicating the delivery is confirmed.

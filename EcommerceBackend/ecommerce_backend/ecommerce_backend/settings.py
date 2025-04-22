@@ -228,7 +228,7 @@ DJOSER = {
     #     'user_create': ['rest_framework.permissions.AllowAny'],  # For registration
     # },
     'USER_CREATE_PASSWORD_RETYPE': True,
-    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': False,
     'ACTIVATION_URL': 'auth/activate/?uid={uid}&token={token}',
     'PASSWORD_RESET_CONFIRM_URL': 'auth/reset-password/?uid={uid}&token={token}',
     'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,

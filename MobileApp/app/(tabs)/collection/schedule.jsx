@@ -336,7 +336,7 @@ const ScheduleDeliveryScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => navigation.back()}
           style={{ marginHorizontal: 10, paddingHorizontal: 2 }}
           className="border w-10 h-10 flex flex-row justify-center items-center py-1 rounded-full border-gray-300"
         >
@@ -349,13 +349,15 @@ const ScheduleDeliveryScreen = () => {
       >
         {t("schedule")}
       </Text>
+      <View style={{padding:12,}}>
+
       <Text
         style={{ fontSize: 18, paddingLeft: 8 }}
-        className="text-start font-poppins-bold text-gray-800 text-[14px] mb-4"
+        className="text-start font-poppins-bold text-gray-800 text-[14px]"
       >
         {t("address")}
       </Text>
-      <TextInput
+      {/* <TextInput
         style={{
           height: 50,
           width: "100%",
@@ -368,7 +370,8 @@ const ScheduleDeliveryScreen = () => {
         placeholder="Type your home address"
         onChangeText={(value) => setText(value)}
         value={text}
-      />
+      /> */}
+      </View>
       {/* <View
         style={{
           padding: 10,
@@ -491,7 +494,7 @@ const ScheduleDeliveryScreen = () => {
             {calendarOpen && (
               <Calendar
               // only fix the overall width; height will adjust
-              style={{ width: 220, alignSelf: 'center' }}
+              style={{ width: 250, alignSelf: 'center' }}
               
               // keep your existing props…
               minDate={format(new Date(), "yyyy-MM-dd")}
@@ -502,6 +505,9 @@ const ScheduleDeliveryScreen = () => {
             
               // now the magic: shrink fonts & cell sizes
               theme={{
+                selectedDayBackgroundColor: "#445399",
+                todayTextColor: "#445399",
+                arrowColor: "#445399",
                 // smaller month header
                 textMonthFontSize:       16,
                 textMonthFontWeight:     '600',
@@ -578,6 +584,7 @@ const ScheduleDeliveryScreen = () => {
             />
           </View>
         )}
+        <View  style={{ marginBottom: 20 }}>
 
         <Button
           title={loading ? t("scheduling") : t("confirm")}
@@ -595,8 +602,9 @@ const ScheduleDeliveryScreen = () => {
             />
           }
         />
+        </View>
 
-        <View style={{ marginTop: 20 }}>
+        {/* <View style={{ marginTop: 20 }}>
           <View
             style={{ flexDirection: "row", alignItems: "center", padding: 5 }}
           >
@@ -614,18 +622,8 @@ const ScheduleDeliveryScreen = () => {
             disabled={loading}
             loading={loading}
           />
-          {/* <TouchableOpacity
-            onPress={() => handleScheduleForPickFromStore()}
-            style={{
-              backgroundColor: "#55B051",
-              borderRadius: 48,
-              alignItems: "center",
-              paddingVertical: 15,
-            }}
-          >
-            <Text style={{ fontSize: 16, color: "#fff" }}>{t("pick")}</Text>
-          </TouchableOpacity> */}
-        </View>
+         
+        </View> */}
 
         {/* <View style={{ marginTop: 12 }}>
         <Button title="Show Date Picker" onPress={showDatePicker} />

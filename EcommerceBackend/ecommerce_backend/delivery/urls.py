@@ -1,8 +1,26 @@
 # delivery/urls.py
 from django.urls import path
-from .views import DeliveryUserCreateView, PendingOrdersListAPIView, AcceptOrderAPIView, OrderDetailsView, PendingAndPreparedOrdersListAPIView, UpdatePreparedStatusAPIView, AssignedOrdersListAPIView, HistoryAcceptedOrdersListAPIView, HistoryOrdersListAPIView, HistoryDeliveredOrdersListAPIView,NeedDeliveryOrderListView 
+from .views import (
+    DeliveryUserCreateView, 
+    PendingOrdersListAPIView, 
+    AcceptOrderAPIView, 
+    OrderDetailsView, 
+    PendingAndPreparedOrdersListAPIView, 
+    UpdatePreparedStatusAPIView, 
+    AssignedOrdersListAPIView, 
+    HistoryAcceptedOrdersListAPIView, 
+    HistoryOrdersListAPIView,
+    HistoryDeliveredOrdersListAPIView,
+    NeedDeliveryOrderListView, 
+    DeliveryUserListView,
+    DeliveryAvailabilityView,
+    AdminAvailableDeliveryListView
+    ) 
 
 urlpatterns = [
+    path('admin/availability/', AdminAvailableDeliveryListView.as_view(), name='delivery-admin-availability'),
+    path('availability/', DeliveryAvailabilityView.as_view(), name='delivery-availability'),
+    path('list/', DeliveryUserListView.as_view(), name='delivery-list'),
     path('register/', DeliveryUserCreateView.as_view(), name='delivery-register'),
     path('orders/pending/', PendingOrdersListAPIView.as_view(), name='pending-orders'),
     path('orders/assigned/', AssignedOrdersListAPIView.as_view(), name='assigned-orders'),

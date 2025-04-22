@@ -13,6 +13,7 @@
     "accepted":"በጉዞ ላይ ነው",
     "confirmed":"ታዙዋል",
     "nocompletedelivery":"የተጠናቀቀ ትዕዛዝ የለም።",
+    "nomissedelivery":"ሰእቱ ያለፈበት ትዕዛዝ የለም።",
     "noactivedelivery":"አዲስ ማድረስ የሚያስፈልገው ትዕዛዝ የለም።",
     "waiting":"ይታገሱ",
     "confirm":"ያረጋግጡ"

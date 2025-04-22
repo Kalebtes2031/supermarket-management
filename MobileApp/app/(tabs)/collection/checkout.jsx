@@ -502,7 +502,7 @@ const CheckoutPage = () => {
             </View>
             <Text style={styles.radioText}>{t("direct")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.radioLabel}
             onPress={() => {
               // setAmountToPay(advanceAmount);
@@ -520,7 +520,7 @@ const CheckoutPage = () => {
               />
             </View>
             <Text style={styles.radioText}>{t("cash")}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
 

@@ -5,8 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
 // const baseUrl = "https://malhibnewbackend.activetechet.com/";
-// const baseUrl = "http://192.168.100.51:8000/";  //active wifi
-const baseUrl = "http://192.168.1.3:8000/"; //home wifi
+const baseUrl = "http://192.168.100.51:8000/";  //active wifi
+// const baseUrl = "http://192.168.1.3:8000/"; //home wifi
 // const baseUrl = "http://192.168.65.193:8000/";  //my data network
 // const baseUrl = "http://192.168.8.17:8000/";  //my data network
 // npm i @react-native-picker/picker@2.9.0 expo@52.0.42 expo-constants@17.0.8 expo-location@18.0.10 expo-router@4.0.20 expo-system-ui@4.0.9 react-native@0.76.9 react-native-svg@15.8.0 jest-expo@52.0.6

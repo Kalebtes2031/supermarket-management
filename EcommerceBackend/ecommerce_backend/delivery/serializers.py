@@ -9,7 +9,7 @@ class DeliveryUserCreateSerializer(UserCreateSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     image= serializers.ImageField(required=False)
-
+    
     class Meta(UserCreateSerializer.Meta):
         model = CustomUser
         # Ensure we include first_name and last_name along with phone_number
@@ -17,7 +17,15 @@ class DeliveryUserCreateSerializer(UserCreateSerializer):
 
     def create(self, validated_data):
         validated_data['role'] = 'delivery'  # Set the role for delivery personnel
-        return super().create(validated_data)
+        
+        # create the user first
+        user = super().create(validated_data)
+        # now create their profile
+        AvailableDelivery.objects.create(
+            user=user,
+            phone_number=user.phone_number or ""   # optional
+        )
+        return user
 
 
 class DeliveryPersonUserSerializer(serializers.ModelSerializer):
@@ -40,3 +48,26 @@ class AvailableDeliverySerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailableDelivery
         fields = ['user', 'is_available']
+
+
+class NewAvailableDeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailableDelivery
+        fields = ['is_available', 'phone_number']
+
+class DeliveryUserSerializer(serializers.ModelSerializer):
+    delivery_profile = NewAvailableDeliverySerializer(read_only=True)
+
+    class Meta:
+        model  = CustomUser
+        fields = [
+          'id','username','first_name','last_name',
+          'email','phone_number','role',
+          'delivery_profile'
+        ]
+# delivery/serializers.py
+class AdminAvailableDeliverySerializer(serializers.ModelSerializer):
+    user = DeliveryUserSerializer(read_only=True)
+    class Meta:
+        model  = AvailableDelivery
+        fields = ['id', 'user', 'is_available', 'phone_number']

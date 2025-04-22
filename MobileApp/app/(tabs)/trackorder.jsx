@@ -21,6 +21,8 @@ import { database } from "@/firebaseConfig";
 import OrderMapView from "@/components/OrderMapView";
 import ShopTracking from "@/components/ShopTracking";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from '@react-navigation/native';
+
 // Color Constants
 const COLORS = {
   primary: "#2D4150",
@@ -64,15 +66,14 @@ const OrderTrackingScreen = () => {
     }
   };
   const handleReschedule = async (orderId) => {
-
-    setConfirmingId(orderId);
+    // setConfirmingId(orderId);
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       router.push(
-                      `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
-                        JSON.stringify(orderId)
-                      )}`
-                    ) 
+        `/(tabs)/collection/schedule?orderId=${encodeURIComponent(
+          JSON.stringify(orderId)
+        )}`
+      );
     } catch (err) {
       console.error("Confirm failed", err);
     } finally {
@@ -82,7 +83,6 @@ const OrderTrackingScreen = () => {
   };
 
   const handleConfirm = async (orderId) => {
-
     setConfirmingId(orderId);
     try {
       // setIsLoading(true)
@@ -96,11 +96,14 @@ const OrderTrackingScreen = () => {
     }
   };
 
-  useEffect(() => {
-    loadData();
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+      const timer = setInterval(() => setNow(Date.now()), 1000);
+      return () => clearInterval(timer);
+    }, [])
+  );
+  
 
   const formatCountdown = (scheduledTime) => {
     const scheduled = new Date(scheduledTime);
@@ -130,22 +133,23 @@ const OrderTrackingScreen = () => {
 
   const renderOrderItem = ({ item }) => {
     const nowDate = new Date(now);
-const scheduled = new Date(item.scheduled_delivery);
-const isMissed = scheduled < nowDate && item.status !== "Delivered";
+    const scheduled = new Date(item.scheduled_delivery);
+    const isMissed = scheduled < nowDate && item.status !== "Delivered";
 
-const timeInfo = item.status === "Delivered"
-  ? {
-      status: "Delivered",
-      color: COLORS.success,
-      details: `Delivered on ${scheduled.toLocaleDateString()}`,
-    }
-  : isMissed
-  ? {
-      status: "Missed",
-      color: COLORS.error,
-      details: `Scheduled for ${scheduled.toLocaleDateString()}`,
-    }
-  : formatCountdown(item.scheduled_delivery);
+    const timeInfo =
+      item.status === "Delivered"
+        ? {
+            status: "Delivered",
+            color: COLORS.success,
+            details: `Delivered on ${scheduled.toLocaleDateString()}`,
+          }
+        : isMissed
+        ? {
+            status: "Missed",
+            color: COLORS.error,
+            details: `Scheduled for ${scheduled.toLocaleDateString()}`,
+          }
+        : formatCountdown(item.scheduled_delivery);
 
     return (
       <View style={styles.card}>
@@ -175,15 +179,18 @@ const timeInfo = item.status === "Delivered"
             {new Date(item.scheduled_delivery) < new Date() &&
               item.status !== "Delivered" && (
                 <TouchableOpacity
-                  onPress={() =>
-                    handleReschedule(item.id)
-                  }
+                  onPress={() => handleReschedule(item.id)}
                   style={[
                     styles.button2,
                     { backgroundColor: COLORS.error, marginTop: 10 },
                   ]}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.buttonText}>{t("reschedule")}</Text>
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>{t("reschedule")}</Text>
+                  )}
                 </TouchableOpacity>
               )}
           </View>
@@ -285,7 +292,6 @@ const timeInfo = item.status === "Delivered"
           >
             <View>
               {item?.delivery_person ? (
-
                 item?.delivery_person?.user?.image ? (
                   <Image
                     source={{
@@ -314,7 +320,7 @@ const timeInfo = item.status === "Delivered"
                     <Icon name="person" size={40} color="#666" />
                   </View>
                 )
-              ):(
+              ) : (
                 <Text>Delivery Person Not Assigned</Text>
               )}
             </View>
@@ -355,7 +361,6 @@ const timeInfo = item.status === "Delivered"
     <View style={styles.container}>
       <SectionList
         sections={[
-         
           {
             title: t("active"),
             data: orders.filter(
@@ -363,17 +368,19 @@ const timeInfo = item.status === "Delivered"
                 o.status !== "Delivered" &&
                 new Date(o.scheduled_delivery) >= new Date()
             ),
-          }, 
+          },
+          
           {
-            title: t("completed"),
-            data: orders.filter((o) => o.status === "Delivered"),
-          },{
             title: t("missed"), // Overdue Deliveries
             data: orders.filter(
               (o) =>
                 o.status !== "Delivered" &&
                 new Date(o.scheduled_delivery) < new Date()
             ),
+          },
+          {
+            title: t("completed"),
+            data: orders.filter((o) => o.status === "Delivered"),
           },
         ]}
         renderItem={renderOrderItem}
@@ -388,7 +395,9 @@ const timeInfo = item.status === "Delivered"
                 <Text style={styles.emptySectionText}>
                   {section.title === t("active")
                     ? t("noactivedelivery") // for example, "No active deliveries"
-                    : t("nocompletedelivery")}{" "}
+                    : section.title===t("missed")
+                    ? t("nomissedelivery")
+                    : t("nocompletedelivery")}
                   {/* e.g. "No completed deliveries" */}
                 </Text>
               </View>

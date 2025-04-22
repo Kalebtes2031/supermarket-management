@@ -1,8 +1,14 @@
 # orders/urls.py
 from django.urls import path, include
 from . import views
+from rest_framework.routers import DefaultRouter
+from .views import PaymentViewSet
+
+router = DefaultRouter()
+router.register(r'payments', PaymentViewSet, basename='payment')
 
 urlpatterns = [
+     path('', include(router.urls)),
     path('orders/<int:order_id>/schedule-delivery-pick-from-store/', views.ScheduleDeliveryAndPickFromStoreAPIView.as_view(), name='schedule_delivery_and_pick_from_store'),
     path('orders/<int:order_id>/schedule-delivery/', views.ScheduleDeliveryAPIView.as_view(), name='schedule_delivery'),
     path('orders/<int:order_id>/confirm-delivery/', views.ConfirmDeliveryAPIView.as_view(), name='confirm_delivery'),

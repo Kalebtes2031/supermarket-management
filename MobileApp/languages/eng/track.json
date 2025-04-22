@@ -14,6 +14,7 @@
   "confirmed": "Confirmed",
   "nocompletedelivery": "There is no Completed Delivery",
   "noactivedelivery": "There is no Active Delivery",
+  "nomissedelivery": "There is no Missed Delivery",
   "waiting": "Waiting",
   "confirm": "Confirm",
   "missed": "Missed Deliveries",

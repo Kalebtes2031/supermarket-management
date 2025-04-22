@@ -1,7 +1,7 @@
 # delivery/views.py
 from rest_framework import generics, status
 from accounts.models import CustomUser
-from .serializers import DeliveryUserCreateSerializer
+from .serializers import AdminAvailableDeliverySerializer,NewAvailableDeliverySerializer,DeliveryUserCreateSerializer, DeliveryUserSerializer
 from orders.models import Order
 from orders.serializers import OrderSerializer, OrderItemSerializer
 from accounts.permissions import IsDeliveryPerson
@@ -12,9 +12,54 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from delivery.models import AvailableDelivery
 from notifications import send_notification
+from accounts.permissions import IsVendorOrAdminOrSuperUser
 
 logger = logging.getLogger(__name__)
 
+
+# class DeliveryAvailabilityView(generics.RetrieveUpdateAPIView):
+#     serializer_class   = NewAvailableDeliverySerializer
+#     permission_classes = [IsDeliveryPerson]
+
+#     def get_object(self):
+#         # returns the AvailableDelivery for the current user (1‑to‑1)
+#         return self.request.user.delivery_profile
+class AdminAvailableDeliveryListView(generics.ListAPIView):
+    permission_classes = [IsVendorOrAdminOrSuperUser]   # or your own perms
+    queryset           = AvailableDelivery.objects.filter(is_available=True)
+    serializer_class   = AdminAvailableDeliverySerializer
+    
+class DeliveryAvailabilityView(APIView):
+    permission_classes = [IsDeliveryPerson]
+
+    def get(self, request):
+        try:
+            profile = AvailableDelivery.objects.get(user=request.user)
+            serializer = NewAvailableDeliverySerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except AvailableDelivery.DoesNotExist:
+            return Response({"detail": "Delivery profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request):
+        try:
+            profile = AvailableDelivery.objects.get(user=request.user)
+            is_available = request.data.get('is_available')
+
+            if is_available is not None:
+                profile.is_available = is_available
+                profile.save()
+                serializer = NewAvailableDeliverySerializer(profile)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "Missing 'is_available' in request."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except AvailableDelivery.DoesNotExist:
+            return Response({"detail": "Delivery profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class DeliveryUserListView(generics.ListAPIView):
+    queryset         = CustomUser.objects.filter(role='delivery')
+    serializer_class = DeliveryUserSerializer
+    
 
 class DeliveryUserCreateView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()

@@ -5,6 +5,33 @@ from shop.serializers import ProductSerializer, ProductVariantSerializer
 from django.utils import timezone
 from delivery.serializers import AvailableDeliverySerializer
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = User
+        fields = ['id','username','email']    # whatever you need
+
+class PaymentAdminSerializer(serializers.ModelSerializer):
+    user        = UserBriefSerializer(read_only=True)
+    receipt_url = serializers.SerializerMethodField()   # <-- this
+
+    def get_receipt_url(self, obj):                     # <-- must live here
+        request = self.context.get('request')
+        if obj.receipt:
+            return request.build_absolute_uri(obj.receipt.url)
+        return None
+
+    class Meta:
+        model  = Payment
+        fields = [
+            'id', 'user','order','transaction_id',
+            'amount','status','bank_name','receipt_url',
+            'created_at'
+        ]
+        read_only_fields = fields
 
 # class ScheduleDeliverySerializer(serializers.Serializer):
 #     scheduled_delivery = serializers.DateTimeField()
@@ -54,10 +81,11 @@ class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.SerializerMethodField()
     delivery_person = AvailableDeliverySerializer(read_only=True)
-    
+    payment = serializers.SerializerMethodField()
+     
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email', 'need_delivery', 'customer_latitude', 'customer_longitude']
+        fields = ['id', 'user', 'status', 'payment_status', 'created_at', 'items', 'total', 'total_payment', 'prepared', 'delivery_person', 'scheduled_delivery','phone_number','first_name','last_name','email', 'need_delivery', 'customer_latitude', 'customer_longitude', 'payment']
 
     def get_user(self, obj):
         if obj.user:
@@ -70,6 +98,14 @@ class OrderSerializer(serializers.ModelSerializer):
                 'image': obj.user.image.url if obj.user.image else None
             }
         return None
+    def get_payment(self, obj):
+        # picks the latest payment; change the ordering/filtering as needed
+        payment = obj.payments.order_by('-created_at').first()
+        if not payment:
+            return None
+        # we pass the current request into the context so that
+        # your get_receipt_url() method can build an absolute URI
+        return PaymentAdminSerializer(payment, context=self.context).data
     
 class PaymentSerializer(serializers.ModelSerializer):
     # user = serializers.SerializerMethodField()  # Add user field
@@ -80,6 +116,25 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['id', 'order','items','user', 'transaction_id', 'amount', 'status', 'created_at']
     
+# class PaymentAdminSerializer(serializers.ModelSerializer):
+#     receipt_url = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Payment
+#         fields = [
+#             'id','user','order','transaction_id',
+#             'amount','status','bank_name','receipt_url',
+#             'created_at'
+#         ]
+#         read_only_fields = ['id','user','order','transaction_id',
+#                             'amount','bank_name','receipt_url','created_at']
+#         # only `status` is writeable
+
+#     def get_receipt_url(self, obj):
+#         request = self.context.get('request')
+#         if obj.receipt and request:
+#             return request.build_absolute_uri(obj.receipt.url)
+#         return None
     # def get_user(self, obj):
     #     # Return the user's username (or any field you prefer)
     #     return obj.user.username if obj.user else None 
